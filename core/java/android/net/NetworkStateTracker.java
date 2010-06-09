@@ -26,6 +26,12 @@ package android.net;
  */
 public interface NetworkStateTracker {
 
+    // Share the event space with ConnectivityService (which we can't see, but
+    // must send events to).  If you change these, change ConnectivityService
+    // too.
+    static final int MIN_NETWORK_STATE_TRACKER_EVENT = 1;
+    static final int MAX_NETWORK_STATE_TRACKER_EVENT = 100;
+
     public static final int EVENT_STATE_CHANGED = 1;
     public static final int EVENT_SCAN_RESULTS_AVAILABLE = 2;
     /**
@@ -37,7 +43,6 @@ public interface NetworkStateTracker {
     public static final int EVENT_CONFIGURATION_CHANGED = 4;
     public static final int EVENT_ROAMING_CHANGED = 5;
     public static final int EVENT_NETWORK_SUBTYPE_CHANGED = 6;
-    public static final int EVENT_RESTORE_DEFAULT_NETWORK = 7;
     public static final int EVENT_CLEAR_NET_TRANSITION_WAKELOCK = 8;
 
     /**
