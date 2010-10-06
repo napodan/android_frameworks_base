@@ -427,7 +427,7 @@ public class ViewDebug {
      * @hide
      */
     public static long getViewInstanceCount() {
-        return View.sInstanceCount;
+        return Debug.countInstancesOfClass(View.class);
     }
 
     /**
@@ -438,7 +438,7 @@ public class ViewDebug {
      * @hide
      */
     public static long getViewRootInstanceCount() {
-        return ViewRoot.getInstanceCount();
+        return Debug.countInstancesOfClass(ViewRoot.class);
     }
 
     /**

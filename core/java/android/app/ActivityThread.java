@@ -679,14 +679,14 @@ public final class ActivityThread {
             long dalvikAllocated = dalvikMax - dalvikFree;
             long viewInstanceCount = ViewDebug.getViewInstanceCount();
             long viewRootInstanceCount = ViewDebug.getViewRootInstanceCount();
-            long appContextInstanceCount = ContextImpl.getInstanceCount();
-            long activityInstanceCount = Activity.getInstanceCount();
+            long appContextInstanceCount = Debug.countInstancesOfClass(ContextImpl.class);
+            long activityInstanceCount = Debug.countInstancesOfClass(Activity.class);
             int globalAssetCount = AssetManager.getGlobalAssetCount();
             int globalAssetManagerCount = AssetManager.getGlobalAssetManagerCount();
             int binderLocalObjectCount = Debug.getBinderLocalObjectCount();
             int binderProxyObjectCount = Debug.getBinderProxyObjectCount();
             int binderDeathObjectCount = Debug.getBinderDeathObjectCount();
-            int openSslSocketCount = OpenSSLSocketImpl.getInstanceCount();
+            long openSslSocketCount = Debug.countInstancesOfClass(OpenSSLSocketImpl.class);
             SQLiteDebug.PagerStats stats = SQLiteDebug.getDatabaseInfo();
 
             // Check to see if we were called by checkin server. If so, print terse format.
