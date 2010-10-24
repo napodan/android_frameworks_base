@@ -1704,6 +1704,11 @@ public abstract class AbsListView extends AdapterView<ListAdapter> implements Te
         if (mAdapter != null && mDataSetObserver == null) {
             mDataSetObserver = new AdapterDataSetObserver();
             mAdapter.registerDataSetObserver(mDataSetObserver);
+
+            // Data may have changed while we were detached. Refresh.
+            mDataChanged = true;
+            mOldItemCount = mItemCount;
+            mItemCount = mAdapter.getCount();
         }
     }
 
