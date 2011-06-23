@@ -24,6 +24,7 @@ import android.os.RemoteException;
 import android.os.Handler;
 import android.os.Message;
 import android.os.ServiceManager;
+import android.os.SystemProperties;
 import com.android.internal.telephony.ITelephony;
 import com.android.internal.telephony.Phone;
 import com.android.internal.telephony.TelephonyIntents;
@@ -86,18 +87,16 @@ public class MobileDataStateTracker implements NetworkStateTracker {
 
         mPhoneService = null;
 
-        sDnsPropNames = new String[] {
-                "net.rmnet0.dns1",
-                "net.rmnet0.dns2",
-                "net.eth0.dns1",
-                "net.eth0.dns2",
-                "net.eth0.dns3",
-                "net.eth0.dns4",
-                "net.gprs.dns1",
-                "net.gprs.dns2",
-                "net.ppp0.dns1",
-                "net.ppp0.dns2"};
+        String[] ifNames = SystemProperties.get(
+            "mobiledata.interfaces",
+            "rmnet0,eth0,gprs,ppp0"
+        ).split(",");
 
+        sDnsPropNames = new String[2 * ifNames.length];
+        for (int i = 0; i < ifNames.length; ++i) {
+            sDnsPropNames[2*i+0] = "net." + ifNames[i] + ".dns1";
+            sDnsPropNames[2*i+1] = "net." + ifNames[i] + ".dns2";
+        }
     }
 
     /**
