@@ -91,13 +91,6 @@ status_t AudioHardwareStub::setVoiceVolume(float volume)
     return NO_ERROR;
 }
 
-#ifdef HAVE_FM_RADIO
-status_t AudioHardwareStub::setFmVolume(float volume)
-{
-    return NO_ERROR;
-}
-#endif
-
 status_t AudioHardwareStub::setMasterVolume(float volume)
 {
     return NO_ERROR;
