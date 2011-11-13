@@ -170,10 +170,6 @@ public:
 
     virtual status_t moveEffects(int session, int srcOutput, int dstOutput);
 
-#ifdef HAVE_FM_RADIO
-    virtual status_t setFmVolume(float volume);
-#endif
-
     enum hardware_call_state {
         AUDIO_HW_IDLE = 0,
         AUDIO_HW_INIT,
@@ -191,9 +187,6 @@ public:
         AUDIO_HW_SET_MIC_MUTE,
         AUDIO_SET_VOICE_VOLUME,
         AUDIO_SET_PARAMETER,
-#ifdef HAVE_FM_RADIO
-        AUDIO_SET_FM_VOLUME
-#endif
     };
 
     // record interface
@@ -1197,9 +1190,6 @@ private:
 #endif
                 uint32_t mMode;
 
-#ifdef HAVE_FM_RADIO
-                bool                                mFmOn;
-#endif
 };
 
 // ----------------------------------------------------------------------------
