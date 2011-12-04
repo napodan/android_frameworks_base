@@ -1816,4 +1816,6 @@
   <!-- From PinyinIME(!!!) -->
   <java-symbol type="string" name="inputMethod" />
 
+  <java-symbol type="string" name="config_legacyUmsLunFile" />
+
 </resources>
