@@ -2316,6 +2316,12 @@ public final class Settings {
          */
         public static final String STATUSBAR_BATT_STYLE = "statusbar_batt_style";
 
+        /**
+         * Toggle to let trackball wake the screen.
+         * @hide
+         */
+        public static final String TRACKBALL_WAKE_SCREEN = "trackball_wake_screen";
+
         /* END Constants for Evervolv Toolbox */
 
         /**
