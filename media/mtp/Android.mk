@@ -41,6 +41,9 @@ LOCAL_C_INCLUDES := external/sqlite/dist
 
 LOCAL_CFLAGS := -DMTP_DEVICE
 
+# Needed for <bionic_time.h>
+LOCAL_C_INCLUDES := bionic/libc/private
+
 LOCAL_SHARED_LIBRARIES := libutils libsqlite libstagefright libcutils \
 	libmedia
 
@@ -71,6 +74,9 @@ LOCAL_SRC_FILES:=                                       \
 
 LOCAL_CFLAGS := -g -DMTP_HOST
 LOCAL_LDFLAGS := -g
+# Needed for <bionic_time.h>
+LOCAL_C_INCLUDES := bionic/libc/private
+
 
 include $(BUILD_STATIC_LIBRARY)
 
@@ -98,5 +104,8 @@ LOCAL_SHARED_LIBRARIES := libutils libsqlite libstagefright libmedia
 
 LOCAL_CFLAGS := -g
 LOCAL_LDFLAGS := -g
+
+# Needed for <bionic_time.h>
+LOCAL_C_INCLUDES := bionic/libc/private
 
 include $(BUILD_EXECUTABLE)
