@@ -46,6 +46,9 @@ LOCAL_C_INCLUDES := external/sqlite/dist
 
 LOCAL_CFLAGS := -DMTP_DEVICE -DMTP_HOST
 
+# Needed for <bionic_time.h>
+LOCAL_C_INCLUDES += bionic/libc/private
+
 include $(BUILD_STATIC_LIBRARY)
 
 ifneq ($(TARGET_SIMULATOR),true)
@@ -64,6 +67,9 @@ LOCAL_SHARED_LIBRARIES := libutils libsqlite libstagefright libcutils \
 
 LOCAL_STATIC_LIBRARIES := libmtp
 
+# Needed for <bionic_time.h>
+LOCAL_C_INCLUDES := bionic/libc/private
+
 include $(BUILD_EXECUTABLE)
 
 include $(CLEAR_VARS)
@@ -80,6 +86,9 @@ LOCAL_SHARED_LIBRARIES := libutils libsqlite libstagefright libmedia
 
 LOCAL_CFLAGS := -g
 LOCAL_LDFLAGS := -g
+
+# Needed for <bionic_time.h>
+LOCAL_C_INCLUDES := bionic/libc/private
 
 include $(BUILD_EXECUTABLE)
 
