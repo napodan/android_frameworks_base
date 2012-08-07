@@ -2260,6 +2260,17 @@ public final class Settings {
         public static final String POINTER_SPEED = "pointer_speed";
 
         /**
+         * Statusbar battery icon style options.
+         * 0 - Stock
+         * 1 - Stock w/ percentages
+         * 2 - Hidden
+         * @hide
+         */
+        public static final String STATUSBAR_BATT_STYLE = "statusbar_batt_style";
+
+        /* END Constants for Evervolv Toolbox */
+
+        /**
          * Settings to backup. This is here so that it's in the same place as the settings
          * keys and easy to update.
          *
