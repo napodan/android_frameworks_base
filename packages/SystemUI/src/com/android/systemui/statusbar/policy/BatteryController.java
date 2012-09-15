@@ -99,8 +99,10 @@ public class BatteryController extends BroadcastReceiver {
             mLastBatteryLevel = level;
 
             if (mBatteryStyle == BATTERY_PERCENT) {
-                icon = plugged ? R.drawable.stat_sys_battery_charge
-                                         : R.drawable.stat_sys_battery_mod;
+            	  icon = R.drawable.stat_sys_battery_mod;
+                /* icon = plugged ? R.drawable.stat_sys_battery_charge
+                 *                        : R.drawable.stat_sys_battery_mod;
+								 */
             } else {
                 icon = plugged ? R.drawable.stat_sys_battery_charge
                                          : R.drawable.stat_sys_battery;
@@ -139,8 +141,10 @@ public class BatteryController extends BroadcastReceiver {
     private void batteryChange() {
         final int icon;
         if (mBatteryStyle == BATTERY_PERCENT && mThemeCompat && !mDisableToolbox) {
-            icon = mLastPluggedState ? R.drawable.stat_sys_battery_charge
-                                     : R.drawable.stat_sys_battery_mod;
+            icon = R.drawable.stat_sys_battery_mod;
+            /* icon = mLastPluggedState ? R.drawable.stat_sys_battery_charge
+             *                        : R.drawable.stat_sys_battery_mod;
+						 **/
         } else {
             icon = mLastPluggedState ? R.drawable.stat_sys_battery_charge
                                      : R.drawable.stat_sys_battery;
