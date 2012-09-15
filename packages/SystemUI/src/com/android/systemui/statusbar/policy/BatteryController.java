@@ -54,7 +54,9 @@ public class BatteryController extends BroadcastReceiver {
         mContext = context;
         mCr = mContext.getContentResolver();
 
-        mBatteryStyle = Settings.System.getInt(mCr, Settings.System.STATUSBAR_BATT_STYLE, BATT_PERCENT);
+        /*mBatteryStyle = Settings.System.getInt(mCr, Settings.System.STATUSBAR_BATT_STYLE, BATT_PERCENT);*/
+				/* Pourcentage par defaut */
+        mBatteryStyle = BATT_PERCENT;
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_BATTERY_CHANGED);
@@ -84,8 +86,10 @@ public class BatteryController extends BroadcastReceiver {
             mLastPluggedState = plugged;
             mLastBatteryLevel = level;
             if (mBatteryStyle == BATT_PERCENT) {
-                icon = plugged ? R.drawable.stat_sys_battery_charge
-                                         : R.drawable.stat_sys_battery_mod;
+            	  icon = R.drawable.stat_sys_battery_mod;
+                /* icon = plugged ? R.drawable.stat_sys_battery_charge
+                 *                        : R.drawable.stat_sys_battery_mod;
+								 */
             } else {
                 icon = plugged ? R.drawable.stat_sys_battery_charge
                                          : R.drawable.stat_sys_battery;
@@ -120,8 +124,10 @@ public class BatteryController extends BroadcastReceiver {
     private void batteryChange() {
         final int icon;
         if (mBatteryStyle == BATT_PERCENT) {
-            icon = mLastPluggedState ? R.drawable.stat_sys_battery_charge
-                                     : R.drawable.stat_sys_battery_mod;
+            icon = R.drawable.stat_sys_battery_mod;
+            /* icon = mLastPluggedState ? R.drawable.stat_sys_battery_charge
+             *                        : R.drawable.stat_sys_battery_mod;
+						 **/
         } else {
             icon = mLastPluggedState ? R.drawable.stat_sys_battery_charge
                                      : R.drawable.stat_sys_battery;
