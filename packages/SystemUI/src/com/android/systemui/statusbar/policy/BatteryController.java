@@ -60,7 +60,7 @@ public class BatteryController extends BroadcastReceiver {
         mThemeCompat = Settings.System.getInt(mCr,
                 Settings.System.THEME_COMPATIBILITY_BATTERY, 1) == 1;
 		// Pourcentage par defaut
-        mBatteryStyle = BATT_PERCENT;
+        mBatteryStyle = BATTERY_PERCENT;
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_BATTERY_CHANGED);
