@@ -34,8 +34,6 @@ import static android.view.WindowManager.LayoutParams.TYPE_INPUT_METHOD_DIALOG;
 import static android.view.WindowManager.LayoutParams.TYPE_WALLPAPER;
 
 import com.android.internal.app.IBatteryStats;
-import com.android.internal.app.ThemeUtils;
-
 import com.android.internal.policy.PolicyManager;
 import com.android.internal.policy.impl.PhoneWindowManager;
 import com.android.internal.view.IInputContext;
@@ -309,12 +307,6 @@ public class WindowManagerService extends IWindowManager.Stub
         }
     };
 
-    private BroadcastReceiver mThemeChangeReceiver = new BroadcastReceiver() {
-        public void onReceive(Context context, Intent intent) {
-            mUiContext = null;
-        }
-    };
-
     final BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -328,7 +320,6 @@ public class WindowManagerService extends IWindowManager.Stub
     };
 
     final Context mContext;
-    private Context mUiContext;
 
     final boolean mHaveInputMethods;
 
@@ -942,15 +933,6 @@ public class WindowManagerService extends IWindowManager.Stub
         Surface.openTransaction();
         createWatermark();
         Surface.closeTransaction();
-
-        ThemeUtils.registerThemeChangeReceiver(mContext, mThemeChangeReceiver);
-    }
-
-    private Context getUiContext() {
-        if (mUiContext == null) {
-            mUiContext = ThemeUtils.createUiContext(mContext);
-        }
-        return mUiContext != null ? mUiContext : mContext;
     }
 
     public InputManagerService getInputManagerService() {
@@ -5167,19 +5149,19 @@ public class WindowManagerService extends IWindowManager.Stub
     // Called by window manager policy.  Not exposed externally.
     @Override
     public void shutdown() {
-        ShutdownThread.shutdown(getUiContext(), true);
+        ShutdownThread.shutdown(mContext, true);
     }
 
     // Called by window manager policy.  Not exposed externally.
     @Override
     public void rebootSafeMode() {
-        ShutdownThread.rebootSafeMode(getUiContext(), true);
+        ShutdownThread.rebootSafeMode(mContext, true);
     }
 
     // Called by window manager policy.  Not exposed externally.
     @Override
     public void reboot(String reason) {
-        ShutdownThread.reboot(getUiContext(), null, true);
+        ShutdownThread.reboot(mContext,reason, true);
     }
 
     public void setInputFilter(InputFilter filter) {
