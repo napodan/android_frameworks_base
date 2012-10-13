@@ -16,11 +16,9 @@
 
 package com.android.server;
 
-import com.android.internal.app.ThemeUtils;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -78,7 +76,6 @@ public class DeviceStorageMonitorService extends Binder {
     private boolean mLowMemFlag=false;
     private boolean mMemFullFlag=false;
     private Context mContext;
-    private Context mUiContext;
     private ContentResolver mContentResolver;
     private long mTotalMemory;  // on /data/data
     private StatFs mDataFileStats;
@@ -310,14 +307,6 @@ public class DeviceStorageMonitorService extends Binder {
         mLastReportedFreeMemTime = 0;
         mContext = context;
         mContentResolver = mContext.getContentResolver();
-
-        ThemeUtils.registerThemeChangeReceiver(mContext, new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context content, Intent intent) {
-                mUiContext = null;
-            }
-        });
-
         //create StatFs object
         mDataFileStats = new StatFs(DATA_PATH);
         mSystemFileStats = new StatFs(SYSTEM_PATH);
@@ -370,7 +359,7 @@ public class DeviceStorageMonitorService extends Binder {
         notification.icon = com.android.internal.R.drawable.stat_notify_disk_full;
         notification.tickerText = title;
         notification.flags |= Notification.FLAG_NO_CLEAR;
-        notification.setLatestEventInfo(getUiContext(), title, details, intent);
+        notification.setLatestEventInfo(mContext, title, details, intent);
         mNotificationMgr.notify(LOW_MEMORY_NOTIFICATION_ID, notification);
         mContext.sendStickyBroadcast(mStorageLowIntent);
     }
@@ -445,12 +434,5 @@ public class DeviceStorageMonitorService extends Binder {
         public void onEvent(int event, String path) {
             EventLogTags.writeCacheFileDeleted(path);
         }
-    }
-
-    private Context getUiContext() {
-        if (mUiContext == null) {
-            mUiContext = ThemeUtils.createUiContext(mContext);
-        }
-        return mUiContext != null ? mUiContext : mContext;
     }
 }
