@@ -40,7 +40,6 @@ import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
 import android.content.pm.UserInfo;
 import android.content.pm.VerifierDeviceIdentity;
-import android.content.pm.ThemeInfo;
 import android.net.Uri;
 import android.content.IntentSender;
 
@@ -126,8 +125,6 @@ interface IPackageManager {
      * returned.
      */
     ParceledListSlice getInstalledPackages(int flags, in String lastRead);
-
-    List<PackageInfo> getInstalledThemePackages();
 
     /**
      * This implements getInstalledApplications via a "last returned row"
