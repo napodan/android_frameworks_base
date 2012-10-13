@@ -57,9 +57,7 @@ public final class ThemeInfo extends BaseThemeInfo {
         COPYRIGHT_INDEX,
         RINGTONE_NAME_INDEX,
         NOTIFICATION_RINGTONE_NAME_INDEX,
-        STYLE_INDEX,
-        HAS_MODDED_BATTERY_INDEX,
-        HAS_MODDED_SIGNAL_INDEX;
+        STYLE_INDEX;
 
         public static AttributeIndex get(int ordinal) {
             return values()[ordinal];
@@ -83,8 +81,6 @@ public final class ThemeInfo extends BaseThemeInfo {
         "ringtoneName",
         "notificationRingtoneName",
         "styleId",
-        "hasModdedBattery",
-        "hasModdedSignal",
     };
 
     private static final Map<String, AttributeIndex> sAttributesLookupTable;
@@ -183,14 +179,6 @@ public final class ThemeInfo extends BaseThemeInfo {
                     case PREVIEW_INDEX:
                         // theme thumbprint
                         previewResourceId = attrs.getAttributeResourceValue(i, 0);
-                        break;
-                    case HAS_MODDED_BATTERY_INDEX:
-                        //does theme utilize 100 image battery mod
-                        hasModdedBattery = attrs.getAttributeValue(i);
-                        break;
-                    case HAS_MODDED_SIGNAL_INDEX:
-                        //does theme utilize 100 image battery mod
-                        hasModdedSignal = attrs.getAttributeValue(i);
                         break;
                 }
             }

@@ -161,7 +161,7 @@ public class NetworkController extends BroadcastReceiver {
 
     private boolean mHasMobileDataFeature;
 
-    private SettingsObserver mObserver = null;
+    private ToolboxObserver mObserver = null;
     private boolean mUseSixBar;
 
     boolean mDataAndWifiStacked = false;
@@ -246,8 +246,8 @@ public class NetworkController extends BroadcastReceiver {
         updateAirplaneMode();
 
         // 6-bar data icons
-        updateSignal();
-        mObserver = new SettingsObserver(new Handler());
+        updateSixBar();
+        mObserver = new ToolboxObserver(new Handler());
         mObserver.observe();
 
         // yuck
@@ -1440,8 +1440,8 @@ public class NetworkController extends BroadcastReceiver {
         }
     }
 
-    private class SettingsObserver extends ContentObserver {
-        public SettingsObserver(Handler handler) {
+    private class ToolboxObserver extends ContentObserver {
+        public ToolboxObserver(Handler handler) {
             super(handler);
         }
 
@@ -1450,26 +1450,22 @@ public class NetworkController extends BroadcastReceiver {
                     Settings.System.STATUSBAR_6BAR_SIGNAL), false, this);
             mCr.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.DISABLE_TOOLBOX), false, this);
-            mCr.registerContentObserver(Settings.System.getUriFor(
-                    Settings.System.THEME_COMPATIBILITY_SIGNAL), false, this);
         }
 
         @Override
         public void onChange(boolean selfChange) {
-            updateSignal();
+            updateSixBar();
             updateTelephonySignalStrength();
             refreshViews();
         }
     }
 
-    private void updateSignal() {
+    private void updateSixBar() {
         boolean toolboxEnabled = (Settings.System.getInt(mCr,
             Settings.System.DISABLE_TOOLBOX, 0) == 0);
         boolean sixBarEnabled = (Settings.System.getInt(mCr,
             Settings.System.STATUSBAR_6BAR_SIGNAL, 1) == 1);
-        boolean themeCompat = Settings.System.getInt(mContext.getContentResolver(),
-                Settings.System.THEME_COMPATIBILITY_SIGNAL, 1) == 1;
-        mUseSixBar = toolboxEnabled && sixBarEnabled && themeCompat;
+        mUseSixBar = toolboxEnabled && sixBarEnabled;
     }
 
 }
