@@ -52,6 +52,12 @@
             android:layout_height="@dimen/notification_panel_header_height"
             />
 
+        <com.android.systemui.statusbar.powerwidget.PowerWidget
+            android:id="@+id/exp_power_stat"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/notification_panel_widget_height"
+        />
+
         <TextView
             android:id="@+id/emergency_calls_only"
             android:textAppearance="@style/TextAppearance.StatusBar.Expanded.Network.EmergencyOnly"
@@ -67,7 +73,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:fadingEdge="none"
-            android:overScrollMode="ifContentScrolls"
+            android:overScrollMode="always"
             >
             <com.android.systemui.statusbar.policy.NotificationRowLayout
                 android:id="@+id/latestItems"
