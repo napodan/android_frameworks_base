@@ -86,6 +86,13 @@ import android.os.ServiceManager;
 import android.os.UserId;
 import android.os.SystemVibrator;
 import android.os.storage.StorageManager;
+// BEGIN privacy-added
+import android.privacy.IPrivacySettingsManager;
+import android.privacy.PrivacySettingsManager;
+import android.privacy.surrogate.PrivacyAccountManager;
+import android.privacy.surrogate.PrivacyLocationManager;
+import android.privacy.surrogate.PrivacyTelephonyManager;
+// END privacy-added
 import android.telephony.TelephonyManager;
 import android.content.ClipboardManager;
 import android.util.AndroidRuntimeException;
@@ -156,6 +163,7 @@ class ContextImpl extends Context {
     private Resources mResources;
     /*package*/ ActivityThread mMainThread;
     private Context mOuterContext;
+    private static Context sOuterContext;
     private IBinder mActivityToken = null;
     private ApplicationContentResolver mContentResolver;
     private int mThemeResource = 0;
@@ -269,7 +277,9 @@ class ContextImpl extends Context {
                 public Object createService(ContextImpl ctx) {
                     IBinder b = ServiceManager.getService(ACCOUNT_SERVICE);
                     IAccountManager service = IAccountManager.Stub.asInterface(b);
-                    return new AccountManager(ctx, service);
+                    // BEGIN privacy-modified
+                    return new PrivacyAccountManager(ctx, service);
+                    // END privacy-modified
                 }});
 
         registerService(ACTIVITY_SERVICE, new ServiceFetcher() {
@@ -364,7 +374,11 @@ class ContextImpl extends Context {
         registerService(LOCATION_SERVICE, new ServiceFetcher() {
                 public Object createService(ContextImpl ctx) {
                     IBinder b = ServiceManager.getService(LOCATION_SERVICE);
-                    return new LocationManager(ctx, ILocationManager.Stub.asInterface(b));
+                    // BEGIN privacy-modified
+                    ILocationManager service = ILocationManager.Stub.asInterface(b);
+                    //return new PrivacyLocationManager(service,getStaticOuterContext());
+                    return new PrivacyLocationManager(service,ctx);
+                    // END privacy-modified
                 }});
 
         registerService(NETWORK_POLICY_SERVICE, new ServiceFetcher() {
@@ -434,7 +448,9 @@ class ContextImpl extends Context {
 
         registerService(TELEPHONY_SERVICE, new ServiceFetcher() {
                 public Object createService(ContextImpl ctx) {
-                    return new TelephonyManager(ctx.getOuterContext());
+                    // BEGIN privacy-modified
+                    return new PrivacyTelephonyManager(ctx.getOuterContext());
+                    // END privacy-modified
                 }});
 
         registerService(THROTTLE_SERVICE, new StaticServiceFetcher() {
@@ -485,6 +501,16 @@ class ContextImpl extends Context {
                 public Object getService(ContextImpl ctx) {
                     return WindowManagerImpl.getDefault(ctx.mPackageInfo.mCompatibilityInfo);
                 }});
+
+        // BEGIN privacy-added
+        registerService("privacy", new StaticServiceFetcher() {
+                public Object createStaticService() {
+                    IBinder b = ServiceManager.getService("privacy");
+                    IPrivacySettingsManager service = IPrivacySettingsManager.Stub.asInterface(b);
+                    return new PrivacySettingsManager(getStaticOuterContext(),service);
+                }});
+        // END privacy-added
+
     }
 
     static ContextImpl getImpl(Context context) {
@@ -1538,7 +1564,7 @@ class ContextImpl extends Context {
     }
 
     ContextImpl() {
-        mOuterContext = this;
+        sOuterContext = mOuterContext = this;
     }
 
     /**
@@ -1553,7 +1579,7 @@ class ContextImpl extends Context {
         mResources = context.mResources;
         mMainThread = context.mMainThread;
         mContentResolver = context.mContentResolver;
-        mOuterContext = this;
+        sOuterContext = mOuterContext = this;
     }
 
     final void init(LoadedApk packageInfo,
@@ -1613,11 +1639,15 @@ class ContextImpl extends Context {
     }
 
     final void setOuterContext(Context context) {
-        mOuterContext = context;
+        sOuterContext = mOuterContext = context;
     }
 
     final Context getOuterContext() {
         return mOuterContext;
+    }
+
+    final static Context getStaticOuterContext() {
+        return sOuterContext;
     }
 
     final IBinder getActivityToken() {
