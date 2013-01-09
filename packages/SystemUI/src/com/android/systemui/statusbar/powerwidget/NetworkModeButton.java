@@ -20,7 +20,7 @@ public class NetworkModeButton extends PowerButton{
 
     private static final List<Uri> OBSERVED_URIS = new ArrayList<Uri>();
     static {
-        OBSERVED_URIS.add(Settings.Secure.getUriFor(Settings.Secure.PREFERRED_NETWORK_MODE));
+        OBSERVED_URIS.add(Settings.Secure.getUriFor(Settings.Global.PREFERRED_NETWORK_MODE));
     }
 
     // retrieved from Phone.apk
@@ -157,7 +157,7 @@ public class NetworkModeButton extends PowerButton{
         int state = 99;
         try {
             state = Settings.Secure.getInt(context.getContentResolver(),
-                    Settings.Secure.PREFERRED_NETWORK_MODE);
+                    Settings.Global.PREFERRED_NETWORK_MODE);
         } catch (SettingNotFoundException e) {
         }
         return state;
