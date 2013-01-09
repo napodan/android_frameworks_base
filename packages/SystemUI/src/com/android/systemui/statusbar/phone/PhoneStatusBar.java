@@ -509,13 +509,13 @@ public class PhoneStatusBar extends BaseStatusBar {
                     public void onClick(View v) {
                         if(Settings.System.getInt(mContext.getContentResolver(),
                                 Settings.System.EXPANDED_HIDE_ONCHANGE, 0) == 1) {
-                            animateCollapse();
+                            animateCollapsePanels();
                         }
                     }
                 });
         mPowerWidget.setGlobalButtonOnLongClickListener(new View.OnLongClickListener() {
             public boolean onLongClick(View v) {
-                animateCollapse();
+                animateCollapsePanels();
                 return true;
             }
         });
