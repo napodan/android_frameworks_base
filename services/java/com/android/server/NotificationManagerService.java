@@ -1120,7 +1120,9 @@ public class NotificationManagerService extends INotificationManager.Stub
                 // and no other vibration is specified, we apply the default vibration anyway
                 final boolean convertSoundToVibration =
                            !hasCustomVibrate
-                        && (useDefaultSound || notification.sound != null)
+                        && (useDefaultSound
+                            || ( (notification.sound != null)
+                              && (! TextUtils.isEmpty(notification.sound.toString()))))
                         && (audioManager.getRingerMode() == AudioManager.RINGER_MODE_VIBRATE);
 
                 // The DEFAULT_VIBRATE flag trumps any custom vibration.
