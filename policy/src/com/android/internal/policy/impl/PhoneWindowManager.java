@@ -1889,8 +1889,16 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             // to wake the device but don't pass the key to the application.
             result = 0;
 
+        boolean isBtnMouse = (keyCode == BTN_MOUSE);
+        if (isBtnMouse) {
+            // BTN_MOUSE is handled as Motion event only.
+            result &= ~ACTION_PASS_TO_USER;
+        }
+
+
             final boolean isWakeKey = (policyFlags
-                    & (WindowManagerPolicy.FLAG_WAKE | WindowManagerPolicy.FLAG_WAKE_DROPPED)) != 0;
+                    & (WindowManagerPolicy.FLAG_WAKE | WindowManagerPolicy.FLAG_WAKE_DROPPED)) != 0
+              || (isBtnMouse);
             if (down && isWakeKey) {
                 if (keyguardActive) {
                     // If the keyguard is showing, let it decide what to do with the wake key.
