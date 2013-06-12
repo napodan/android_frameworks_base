@@ -202,7 +202,7 @@ LOCAL_SHARED_LIBRARIES := \
 	libjpeg \
 	libnfc_ndef
 
-LOCAL_STATIC_LIBRARIES := libmtphost libusbhost libreboot
+LOCAL_STATIC_LIBRARIES := libmtphost libusbhost
 
 ifeq ($(BOARD_HAVE_BLUETOOTH),true)
 LOCAL_C_INCLUDES += \
