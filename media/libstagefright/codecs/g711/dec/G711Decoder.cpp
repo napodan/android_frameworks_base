@@ -125,7 +125,7 @@ status_t G711Decoder::read(
     }
 
     if (inBuffer->range_length() > kMaxNumSamplesPerFrame) {
-        LOGE("input buffer too large (%d).", inBuffer->range_length());
+        ALOGE("input buffer too large (%d).", inBuffer->range_length());
 
         inBuffer->release();
         inBuffer = NULL;

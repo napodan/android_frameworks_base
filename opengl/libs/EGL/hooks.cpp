@@ -27,7 +27,7 @@ namespace android {
 // ----------------------------------------------------------------------------
 
 void gl_unimplemented() {
-    LOGE("called unimplemented OpenGL ES API");
+    ALOGE("called unimplemented OpenGL ES API");
 }
 
 

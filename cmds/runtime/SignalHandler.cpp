@@ -30,21 +30,21 @@ public:
         char buffer[32];
         read(mOwner.mAvailMsg[0], buffer, sizeof(buffer));
 
-        LOGV("Signal command processing thread woke up!");
+        ALOGV("Signal command processing thread woke up!");
 
         if (mOwner.mLostCommands) {
-            LOGE("Lost %d signals!", mOwner.mLostCommands);
+            ALOGE("Lost %d signals!", mOwner.mLostCommands);
             mOwner.mLostCommands = 0;
         }
 
         int cur;
         while ((cur=mOwner.mCommandBottom) != mOwner.mCommandTop) {
             if (mOwner.mCommands[cur].filled == 0) {
-                LOGV("Command at %d is not yet filled", cur);
+                ALOGV("Command at %d is not yet filled", cur);
                 break;
             }
 
-            LOGV("Processing command at %d, top is %d",
+            ALOGV("Processing command at %d, top is %d",
                  cur, mOwner.mCommandTop);
             processCommand(mOwner.mCommands[cur]);
             mOwner.mCommands[cur].filled = 0;
@@ -73,18 +73,18 @@ public:
             }
             mOwner.mLock.unlock();
 
-            LOGD("SIGCHLD: pid=%d, handle index=%d", entry.info.si_pid, i);
+            ALOGD("SIGCHLD: pid=%d, handle index=%d", entry.info.si_pid, i);
 
             if (i >= 0) {
                 int res = waitpid(entry.info.si_pid, NULL, WNOHANG);
-                LOGW_IF(res == 0,
+                ALOGW_IF(res == 0,
                         "Received SIGCHLD, but pid %d is not yet stopped",
                         entry.info.si_pid);
                 if (ch.handler) {
                     ch.handler(entry.info.si_pid, ch.userData);
                 }
             } else {
-                LOGW("Unhandled SIGCHLD for pid %d", entry.info.si_pid);
+                ALOGW("Unhandled SIGCHLD for pid %d", entry.info.si_pid);
             }
         } break;
         }
@@ -110,10 +110,10 @@ status_t SignalHandler::setChildHandler(pid_t childPid,
     pid_t res = waitpid(childPid, NULL, WNOHANG);
     if (res != 0) {
         if (res < 0) {
-            LOGW("setChildHandler waitpid of %d failed: %d (%s)",
+            ALOGW("setChildHandler waitpid of %d failed: %d (%s)",
                  childPid, res, strerror(errno));
         } else {
-            LOGW("setChildHandler waitpid of %d said %d already dead",
+            ALOGW("setChildHandler waitpid of %d said %d already dead",
                  childPid, res);
         }
 
@@ -136,7 +136,7 @@ status_t SignalHandler::setChildHandler(pid_t childPid,
 
     // Note: this replaces an existing entry for this pid, if there already
     // is one.  This is the required behavior.
-    LOGD("setChildHandler adding pid %d, tag %d, handler %p, data %p",
+    ALOGD("setChildHandler adding pid %d, tag %d, handler %p, data %p",
          childPid, tag, handler, userData);
     self->mChildHandlers.add(childPid, entry);
 
@@ -155,7 +155,7 @@ void SignalHandler::killAllChildren(int tag)
         const ChildHandler& ch(self->mChildHandlers.valueAt(i));
         if (tag == 0 || ch.tag == tag) {
             const pid_t pid = ch.childPid;
-            LOGI("Killing child %d (tag %d)\n", pid, ch.tag);
+            ALOGI("Killing child %d (tag %d)\n", pid, ch.tag);
             kill(pid, SIGKILL);
         }
     }
@@ -169,7 +169,7 @@ SignalHandler::SignalHandler()
     memset(mCommands, 0, sizeof(mCommands));
 
     int res = pipe(mAvailMsg);
-    LOGE_IF(res != 0, "Unable to create signal handler pipe: %s", strerror(errno));
+    ALOGE_IF(res != 0, "Unable to create signal handler pipe: %s", strerror(errno));
 
     mProcessThread = new ProcessThread(*this);
     mProcessThread->run("SignalHandler", PRIORITY_HIGHEST);
@@ -205,7 +205,7 @@ void SignalHandler::sigAction(int signum, siginfo_t* info, void*)
 
     // XXX This is not safe!
     #if 0
-    LOGV("Signal %d: signo=%d, errno=%d, code=%d, pid=%d\n",
+    ALOGV("Signal %d: signo=%d, errno=%d, code=%d, pid=%d\n",
            signum,
            info->si_signo, info->si_errno, info->si_code,
            info->si_pid);
@@ -226,7 +226,7 @@ void SignalHandler::sigAction(int signum, siginfo_t* info, void*)
             // The buffer is filled up!  Ouch!
             // XXX This is not safe!
             #if 0
-            LOGE("Command buffer overflow!  newTop=%d\n", newTop);
+            ALOGE("Command buffer overflow!  newTop=%d\n", newTop);
             #endif
             android_atomic_add(1, &self->mLostCommands);
             write(self->mAvailMsg[1], wakeupMsg, sizeof(wakeupMsg));

@@ -156,7 +156,7 @@ status_t EventHub::getAbsoluteAxisInfo(int32_t deviceId, int axis,
     struct input_absinfo info;
 
     if(ioctl(device->fd, EVIOCGABS(axis), &info)) {
-        LOGW("Error reading absolute controller %d for device %s fd %d\n",
+        ALOGW("Error reading absolute controller %d for device %s fd %d\n",
              axis, device->name.string(), device->fd);
         return -errno;
     }
@@ -212,13 +212,13 @@ int32_t EventHub::getKeyCodeStateLocked(device_t* device, int32_t keyCode) const
     if (ioctl(device->fd, EVIOCGKEY(sizeof(key_bitmask)), key_bitmask) >= 0) {
         #if 0
         for (size_t i=0; i<=KEY_MAX; i++) {
-            LOGI("(Scan code %d: down=%d)", i, test_bit(i, key_bitmask));
+            ALOGI("(Scan code %d: down=%d)", i, test_bit(i, key_bitmask));
         }
         #endif
         const size_t N = scanCodes.size();
         for (size_t i=0; i<N && i<=KEY_MAX; i++) {
             int32_t sc = scanCodes.itemAt(i);
-            //LOGI("Code %d: down=%d", sc, test_bit(sc, key_bitmask));
+            //ALOGI("Code %d: down=%d", sc, test_bit(sc, key_bitmask));
             if (sc >= 0 && sc <= KEY_MAX && test_bit(sc, key_bitmask)) {
                 return AKEY_STATE_DOWN;
             }
@@ -361,7 +361,7 @@ bool EventHub::getEvent(RawEvent* outEvent)
         // Report any devices that had last been added/removed.
         if (mClosingDevices != NULL) {
             device_t* device = mClosingDevices;
-            LOGV("Reporting device closed: id=0x%x, name=%s\n",
+            ALOGV("Reporting device closed: id=0x%x, name=%s\n",
                  device->id, device->path.string());
             mClosingDevices = device->next;
             if (device->id == mFirstKeyboardId) {
@@ -378,7 +378,7 @@ bool EventHub::getEvent(RawEvent* outEvent)
 
         if (mOpeningDevices != NULL) {
             device_t* device = mOpeningDevices;
-            LOGV("Reporting device opened: id=0x%x, name=%s\n",
+            ALOGV("Reporting device opened: id=0x%x, name=%s\n",
                  device->id, device->path.string());
             mOpeningDevices = device->next;
             if (device->id == mFirstKeyboardId) {
@@ -406,7 +406,7 @@ bool EventHub::getEvent(RawEvent* outEvent)
                 const struct input_event& iev = mInputBufferData[mInputBufferIndex++];
                 const device_t* device = mDevices[mInputDeviceIndex];
 
-                LOGV("%s got: t0=%d, t1=%d, type=%d, code=%d, v=%d", device->path.string(),
+                ALOGV("%s got: t0=%d, t1=%d, type=%d, code=%d, v=%d", device->path.string(),
                      (int) iev.time.tv_sec, (int) iev.time.tv_usec, iev.type, iev.code, iev.value);
                 if (device->id == mFirstKeyboardId) {
                     outEvent->deviceId = 0;
@@ -418,7 +418,7 @@ bool EventHub::getEvent(RawEvent* outEvent)
                 if (iev.type == EV_KEY) {
                     status_t err = device->layoutMap->map(iev.code,
                             & outEvent->keyCode, & outEvent->flags);
-                    LOGV("iev.code=%d keyCode=%d flags=0x%08x err=%d\n",
+                    ALOGV("iev.code=%d keyCode=%d flags=0x%08x err=%d\n",
                         iev.code, outEvent->keyCode, outEvent->flags, err);
                     if (err != 0) {
                         outEvent->keyCode = AKEYCODE_UNKNOWN;
@@ -451,10 +451,10 @@ bool EventHub::getEvent(RawEvent* outEvent)
                         sizeof(struct input_event) * INPUT_BUFFER_SIZE);
                 if (readSize < 0) {
                     if (errno != EAGAIN && errno != EINTR) {
-                        LOGW("could not get event (errno=%d)", errno);
+                        ALOGW("could not get event (errno=%d)", errno);
                     }
                 } else if ((readSize % sizeof(struct input_event)) != 0) {
-                    LOGE("could not get event (wrong size: %d)", readSize);
+                    ALOGE("could not get event (wrong size: %d)", readSize);
                 } else {
                     mInputBufferCount = readSize / sizeof(struct input_event);
                     mInputBufferIndex = 0;
@@ -490,7 +490,7 @@ bool EventHub::getEvent(RawEvent* outEvent)
 
         if (pollResult <= 0) {
             if (errno != EINTR) {
-                LOGW("poll failed (errno=%d)\n", errno);
+                ALOGW("poll failed (errno=%d)\n", errno);
                 usleep(100000);
             }
         }
@@ -517,7 +517,7 @@ bool EventHub::openPlatformInput(void)
     mFDs[0].fd = inotify_init();
     res = inotify_add_watch(mFDs[0].fd, device_path, IN_DELETE | IN_CREATE);
     if(res < 0) {
-        LOGE("could not add watch for %s, %s\n", device_path, strerror(errno));
+        ALOGE("could not add watch for %s, %s\n", device_path, strerror(errno));
     }
 #else
     /*
@@ -529,7 +529,7 @@ bool EventHub::openPlatformInput(void)
 
     res = scanDir(device_path);
     if(res < 0) {
-        LOGE("scan dir failed for %s\n", device_path);
+        ALOGE("scan dir failed for %s\n", device_path);
     }
 
     return true;
@@ -568,22 +568,22 @@ int EventHub::openDevice(const char *deviceName) {
     char idstr[80];
     struct input_id id;
 
-    LOGV("Opening device: %s", deviceName);
+    ALOGV("Opening device: %s", deviceName);
 
     AutoMutex _l(mLock);
 
     fd = open(deviceName, O_RDWR);
     if(fd < 0) {
-        LOGE("could not open %s, %s\n", deviceName, strerror(errno));
+        ALOGE("could not open %s, %s\n", deviceName, strerror(errno));
         return -1;
     }
 
     if(ioctl(fd, EVIOCGVERSION, &version)) {
-        LOGE("could not get driver version for %s, %s\n", deviceName, strerror(errno));
+        ALOGE("could not get driver version for %s, %s\n", deviceName, strerror(errno));
         return -1;
     }
     if(ioctl(fd, EVIOCGID, &id)) {
-        LOGE("could not get driver id for %s, %s\n", deviceName, strerror(errno));
+        ALOGE("could not get driver id for %s, %s\n", deviceName, strerror(errno));
         return -1;
     }
     name[sizeof(name) - 1] = '\0';
@@ -600,7 +600,7 @@ int EventHub::openDevice(const char *deviceName) {
     for ( ; iter != end; iter++) {
         const char* test = *iter;
         if (strcmp(name, test) == 0) {
-            LOGI("ignoring event id %s driver %s\n", deviceName, test);
+            ALOGI("ignoring event id %s driver %s\n", deviceName, test);
             close(fd);
             return -1;
         }
@@ -616,7 +616,7 @@ int EventHub::openDevice(const char *deviceName) {
     }
 
     if (fcntl(fd, F_SETFL, O_NONBLOCK)) {
-        LOGE("Error %d making device file descriptor non-blocking.", errno);
+        ALOGE("Error %d making device file descriptor non-blocking.", errno);
         close(fd);
         return -1;
     }
@@ -632,7 +632,7 @@ int EventHub::openDevice(const char *deviceName) {
         device_ent* new_devids = (device_ent*)realloc(mDevicesById,
                 sizeof(mDevicesById[0]) * (devid + 1));
         if (new_devids == NULL) {
-            LOGE("out of memory");
+            ALOGE("out of memory");
             return -1;
         }
         mDevicesById = new_devids;
@@ -649,29 +649,29 @@ int EventHub::openDevice(const char *deviceName) {
     new_mFDs = (pollfd*)realloc(mFDs, sizeof(mFDs[0]) * (mFDCount + 1));
     new_devices = (device_t**)realloc(mDevices, sizeof(mDevices[0]) * (mFDCount + 1));
     if (new_mFDs == NULL || new_devices == NULL) {
-        LOGE("out of memory");
+        ALOGE("out of memory");
         return -1;
     }
     mFDs = new_mFDs;
     mDevices = new_devices;
 
 #if 0
-    LOGI("add device %d: %s\n", mFDCount, deviceName);
-    LOGI("  bus:      %04x\n"
+    ALOGI("add device %d: %s\n", mFDCount, deviceName);
+    ALOGI("  bus:      %04x\n"
          "  vendor    %04x\n"
          "  product   %04x\n"
          "  version   %04x\n",
         id.bustype, id.vendor, id.product, id.version);
-    LOGI("  name:     \"%s\"\n", name);
-    LOGI("  location: \"%s\"\n"
+    ALOGI("  name:     \"%s\"\n", name);
+    ALOGI("  location: \"%s\"\n"
          "  id:       \"%s\"\n", location, idstr);
-    LOGI("  version:  %d.%d.%d\n",
+    ALOGI("  version:  %d.%d.%d\n",
         version >> 16, (version >> 8) & 0xff, version & 0xff);
 #endif
 
     device_t* device = new device_t(devid|mDevicesById[devid].seq, deviceName, name);
     if (device == NULL) {
-        LOGE("out of memory");
+        ALOGE("out of memory");
         return -1;
     }
 
@@ -685,11 +685,11 @@ int EventHub::openDevice(const char *deviceName) {
     uint8_t key_bitmask[sizeof_bit_array(KEY_MAX + 1)];
     memset(key_bitmask, 0, sizeof(key_bitmask));
 
-    LOGV("Getting keys...");
+    ALOGV("Getting keys...");
     if (ioctl(fd, EVIOCGBIT(EV_KEY, sizeof(key_bitmask)), key_bitmask) >= 0) {
-        //LOGI("MAP\n");
+        //ALOGI("MAP\n");
         //for (int i = 0; i < sizeof(key_bitmask); i++) {
-        //    LOGI("%d: 0x%02x\n", i, key_bitmask[i]);
+        //    ALOGI("%d: 0x%02x\n", i, key_bitmask[i]);
         //}
 
         // See if this is a keyboard.  Ignore everything in the button range except for
@@ -706,7 +706,7 @@ int EventHub::openDevice(const char *deviceName) {
                 memcpy(device->keyBitmask, key_bitmask, sizeof(key_bitmask));
             } else {
                 delete device;
-                LOGE("out of memory allocating key bitmask");
+                ALOGE("out of memory allocating key bitmask");
                 return -1;
             }
         }
@@ -716,7 +716,7 @@ int EventHub::openDevice(const char *deviceName) {
     if (test_bit(BTN_MOUSE, key_bitmask)) {
         uint8_t rel_bitmask[sizeof_bit_array(REL_MAX + 1)];
         memset(rel_bitmask, 0, sizeof(rel_bitmask));
-        LOGV("Getting relative controllers...");
+        ALOGV("Getting relative controllers...");
         if (ioctl(fd, EVIOCGBIT(EV_REL, sizeof(rel_bitmask)), rel_bitmask) >= 0) {
             if (test_bit(REL_X, rel_bitmask) && test_bit(REL_Y, rel_bitmask)) {
                 device->classes |= INPUT_DEVICE_CLASS_TRACKBALL;
@@ -727,7 +727,7 @@ int EventHub::openDevice(const char *deviceName) {
     // See if this is a touch pad.
     uint8_t abs_bitmask[sizeof_bit_array(ABS_MAX + 1)];
     memset(abs_bitmask, 0, sizeof(abs_bitmask));
-    LOGV("Getting absolute controllers...");
+    ALOGV("Getting absolute controllers...");
     if (ioctl(fd, EVIOCGBIT(EV_ABS, sizeof(abs_bitmask)), abs_bitmask) >= 0) {
         // Is this a new modern multi-touch driver?
         if (test_bit(ABS_MT_POSITION_X, abs_bitmask)
@@ -748,7 +748,7 @@ int EventHub::openDevice(const char *deviceName) {
     bool hasSwitches = false;
     if (ioctl(fd, EVIOCGBIT(EV_SW, sizeof(sw_bitmask)), sw_bitmask) >= 0) {
         for (int i=0; i<EV_SW; i++) {
-            //LOGI("Device 0x%x sw %d: has=%d", device->id, i, test_bit(i, sw_bitmask));
+            //ALOGI("Device 0x%x sw %d: has=%d", device->id, i, test_bit(i, sw_bitmask));
             if (test_bit(i, sw_bitmask)) {
                 hasSwitches = true;
                 if (mSwitches[i] == 0) {
@@ -786,7 +786,7 @@ int EventHub::openDevice(const char *deviceName) {
         }
         status_t status = device->layoutMap->load(keylayoutFilename);
         if (status) {
-            LOGE("Error %d loading key layout.", status);
+            ALOGE("Error %d loading key layout.", status);
         }
 
         // tell the world about the devname (the descriptive name)
@@ -828,22 +828,22 @@ int EventHub::openDevice(const char *deviceName) {
             }
         }
 
-        LOGI("New keyboard: device->id=0x%x devname='%s' propName='%s' keylayout='%s'\n",
+        ALOGI("New keyboard: device->id=0x%x devname='%s' propName='%s' keylayout='%s'\n",
                 device->id, name, propName, keylayoutFilename);
     }
 
     // If the device isn't recognized as something we handle, don't monitor it.
     if (device->classes == 0) {
-        LOGV("Dropping device %s %p, id = %d\n", deviceName, device, devid);
+        ALOGV("Dropping device %s %p, id = %d\n", deviceName, device, devid);
         close(fd);
         delete device;
         return -1;
     }
 
-    LOGI("New device: path=%s name=%s id=0x%x (of 0x%x) index=%d fd=%d classes=0x%x\n",
+    ALOGI("New device: path=%s name=%s id=0x%x (of 0x%x) index=%d fd=%d classes=0x%x\n",
          deviceName, name, device->id, mNumDevicesById, mFDCount, fd, device->classes);
          
-    LOGV("Adding device %s %p at %d, id = %d, classes = 0x%x\n",
+    ALOGV("Adding device %s %p at %d, id = %d, classes = 0x%x\n",
          deviceName, device, mFDCount, devid, device->classes);
 
     mDevicesById[devid].device = device;
@@ -880,10 +880,10 @@ int EventHub::closeDevice(const char *deviceName) {
     int i;
     for(i = 1; i < mFDCount; i++) {
         if(strcmp(mDevices[i]->path.string(), deviceName) == 0) {
-            //LOGD("remove device %d: %s\n", i, deviceName);
+            //ALOGD("remove device %d: %s\n", i, deviceName);
             device_t* device = mDevices[i];
             
-            LOGI("Removed device: path=%s name=%s id=0x%x (of 0x%x) index=%d fd=%d classes=0x%x\n",
+            ALOGI("Removed device: path=%s name=%s id=0x%x (of 0x%x) index=%d fd=%d classes=0x%x\n",
                  device->path.string(), device->name.string(), device->id,
                  mNumDevicesById, mFDCount, mFDs[i].fd, device->classes);
          
@@ -910,7 +910,7 @@ int EventHub::closeDevice(const char *deviceName) {
             mClosingDevices = device;
 
             if (device->id == mFirstKeyboardId) {
-                LOGW("built-in keyboard device %s (id=%d) is closing! the apps will not like this",
+                ALOGW("built-in keyboard device %s (id=%d) is closing! the apps will not like this",
                         device->path.string(), mFirstKeyboardId);
                 mFirstKeyboardId = 0;
                 property_set("hw.keyboards.0.devname", NULL);
@@ -922,7 +922,7 @@ int EventHub::closeDevice(const char *deviceName) {
             return 0;
         }
     }
-    LOGE("remove device: %s not found\n", deviceName);
+    ALOGE("remove device: %s not found\n", deviceName);
     return -1;
 }
 
@@ -936,12 +936,12 @@ int EventHub::readNotify(int nfd) {
     int event_pos = 0;
     struct inotify_event *event;
 
-    LOGV("EventHub::readNotify nfd: %d\n", nfd);
+    ALOGV("EventHub::readNotify nfd: %d\n", nfd);
     res = read(nfd, event_buf, sizeof(event_buf));
     if(res < (int)sizeof(*event)) {
         if(errno == EINTR)
             return 0;
-        LOGW("could not get event, %s\n", strerror(errno));
+        ALOGW("could not get event, %s\n", strerror(errno));
         return 1;
     }
     //printf("got %d bytes of event information\n", res);

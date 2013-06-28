@@ -89,10 +89,10 @@ bool DisplayHardwareBase::DisplayEventThread::threadLoop()
       err = read(fd, &buf, 1);
     } while (err < 0 && errno == EINTR);
     close(fd);
-    LOGW_IF(err<0, "ANDROID_WAIT_FOR_FB_SLEEP failed (%s)", strerror(errno));
+    ALOGW_IF(err<0, "ANDROID_WAIT_FOR_FB_SLEEP failed (%s)", strerror(errno));
     if (err >= 0) {
         sp<SurfaceFlinger> flinger = mFlinger.promote();
-        LOGD("About to give-up screen, flinger = %p", flinger.get());
+        ALOGD("About to give-up screen, flinger = %p", flinger.get());
         if (flinger != 0) {
             mBarrier.close();
             flinger->screenReleased(0);
@@ -104,10 +104,10 @@ bool DisplayHardwareBase::DisplayEventThread::threadLoop()
       err = read(fd, &buf, 1);
     } while (err < 0 && errno == EINTR);
     close(fd);
-    LOGW_IF(err<0, "ANDROID_WAIT_FOR_FB_WAKE failed (%s)", strerror(errno));
+    ALOGW_IF(err<0, "ANDROID_WAIT_FOR_FB_WAKE failed (%s)", strerror(errno));
     if (err >= 0) {
         sp<SurfaceFlinger> flinger = mFlinger.promote();
-        LOGD("Screen about to return, flinger = %p", flinger.get());
+        ALOGD("Screen about to return, flinger = %p", flinger.get());
         if (flinger != 0)
             flinger->screenAcquired(0);
     }
@@ -124,7 +124,7 @@ status_t DisplayHardwareBase::DisplayEventThread::readyToRun()
 {
     if (access(kSleepFileName, R_OK) || access(kWakeFileName, R_OK)) {
         if (access(kOldSleepFileName, R_OK) || access(kOldWakeFileName, R_OK)) {
-            LOGE("Couldn't open %s or %s", kSleepFileName, kWakeFileName);
+            ALOGE("Couldn't open %s or %s", kSleepFileName, kWakeFileName);
             return NO_INIT;
         }
         kSleepFileName = kOldSleepFileName;
@@ -156,7 +156,7 @@ DisplayHardwareBase::ConsoleManagerThread::ConsoleManagerThread(
     char const * const ttydev = "/dev/tty0";
     int fd = open(ttydev, O_RDWR | O_SYNC);
     if (fd<0) {
-        LOGE("Can't open %s", ttydev);
+        ALOGE("Can't open %s", ttydev);
         this->consoleFd = -errno;
         return;
     }
@@ -164,7 +164,7 @@ DisplayHardwareBase::ConsoleManagerThread::ConsoleManagerThread(
     // to make sure that we are in text mode
     int res = ioctl(fd, KDSETMODE, (void*) KD_TEXT);
     if (res<0) {
-        LOGE("ioctl(%d, KDSETMODE, ...) failed, res %d (%s)",
+        ALOGE("ioctl(%d, KDSETMODE, ...) failed, res %d (%s)",
                 fd, res, strerror(errno));
     }
     
@@ -172,7 +172,7 @@ DisplayHardwareBase::ConsoleManagerThread::ConsoleManagerThread(
     struct vt_stat vs;
     res = ioctl(fd, VT_GETSTATE, &vs);
     if (res<0) {
-        LOGE("ioctl(%d, VT_GETSTATE, ...) failed, res %d (%s)",
+        ALOGE("ioctl(%d, VT_GETSTATE, ...) failed, res %d (%s)",
                 fd, res, strerror(errno));
         this->consoleFd = -errno;
         return;
@@ -184,7 +184,7 @@ DisplayHardwareBase::ConsoleManagerThread::ConsoleManagerThread(
         res = ioctl(fd, VT_ACTIVATE, (void*)vtnum);
     } while(res < 0 && errno == EINTR);
     if (res<0) {
-        LOGE("ioctl(%d, VT_ACTIVATE, ...) failed, %d (%s) for %d",
+        ALOGE("ioctl(%d, VT_ACTIVATE, ...) failed, %d (%s) for %d",
                 fd, errno, strerror(errno), vtnum);
         this->consoleFd = -errno;
         return;
@@ -194,7 +194,7 @@ DisplayHardwareBase::ConsoleManagerThread::ConsoleManagerThread(
         res = ioctl(fd, VT_WAITACTIVE, (void*)vtnum);
     } while(res < 0 && errno == EINTR);
     if (res<0) {
-        LOGE("ioctl(%d, VT_WAITACTIVE, ...) failed, %d %d %s for %d",
+        ALOGE("ioctl(%d, VT_WAITACTIVE, ...) failed, %d %d %s for %d",
                 fd, res, errno, strerror(errno), vtnum);
         this->consoleFd = -errno;
         return;
@@ -204,7 +204,7 @@ DisplayHardwareBase::ConsoleManagerThread::ConsoleManagerThread(
     close(fd);
     fd = open(ttydev, O_RDWR | O_SYNC);
     if (fd<0) {
-        LOGE("Can't open new console %s", ttydev);
+        ALOGE("Can't open new console %s", ttydev);
         this->consoleFd = -errno;
         return;
     }
@@ -243,7 +243,7 @@ DisplayHardwareBase::ConsoleManagerThread::ConsoleManagerThread(
 
     // switch to graphic mode
     res = ioctl(fd, KDSETMODE, (void*)KD_GRAPHICS);
-    LOGW_IF(res<0,
+    ALOGW_IF(res<0,
             "ioctl(%d, KDSETMODE, KD_GRAPHICS) failed, res %d", fd, res);
 
     this->prev_vt_num = vs.v_active;
@@ -285,7 +285,7 @@ status_t DisplayHardwareBase::ConsoleManagerThread::readyToRun()
 
         int res = ioctl(this->consoleFd, VT_SETMODE, &vm);
         if (res<0) {
-            LOGE("ioctl(%d, VT_SETMODE, ...) failed, %d (%s)",
+            ALOGE("ioctl(%d, VT_SETMODE, ...) failed, %d (%s)",
                     this->consoleFd, errno, strerror(errno));
         }
         return NO_ERROR;
@@ -306,7 +306,7 @@ void DisplayHardwareBase::ConsoleManagerThread::requestExit()
 void DisplayHardwareBase::ConsoleManagerThread::sigHandler(int sig)
 {
     // resend the signal to our signal catcher thread
-    LOGW("received signal %d in thread %d, resending to %d",
+    ALOGW("received signal %d in thread %d, resending to %d",
             sig, gettid(), sSignalCatcherPid);
 
     // we absolutely need the delays below because without them
@@ -320,7 +320,7 @@ status_t DisplayHardwareBase::ConsoleManagerThread::releaseScreen() const
 {
     int fd = this->consoleFd;
     int err = ioctl(fd, VT_RELDISP, (void*)1);
-    LOGE_IF(err<0, "ioctl(%d, VT_RELDISP, 1) failed %d (%s)",
+    ALOGE_IF(err<0, "ioctl(%d, VT_RELDISP, 1) failed %d (%s)",
         fd, errno, strerror(errno));
     return (err<0) ? (-errno) : status_t(NO_ERROR);
 }
@@ -337,12 +337,12 @@ bool DisplayHardwareBase::ConsoleManagerThread::threadLoop()
 
     if (sig == vm.relsig) {
         sp<SurfaceFlinger> flinger = mFlinger.promote();
-        //LOGD("About to give-up screen, flinger = %p", flinger.get());
+        //ALOGD("About to give-up screen, flinger = %p", flinger.get());
         if (flinger != 0)
             flinger->screenReleased(0);
     } else if (sig == vm.acqsig) {
         sp<SurfaceFlinger> flinger = mFlinger.promote();
-        //LOGD("Screen about to return, flinger = %p", flinger.get());
+        //ALOGD("Screen about to return, flinger = %p", flinger.get());
         if (flinger != 0) 
             flinger->screenAcquired(0);
     }

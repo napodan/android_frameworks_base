@@ -78,16 +78,16 @@ AudioHardwareInterface* AudioHardwareInterface::create()
 #else
     // if running in emulation - use the emulator driver
     if (property_get("ro.kernel.qemu", value, 0)) {
-        LOGD("Running in emulation - using generic audio driver");
+        ALOGD("Running in emulation - using generic audio driver");
         hw = new AudioHardwareGeneric();
     }
     else {
-        LOGV("Creating Vendor Specific AudioHardware");
+        ALOGV("Creating Vendor Specific AudioHardware");
         hw = createAudioHardware();
     }
 #endif
     if (hw->initCheck() != NO_ERROR) {
-        LOGW("Using stubbed audio hardware. No sound will be produced.");
+        ALOGW("Using stubbed audio hardware. No sound will be produced.");
         delete hw;
         hw = new AudioHardwareStub();
     }
@@ -102,7 +102,7 @@ AudioHardwareInterface* AudioHardwareInterface::create()
     // will record buffers in a file (after sending them to hardware) for testing purpose.
     // This feature is enabled by defining symbol ENABLE_AUDIO_DUMP.
     // The output file is set with setParameters("test_cmd_file_name=<name>"). Pause are not recorded in the file.
-    LOGV("opening PCM dump interface");
+    ALOGV("opening PCM dump interface");
     hw = new AudioDumpInterface(hw);    // replace interface
 #endif
     return hw;
@@ -122,7 +122,7 @@ AudioHardwareBase::AudioHardwareBase()
 status_t AudioHardwareBase::setMode(int mode)
 {
 #if LOG_ROUTING_CALLS
-    LOGD("setMode(%s)", displayMode(mode));
+    ALOGD("setMode(%s)", displayMode(mode));
 #endif
     if ((mode < 0) || (mode >= AudioSystem::NUM_MODES))
         return BAD_VALUE;
@@ -149,15 +149,15 @@ String8 AudioHardwareBase::getParameters(const String8& keys)
 size_t AudioHardwareBase::getInputBufferSize(uint32_t sampleRate, int format, int channelCount)
 {
     if (sampleRate != 8000) {
-        LOGW("getInputBufferSize bad sampling rate: %d", sampleRate);
+        ALOGW("getInputBufferSize bad sampling rate: %d", sampleRate);
         return 0;
     }
     if (format != AudioSystem::PCM_16_BIT) {
-        LOGW("getInputBufferSize bad format: %d", format);
+        ALOGW("getInputBufferSize bad format: %d", format);
         return 0;
     }
     if (channelCount != 1) {
-        LOGW("getInputBufferSize bad channel count: %d", channelCount);
+        ALOGW("getInputBufferSize bad channel count: %d", channelCount);
         return 0;
     }
 

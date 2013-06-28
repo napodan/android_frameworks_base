@@ -131,7 +131,7 @@ static ACCvoid* symbolLookup(ACCvoid* pContext, const ACCchar* name)
     if (sym) {
         return sym->mPtr;
     }
-    LOGE("ScriptC sym lookup failed for %s", name);
+    ALOGE("ScriptC sym lookup failed for %s", name);
     return NULL;
 }
 
@@ -159,7 +159,7 @@ void ScriptCState::runCompiler(Context *rsc, ScriptC *s)
         ACCchar buf[4096];
         ACCsizei len;
         accGetScriptInfoLog(s->mAccScript, sizeof(buf), &len, buf);
-        LOGE("%s", buf);
+        ALOGE("%s", buf);
         rsc->setError(RS_ERROR_BAD_SCRIPT, "Error compiling user script.");
         return;
     }
@@ -213,7 +213,7 @@ void ScriptCState::runCompiler(Context *rsc, ScriptC *s)
                     s->mEnviroment.mVertex.set(pv);
                     continue;
                 }
-                LOGE("Unreconized value %s passed to stateVertex", str[ct+1]);
+                ALOGE("Unreconized value %s passed to stateVertex", str[ct+1]);
             }
 
             if (!strcmp(str[ct], "stateRaster")) {
@@ -229,7 +229,7 @@ void ScriptCState::runCompiler(Context *rsc, ScriptC *s)
                     s->mEnviroment.mRaster.set(pr);
                     continue;
                 }
-                LOGE("Unreconized value %s passed to stateRaster", str[ct+1]);
+                ALOGE("Unreconized value %s passed to stateRaster", str[ct+1]);
             }
 
             if (!strcmp(str[ct], "stateFragment")) {
@@ -245,7 +245,7 @@ void ScriptCState::runCompiler(Context *rsc, ScriptC *s)
                     s->mEnviroment.mFragment.set(pf);
                     continue;
                 }
-                LOGE("Unreconized value %s passed to stateFragment", str[ct+1]);
+                ALOGE("Unreconized value %s passed to stateFragment", str[ct+1]);
             }
 
             if (!strcmp(str[ct], "stateStore")) {
@@ -262,7 +262,7 @@ void ScriptCState::runCompiler(Context *rsc, ScriptC *s)
                     s->mEnviroment.mFragmentStore.set(pfs);
                     continue;
                 }
-                LOGE("Unreconized value %s passed to stateStore", str[ct+1]);
+                ALOGE("Unreconized value %s passed to stateStore", str[ct+1]);
             }
 
         }
@@ -291,7 +291,7 @@ void ScriptCState::appendVarDefines(const Context *rsc, String8 *str)
 {
     char buf[256];
     if (rsc->props.mLogScripts) {
-        LOGD("appendVarDefines mInt32Defines.size()=%d mFloatDefines.size()=%d\n",
+        ALOGD("appendVarDefines mInt32Defines.size()=%d mFloatDefines.size()=%d\n",
                 mInt32Defines.size(), mFloatDefines.size());
     }
     for (size_t ct=0; ct < mInt32Defines.size(); ct++) {
@@ -345,7 +345,7 @@ void ScriptCState::appendTypes(const Context *rsc, String8 *str)
             s.append(e->getName());
             s.append("\n\n");
             if (rsc->props.mLogScripts) {
-                LOGV("%s", static_cast<const char*>(s));
+                ALOGV("%s", static_cast<const char*>(s));
             }
             str->append(s);
         }
@@ -372,7 +372,7 @@ void ScriptCState::appendTypes(const Context *rsc, String8 *str)
             s.append(mSlotNames[ct]);
             s.append(";\n");
             if (rsc->props.mLogScripts) {
-                LOGV("%s", static_cast<const char*>(s));
+                ALOGV("%s", static_cast<const char*>(s));
             }
             str->append(s);
         }

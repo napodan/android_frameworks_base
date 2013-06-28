@@ -66,7 +66,7 @@ static float SC_loadF(uint32_t bank, uint32_t offset)
     GET_TLS();
     const void *vp = sc->mSlots[bank]->getPtr();
     const float *f = static_cast<const float *>(vp);
-    //LOGE("loadF %i %i = %f %x", bank, offset, f, ((int *)&f)[0]);
+    //ALOGE("loadF %i %i = %f %x", bank, offset, f, ((int *)&f)[0]);
     return f[offset];
 }
 
@@ -75,7 +75,7 @@ static int32_t SC_loadI32(uint32_t bank, uint32_t offset)
     GET_TLS();
     const void *vp = sc->mSlots[bank]->getPtr();
     const int32_t *i = static_cast<const int32_t *>(vp);
-    //LOGE("loadI32 %i %i = %i", bank, offset, t);
+    //ALOGE("loadI32 %i %i = %i", bank, offset, t);
     return i[offset];
 }
 
@@ -136,7 +136,7 @@ static void SC_loadMatrix(uint32_t bank, uint32_t offset, rsc_Matrix *m)
 
 static void SC_storeF(uint32_t bank, uint32_t offset, float v)
 {
-    //LOGE("storeF %i %i %f", bank, offset, v);
+    //ALOGE("storeF %i %i %f", bank, offset, v);
     GET_TLS();
     void *vp = sc->mSlots[bank]->getPtr();
     float *f = static_cast<float *>(vp);
@@ -733,11 +733,11 @@ static void SC_drawQuadTexCoords(float x1, float y1, float z1,
         return;
     }
 
-    //LOGE("Quad");
-    //LOGE("%4.2f, %4.2f, %4.2f", x1, y1, z1);
-    //LOGE("%4.2f, %4.2f, %4.2f", x2, y2, z2);
-    //LOGE("%4.2f, %4.2f, %4.2f", x3, y3, z3);
-    //LOGE("%4.2f, %4.2f, %4.2f", x4, y4, z4);
+    //ALOGE("Quad");
+    //ALOGE("%4.2f, %4.2f, %4.2f", x1, y1, z1);
+    //ALOGE("%4.2f, %4.2f, %4.2f", x2, y2, z2);
+    //ALOGE("%4.2f, %4.2f, %4.2f", x3, y3, z3);
+    //ALOGE("%4.2f, %4.2f, %4.2f", x4, y4, z4);
 
     float vtx[] = {x1,y1,z1, x2,y2,z2, x3,y3,z3, x4,y4,z4};
     const float tex[] = {u1,v1, u2,v2, u3,v3, u4,v4};
@@ -803,9 +803,9 @@ static void SC_drawSprite(float x, float y, float z, float w, float h)
     float vin[3] = {x, y, z};
     float vout[4];
 
-    //LOGE("ds  in %f %f %f", x, y, z);
+    //ALOGE("ds  in %f %f %f", x, y, z);
     rsc->getVertex()->transformToScreen(rsc, vout, vin);
-    //LOGE("ds  out %f %f %f %f", vout[0], vout[1], vout[2], vout[3]);
+    //ALOGE("ds  out %f %f %f %f", vout[0], vout[1], vout[2], vout[3]);
     vout[0] /= vout[3];
     vout[1] /= vout[3];
     vout[2] /= vout[3];
@@ -818,7 +818,7 @@ static void SC_drawSprite(float x, float y, float z, float w, float h)
     vout[0] -= w/2;
     vout[1] -= h/2;
 
-    //LOGE("ds  out2 %f %f %f", vout[0], vout[1], vout[2]);
+    //ALOGE("ds  out2 %f %f %f", vout[0], vout[1], vout[2]);
 
     // U, V, W, H
     SC_drawSpriteScreenspace(vout[0], vout[1], z, h, w);
@@ -1005,7 +1005,7 @@ static void SC_syncToGL(RsAllocation va)
 
 static void SC_ClearColor(float r, float g, float b, float a)
 {
-    //LOGE("c %f %f %f %f", r, g, b, a);
+    //ALOGE("c %f %f %f %f", r, g, b, a);
     GET_TLS();
     sc->mEnviroment.mClearColor[0] = r;
     sc->mEnviroment.mClearColor[1] = g;
@@ -1015,22 +1015,22 @@ static void SC_ClearColor(float r, float g, float b, float a)
 
 static void SC_debugF(const char *s, float f)
 {
-    LOGE("%s %f", s, f);
+    ALOGE("%s %f", s, f);
 }
 
 static void SC_debugHexF(const char *s, float f)
 {
-    LOGE("%s 0x%x", s, *((int *) (&f)));
+    ALOGE("%s 0x%x", s, *((int *) (&f)));
 }
 
 static void SC_debugI32(const char *s, int32_t i)
 {
-    LOGE("%s %i", s, i);
+    ALOGE("%s %i", s, i);
 }
 
 static void SC_debugHexI32(const char *s, int32_t i)
 {
-    LOGE("%s 0x%x", s, i);
+    ALOGE("%s 0x%x", s, i);
 }
 
 static uint32_t SC_getWidth()

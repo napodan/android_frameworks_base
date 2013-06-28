@@ -173,7 +173,7 @@ status_t MP3Decoder::read(
     ERROR_CODE decoderErr;
     if ((decoderErr = pvmp3_framedecoder(mConfig, mDecoderBuf))
             != NO_DECODING_ERROR) {
-        LOGV("mp3 decoder returned error %d", decoderErr);
+        ALOGV("mp3 decoder returned error %d", decoderErr);
 
         if (decoderErr != NO_ENOUGH_MAIN_DATA_ERROR) {
             buffer->release();

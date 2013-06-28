@@ -142,7 +142,7 @@ void ProgramFragment::setupGL(const Context *rsc, ProgramFragmentState *state)
 void ProgramFragment::setupGL2(const Context *rsc, ProgramFragmentState *state, ShaderCache *sc)
 {
 
-    //LOGE("sgl2 frag1 %x", glGetError());
+    //ALOGE("sgl2 frag1 %x", glGetError());
     if ((state->mLast.get() == this) && !mDirty) {
         //return;
     }

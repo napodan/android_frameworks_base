@@ -111,7 +111,7 @@ static const JNINativeMethod g_methods[] = {
 
 int register_android_backup_BackupDataOutput(JNIEnv* env)
 {
-    //LOGD("register_android_backup_BackupDataOutput");
+    //ALOGD("register_android_backup_BackupDataOutput");
 
     jclass clazz;
 

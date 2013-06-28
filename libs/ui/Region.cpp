@@ -66,7 +66,7 @@ Region::Region(const Rect& rhs)
 Region::Region(const void* buffer)
 {
     status_t err = read(buffer);
-    LOGE_IF(err<0, "error %s reading Region from buffer", strerror(err));
+    ALOGE_IF(err<0, "error %s reading Region from buffer", strerror(err));
 }
 
 Region::~Region()
@@ -268,7 +268,7 @@ public:
     }
     
     virtual void operator()(const Rect& rect) {
-        //LOGD(">>> %3d, %3d, %3d, %3d", 
+        //ALOGD(">>> %3d, %3d, %3d, %3d", 
         //        rect.left, rect.top, rect.right, rect.bottom);
         if (span.size()) {
             if (cur->top != rect.top) {
@@ -334,15 +334,15 @@ bool Region::validate(const Region& reg, const char* name)
         b.bottom = b.bottom > cur->bottom ? b.bottom : cur->bottom;
         if (cur->top == prev->top) {
             if (cur->bottom != prev->bottom) {
-                LOGE("%s: invalid span %p", name, cur);
+                ALOGE("%s: invalid span %p", name, cur);
                 result = false;
             } else if (cur->left < prev->right) {
-                LOGE("%s: spans overlap horizontally prev=%p, cur=%p",
+                ALOGE("%s: spans overlap horizontally prev=%p, cur=%p",
                         name, prev, cur);
                 result = false;
             }
         } else if (cur->top < prev->bottom) {
-            LOGE("%s: spans overlap vertically prev=%p, cur=%p",
+            ALOGE("%s: spans overlap vertically prev=%p, cur=%p",
                     name, prev, cur);
             result = false;
         }
@@ -351,7 +351,7 @@ bool Region::validate(const Region& reg, const char* name)
     }
     if (b != reg.getBounds()) {
         result = false;
-        LOGE("%s: invalid bounds [%d,%d,%d,%d] vs. [%d,%d,%d,%d]", name,
+        ALOGE("%s: invalid bounds [%d,%d,%d,%d] vs. [%d,%d,%d,%d]", name,
                 b.left, b.top, b.right, b.bottom,
                 reg.getBounds().left, reg.getBounds().top, 
                 reg.getBounds().right, reg.getBounds().bottom);
@@ -447,14 +447,14 @@ void Region::boolean_operation(int op, Region& dst,
     }
     
     if(!same) {
-        LOGD("---\nregion boolean %s failed", name);
+        ALOGD("---\nregion boolean %s failed", name);
         lhs.dump("lhs");
         rhs.dump("rhs");
         dst.dump("dst");
-        LOGD("should be");
+        ALOGD("should be");
         SkRegion::Iterator it(sk_dst);
         while (!it.done()) {
-            LOGD("    [%3d, %3d, %3d, %3d]",
+            ALOGD("    [%3d, %3d, %3d, %3d]",
                 it.rect().fLeft,
                 it.rect().fTop,
                 it.rect().fRight,
@@ -631,9 +631,9 @@ void Region::dump(const char* what, uint32_t flags) const
     (void)flags;
     const_iterator head = begin();
     const_iterator const tail = end();
-    LOGD("  Region %s (this=%p, count=%d)\n", what, this, tail-head);
+    ALOGD("  Region %s (this=%p, count=%d)\n", what, this, tail-head);
     while (head != tail) {
-        LOGD("    [%3d, %3d, %3d, %3d]\n",
+        ALOGD("    [%3d, %3d, %3d, %3d]\n",
                 head->left, head->top, head->right, head->bottom);
         head++;
     }

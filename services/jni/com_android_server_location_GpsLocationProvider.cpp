@@ -61,7 +61,7 @@ namespace android {
 
 static void checkAndClearExceptionFromCallback(JNIEnv* env, const char* methodName) {
     if (env->ExceptionCheck()) {
-        LOGE("An exception was thrown by callback '%s'.", methodName);
+        ALOGE("An exception was thrown by callback '%s'.", methodName);
         LOGE_EX(env);
         env->ExceptionClear();
     }
@@ -106,7 +106,7 @@ static void nmea_callback(GpsUtcTime timestamp, const char* nmea, int length)
 
 static void set_capabilities_callback(uint32_t capabilities)
 {
-    LOGD("set_capabilities_callback: %ld\n", capabilities);
+    ALOGD("set_capabilities_callback: %ld\n", capabilities);
     JNIEnv* env = AndroidRuntime::getJNIEnv();
     env->CallVoidMethod(mCallbacksObj, method_setEngineCapabilities, capabilities);
     checkAndClearExceptionFromCallback(env, __FUNCTION__);
@@ -166,7 +166,7 @@ AGpsCallbacks sAGpsCallbacks = {
 
 static void gps_ni_notify_callback(GpsNiNotification *notification)
 {
-    LOGD("gps_ni_notify_callback\n");
+    ALOGD("gps_ni_notify_callback\n");
     JNIEnv* env = AndroidRuntime::getJNIEnv();
     jstring requestor_id = env->NewStringUTF(notification->requestor_id);
     jstring text = env->NewStringUTF(notification->text);
@@ -180,7 +180,7 @@ static void gps_ni_notify_callback(GpsNiNotification *notification)
             notification->requestor_id_encoding,
             notification->text_encoding, extras);
     } else {
-        LOGE("out of memory in gps_ni_notify_callback\n");
+        ALOGE("out of memory in gps_ni_notify_callback\n");
     }
 
     if (requestor_id)
@@ -401,7 +401,7 @@ static void android_location_GpsLocationProvider_agps_set_reference_location_cel
     AGpsRefLocation location;
     const AGpsRilInterface* interface = GetAGpsRilInterface(env, obj);
     if (!interface) {
-        LOGE("no AGPS RIL interface in agps_set_reference_location_cellid");
+        ALOGE("no AGPS RIL interface in agps_set_reference_location_cellid");
         return;
     }
 
@@ -415,7 +415,7 @@ static void android_location_GpsLocationProvider_agps_set_reference_location_cel
             location.u.cellID.cid = cid;
             break;
         default:
-            LOGE("Neither a GSM nor a UMTS cellid (%s:%d).",__FUNCTION__,__LINE__);
+            ALOGE("Neither a GSM nor a UMTS cellid (%s:%d).",__FUNCTION__,__LINE__);
             return;
             break;
     }
@@ -428,7 +428,7 @@ static void android_location_GpsLocationProvider_agps_send_ni_message(JNIEnv* en
     size_t sz;
     const AGpsRilInterface* interface = GetAGpsRilInterface(env, obj);
     if (!interface) {
-        LOGE("no AGPS RIL interface in send_ni_message");
+        ALOGE("no AGPS RIL interface in send_ni_message");
         return;
     }
     if (size < 0)
@@ -444,7 +444,7 @@ static void android_location_GpsLocationProvider_agps_set_id(JNIEnv *env,
 {
     const AGpsRilInterface* interface = GetAGpsRilInterface(env, obj);
     if (!interface) {
-        LOGE("no AGPS RIL interface in agps_set_id");
+        ALOGE("no AGPS RIL interface in agps_set_id");
         return;
     }
 
@@ -512,7 +512,7 @@ static void android_location_GpsLocationProvider_agps_data_conn_open(JNIEnv* env
 {
     const AGpsInterface* interface = GetAGpsInterface(env, obj);
     if (!interface) {
-        LOGE("no AGPS interface in agps_data_conn_open");
+        ALOGE("no AGPS interface in agps_data_conn_open");
         return;
     }
     if (apn == NULL) {
@@ -528,7 +528,7 @@ static void android_location_GpsLocationProvider_agps_data_conn_closed(JNIEnv* e
 {
     const AGpsInterface* interface = GetAGpsInterface(env, obj);
     if (!interface) {
-        LOGE("no AGPS interface in agps_data_conn_open");
+        ALOGE("no AGPS interface in agps_data_conn_open");
         return;
     }
     interface->data_conn_closed();
@@ -538,7 +538,7 @@ static void android_location_GpsLocationProvider_agps_data_conn_failed(JNIEnv* e
 {
     const AGpsInterface* interface = GetAGpsInterface(env, obj);
     if (!interface) {
-        LOGE("no AGPS interface in agps_data_conn_open");
+        ALOGE("no AGPS interface in agps_data_conn_open");
         return;
     }
     interface->data_conn_failed();
@@ -549,7 +549,7 @@ static void android_location_GpsLocationProvider_set_agps_server(JNIEnv* env, jo
 {
     const AGpsInterface* interface = GetAGpsInterface(env, obj);
     if (!interface) {
-        LOGE("no AGPS interface in agps_data_conn_open");
+        ALOGE("no AGPS interface in agps_data_conn_open");
         return;
     }
     const char *c_hostname = env->GetStringUTFChars(hostname, NULL);
@@ -562,7 +562,7 @@ static void android_location_GpsLocationProvider_send_ni_response(JNIEnv* env, j
 {
     const GpsNiInterface* interface = GetNiInterface(env, obj);
     if (!interface) {
-        LOGE("no NI interface in send_ni_response");
+        ALOGE("no NI interface in send_ni_response");
         return;
     }
 

@@ -159,7 +159,7 @@ int register_android_pim_EventRecurrence(JNIEnv* env)
 {
     clazz = env->FindClass(CLASS_NAME);
     if (clazz == NULL) {
-        LOGE("Field lookup unable to find class '%s'\n", CLASS_NAME);
+        ALOGE("Field lookup unable to find class '%s'\n", CLASS_NAME);
         return -1;
     }
 

@@ -101,7 +101,7 @@ void android_view_InputChannel_setDisposeCallback(JNIEnv* env, jobject inputChan
     NativeInputChannel* nativeInputChannel =
             android_view_InputChannel_getNativeInputChannel(env, inputChannelObj);
     if (nativeInputChannel == NULL) {
-        LOGW("Cannot set dispose callback because input channel object has not been initialized.");
+        ALOGW("Cannot set dispose callback because input channel object has not been initialized.");
     } else {
         nativeInputChannel->setDisposeCallback(callback, data);
     }
@@ -126,7 +126,7 @@ static jobjectArray android_view_InputChannel_nativeOpenInputChannelPair(JNIEnv*
     status_t result = InputChannel::openInputChannelPair(name, serverChannel, clientChannel);
 
     if (result) {
-        LOGE("Could not open input channel pair.  status=%d", result);
+        ALOGE("Could not open input channel pair.  status=%d", result);
         jniThrowRuntimeException(env, "Could not open input channel pair.");
         return NULL;
     }
@@ -148,7 +148,7 @@ static void android_view_InputChannel_nativeDispose(JNIEnv* env, jobject obj, jb
             android_view_InputChannel_getNativeInputChannel(env, obj);
     if (nativeInputChannel) {
         if (finalized) {
-            LOGW("Input channel object '%s' was finalized without being disposed!",
+            ALOGW("Input channel object '%s' was finalized without being disposed!",
                     nativeInputChannel->getInputChannel()->getName().string());
         }
 

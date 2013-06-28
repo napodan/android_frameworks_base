@@ -241,7 +241,7 @@ MediaBuffer *AVCDecoder::drainOutputBuffer() {
     AVCDec_Status status = PVAVCDecGetOutput(mHandle, &index, &Release, &Output);
 
     if (status != AVCDEC_SUCCESS) {
-        LOGV("PVAVCDecGetOutput returned error %d", status);
+        ALOGV("PVAVCDecGetOutput returned error %d", status);
         return NULL;
     }
 
@@ -262,9 +262,9 @@ MediaBuffer *AVCDecoder::drainOutputBuffer() {
             // timestamp and we won't return the current one.
             skipFrame = true;
 
-            LOGV("skipping frame at %lld us", timeUs);
+            ALOGV("skipping frame at %lld us", timeUs);
         } else {
-            LOGV("found target frame at %lld us", timeUs);
+            ALOGV("found target frame at %lld us", timeUs);
 
             mTargetTimeUs = -1;
         }
@@ -287,7 +287,7 @@ status_t AVCDecoder::read(
     int64_t seekTimeUs;
     ReadOptions::SeekMode mode;
     if (options && options->getSeekTo(&seekTimeUs, &mode)) {
-        LOGV("seek requested to %lld us (%.2f secs)", seekTimeUs, seekTimeUs / 1E6);
+        ALOGV("seek requested to %lld us (%.2f secs)", seekTimeUs, seekTimeUs / 1E6);
 
         CHECK(seekTimeUs >= 0);
         mPendingSeekTimeUs = seekTimeUs;
@@ -302,7 +302,7 @@ status_t AVCDecoder::read(
     }
 
     if (mInputBuffer == NULL) {
-        LOGV("fetching new input buffer.");
+        ALOGV("fetching new input buffer.");
 
         bool seeking = false;
 
@@ -312,7 +312,7 @@ status_t AVCDecoder::read(
         } else {
             for (;;) {
                 if (mPendingSeekTimeUs >= 0) {
-                    LOGV("reading data from timestamp %lld (%.2f secs)",
+                    ALOGV("reading data from timestamp %lld (%.2f secs)",
                          mPendingSeekTimeUs, mPendingSeekTimeUs / 1E6);
                 }
 
@@ -366,7 +366,7 @@ status_t AVCDecoder::read(
                 &nalType, &nalRefIdc);
 
     if (res != AVCDEC_SUCCESS) {
-        LOGV("cannot determine nal type");
+        ALOGV("cannot determine nal type");
     } else if (nalType == AVC_NALTYPE_SPS || nalType == AVC_NALTYPE_PPS
                 || (mSPSSeen && mPPSSeen)) {
         switch (nalType) {
@@ -379,7 +379,7 @@ status_t AVCDecoder::read(
                         fragSize);
 
                 if (res != AVCDEC_SUCCESS) {
-                    LOGV("PVAVCDecSeqParamSet returned error %d", res);
+                    ALOGV("PVAVCDecSeqParamSet returned error %d", res);
                     break;
                 }
 
@@ -446,7 +446,7 @@ status_t AVCDecoder::read(
                         fragSize);
 
                 if (res != AVCDEC_SUCCESS) {
-                    LOGV("PVAVCDecPicParamSet returned error %d", res);
+                    ALOGV("PVAVCDecPicParamSet returned error %d", res);
                     break;
                 }
 
@@ -483,7 +483,7 @@ status_t AVCDecoder::read(
 
                     err = OK;
                 } else {
-                    LOGV("PVAVCDecodeSlice returned error %d", res);
+                    ALOGV("PVAVCDecodeSlice returned error %d", res);
                 }
                 break;
             }
@@ -516,7 +516,7 @@ status_t AVCDecoder::read(
 
             default:
             {
-                LOGE("Should not be here, unknown nalType %d", nalType);
+                ALOGE("Should not be here, unknown nalType %d", nalType);
                 CHECK(!"Should not be here");
                 break;
             }

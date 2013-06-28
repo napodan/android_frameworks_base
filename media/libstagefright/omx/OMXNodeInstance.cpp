@@ -133,7 +133,7 @@ status_t OMXNodeInstance::freeNode(OMXMaster *master) {
     switch (state) {
         case OMX_StateExecuting:
         {
-            LOGV("forcing Executing->Idle");
+            ALOGV("forcing Executing->Idle");
             sendCommand(OMX_CommandStateSet, OMX_StateIdle);
             OMX_ERRORTYPE err;
             while ((err = OMX_GetState(mHandle, &state)) == OMX_ErrorNone
@@ -152,7 +152,7 @@ status_t OMXNodeInstance::freeNode(OMXMaster *master) {
 
         case OMX_StateIdle:
         {
-            LOGV("forcing Idle->Loaded");
+            ALOGV("forcing Idle->Loaded");
             sendCommand(OMX_CommandStateSet, OMX_StateLoaded);
 
             freeActiveBuffers();
@@ -161,7 +161,7 @@ status_t OMXNodeInstance::freeNode(OMXMaster *master) {
             while ((err = OMX_GetState(mHandle, &state)) == OMX_ErrorNone
                    && state != OMX_StateLoaded
                    && state != OMX_StateInvalid) {
-                LOGV("waiting for Loaded state...");
+                ALOGV("waiting for Loaded state...");
                 usleep(100000);
             }
             CHECK_EQ(err, OMX_ErrorNone);
@@ -184,13 +184,13 @@ status_t OMXNodeInstance::freeNode(OMXMaster *master) {
     mHandle = NULL;
 
     if (err != OMX_ErrorNone) {
-        LOGE("FreeHandle FAILED with error 0x%08x.", err);
+        ALOGE("FreeHandle FAILED with error 0x%08x.", err);
     }
 
     mOwner->invalidateNodeID(mNodeID);
     mNodeID = NULL;
 
-    LOGV("OMXNodeInstance going away.");
+    ALOGV("OMXNodeInstance going away.");
     delete this;
 
     return StatusFromOMXError(err);
@@ -254,7 +254,7 @@ status_t OMXNodeInstance::useBuffer(
             params->size(), static_cast<OMX_U8 *>(params->pointer()));
 
     if (err != OMX_ErrorNone) {
-        LOGE("OMX_UseBuffer failed with error %d (0x%08x)", err, err);
+        ALOGE("OMX_UseBuffer failed with error %d (0x%08x)", err, err);
 
         delete buffer_meta;
         buffer_meta = NULL;
@@ -286,7 +286,7 @@ status_t OMXNodeInstance::allocateBuffer(
             mHandle, &header, portIndex, buffer_meta, size);
 
     if (err != OMX_ErrorNone) {
-        LOGE("OMX_AllocateBuffer failed with error %d (0x%08x)", err, err);
+        ALOGE("OMX_AllocateBuffer failed with error %d (0x%08x)", err, err);
 
         delete buffer_meta;
         buffer_meta = NULL;
@@ -319,7 +319,7 @@ status_t OMXNodeInstance::allocateBufferWithBackup(
             mHandle, &header, portIndex, buffer_meta, params->size());
 
     if (err != OMX_ErrorNone) {
-        LOGE("OMX_AllocateBuffer failed with error %d (0x%08x)", err, err);
+        ALOGE("OMX_AllocateBuffer failed with error %d (0x%08x)", err, err);
 
         delete buffer_meta;
         buffer_meta = NULL;
@@ -415,7 +415,7 @@ void OMXNodeInstance::onMessage(const omx_message &msg) {
 }
 
 void OMXNodeInstance::onObserverDied(OMXMaster *master) {
-    LOGE("!!! Observer died. Quickly, do something, ... anything...");
+    ALOGE("!!! Observer died. Quickly, do something, ... anything...");
 
     // Try to force shutdown of the node and hope for the best.
     freeNode(master);
@@ -485,7 +485,7 @@ void OMXNodeInstance::removeActiveBuffer(
     }
 
     if (!found) {
-        LOGW("Attempt to remove an active buffer we know nothing about...");
+        ALOGW("Attempt to remove an active buffer we know nothing about...");
     }
 }
 

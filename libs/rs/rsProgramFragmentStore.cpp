@@ -68,7 +68,7 @@ void ProgramFragmentStore::setupGL(const Context *rsc, ProgramFragmentStoreState
         glDisable(GL_BLEND);
     }
 
-    //LOGE("pfs  %i, %i, %x", mDepthWriteEnable, mDepthTestEnable, mDepthFunc);
+    //ALOGE("pfs  %i, %i, %x", mDepthWriteEnable, mDepthTestEnable, mDepthFunc);
 
     glDepthMask(mDepthWriteEnable);
     if(mDepthTestEnable || mDepthWriteEnable) {
@@ -103,7 +103,7 @@ void ProgramFragmentStore::setupGL2(const Context *rsc, ProgramFragmentStoreStat
         glDisable(GL_BLEND);
     }
 
-    //LOGE("pfs  %i, %i, %x", mDepthWriteEnable, mDepthTestEnable, mDepthFunc);
+    //ALOGE("pfs  %i, %i, %x", mDepthWriteEnable, mDepthTestEnable, mDepthFunc);
 
     glDepthMask(mDepthWriteEnable);
     if(mDepthTestEnable || mDepthWriteEnable) {

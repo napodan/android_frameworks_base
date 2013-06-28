@@ -177,7 +177,7 @@ int main(int argc, char *argv[]) {
     char* use_outfile = 0;
     int use_socket = 0;
 
-    LOGI("begin\n");
+    ALOGI("begin\n");
 
     /* set as high priority, and protect from OOM killer */
     setpriority(PRIO_PROCESS, 0, -20);
@@ -220,15 +220,15 @@ int main(int argc, char *argv[]) {
         /* switch to non-root user and group */
         gid_t groups[] = { AID_LOG, AID_SDCARD_RW, AID_MOUNT };
         if (setgroups(sizeof(groups)/sizeof(groups[0]), groups) != 0) {
-            LOGE("Unable to setgroups, aborting: %s\n", strerror(errno));
+            ALOGE("Unable to setgroups, aborting: %s\n", strerror(errno));
             return -1;
         }
         if (setgid(AID_SHELL) != 0) {
-            LOGE("Unable to setgid, aborting: %s\n", strerror(errno));
+            ALOGE("Unable to setgid, aborting: %s\n", strerror(errno));
             return -1;
         }
         if (setuid(AID_SHELL) != 0) {
-            LOGE("Unable to setuid, aborting: %s\n", strerror(errno));
+            ALOGE("Unable to setuid, aborting: %s\n", strerror(errno));
             return -1;
         }
     }
@@ -283,7 +283,7 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "rename(%s, %s): %s\n", tmp_path, path, strerror(errno));
     }
 
-    LOGI("done\n");
+    ALOGI("done\n");
 
     return 0;
 }

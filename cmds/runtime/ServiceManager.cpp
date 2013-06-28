@@ -32,7 +32,7 @@ sp<IBinder> BServiceManager::getService(const String16& name) const
 {
     AutoMutex _l(mLock);
     ssize_t i = mServices.indexOfKey(name);
-    LOGV("ServiceManager: getService(%s) -> %d\n", String8(name).string(), i);
+    ALOGV("ServiceManager: getService(%s) -> %d\n", String8(name).string(), i);
     if (i >= 0) return mServices.valueAt(i);
     return NULL;
 }
@@ -41,7 +41,7 @@ sp<IBinder> BServiceManager::checkService(const String16& name) const
 {
     AutoMutex _l(mLock);
     ssize_t i = mServices.indexOfKey(name);
-    LOGV("ServiceManager: getService(%s) -> %d\n", String8(name).string(), i);
+    ALOGV("ServiceManager: getService(%s) -> %d\n", String8(name).string(), i);
     if (i >= 0) return mServices.valueAt(i);
     return NULL;
 }
@@ -49,7 +49,7 @@ sp<IBinder> BServiceManager::checkService(const String16& name) const
 status_t BServiceManager::addService(const String16& name, const sp<IBinder>& service)
 {
     AutoMutex _l(mLock);
-    LOGI("ServiceManager: addService(%s, %p)\n", String8(name).string(), service.get());
+    ALOGI("ServiceManager: addService(%s, %p)\n", String8(name).string(), service.get());
     const ssize_t res = mServices.add(name, service);
     if (res >= NO_ERROR) {
         mChanged.broadcast();

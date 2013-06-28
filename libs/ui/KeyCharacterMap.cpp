@@ -172,23 +172,23 @@ KeyCharacterMap::load(int id)
         for (char *p = strchr(tmpfn, ' '); p && *p; p = strchr(tmpfn, ' '))
             *p = '_';
         snprintf(path, sizeof(path), "%s/usr/keychars/%s.kcm.bin", root, tmpfn);
-        //LOGD("load: dev='%s' path='%s'\n", dev, path);
+        //ALOGD("load: dev='%s' path='%s'\n", dev, path);
         rv = try_file(path);
         if (rv != NULL) {
             return rv;
         }
-        LOGW("Error loading keycharmap file '%s'. %s='%s'", path, propName, dev);
+        ALOGW("Error loading keycharmap file '%s'. %s='%s'", path, propName, dev);
     } else {
-        LOGW("No keyboard for id %d", id);
+        ALOGW("No keyboard for id %d", id);
     }
 
     snprintf(path, sizeof(path), "%s/usr/keychars/qwerty.kcm.bin", root);
     rv = try_file(path);
     if (rv == NULL) {
-        LOGE("Can't find any keycharmaps (also tried %s)", path);
+        ALOGE("Can't find any keycharmaps (also tried %s)", path);
         return NULL;
     }
-    LOGW("Using default keymap: %s", path);
+    ALOGW("Using default keymap: %s", path);
 
     return rv;
 }
@@ -205,7 +205,7 @@ KeyCharacterMap::try_file(const char* filename)
     
     fd = open(filename, O_RDONLY);
     if (fd == -1) {
-        LOGW("Can't open keycharmap file");
+        ALOGW("Can't open keycharmap file");
         return NULL;
     }
 
@@ -214,30 +214,30 @@ KeyCharacterMap::try_file(const char* filename)
 
     // validate the header
     if (filesize <= (off_t)sizeof(header)) {
-        LOGW("Bad keycharmap - filesize=%d\n", (int)filesize);
+        ALOGW("Bad keycharmap - filesize=%d\n", (int)filesize);
         goto cleanup1;
     }
 
     err = read(fd, &header, sizeof(header));
     if (err == -1) {
-        LOGW("Error reading keycharmap file");
+        ALOGW("Error reading keycharmap file");
         goto cleanup1;
     }
 
     if (0 != memcmp(header.magic, "keychar", 8)) {
-        LOGW("Bad keycharmap magic token");
+        ALOGW("Bad keycharmap magic token");
         goto cleanup1;
     }
     if (header.endian != 0x12345678) {
-        LOGW("Bad keycharmap endians");
+        ALOGW("Bad keycharmap endians");
         goto cleanup1;
     }
     if ((header.version & 0xff) != 2) {
-        LOGW("Only support keycharmap version 2 (got 0x%08x)", header.version);
+        ALOGW("Only support keycharmap version 2 (got 0x%08x)", header.version);
         goto cleanup1;
     }
     if (filesize < (off_t)(sizeof(Header)+(sizeof(Key)*header.keycount))) {
-        LOGW("Bad keycharmap file size\n");
+        ALOGW("Bad keycharmap file size\n");
         goto cleanup1;
     }
 
@@ -245,7 +245,7 @@ KeyCharacterMap::try_file(const char* filename)
     keys = (Key*)malloc(sizeof(Key)*header.keycount);
     err = read(fd, keys, sizeof(Key)*header.keycount);
     if (err == -1) {
-        LOGW("Error reading keycharmap file");
+        ALOGW("Error reading keycharmap file");
         free(keys);
         goto cleanup1;
     }

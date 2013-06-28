@@ -27,12 +27,12 @@ void app_usage()
 
 status_t app_init(const char* className, int argc, const char* const argv[])
 {
-    LOGV("Entered app_init()!\n");
+    ALOGV("Entered app_init()!\n");
 
     AndroidRuntime* jr = AndroidRuntime::getRuntime();
     jr->callMain(className, argc, argv);
     
-    LOGV("Exiting app_init()!\n");
+    ALOGV("Exiting app_init()!\n");
     return NO_ERROR;
 }
 
@@ -64,7 +64,7 @@ public:
     {
         sp<ProcessState> proc = ProcessState::self();
         if (proc->supportsProcesses()) {
-            LOGV("App process: starting thread pool.\n");
+            ALOGV("App process: starting thread pool.\n");
             proc->startThreadPool();
         }
         
@@ -79,7 +79,7 @@ public:
     {
         sp<ProcessState> proc = ProcessState::self();
         if (proc->supportsProcesses()) {
-            LOGV("App process: starting thread pool.\n");
+            ALOGV("App process: starting thread pool.\n");
             proc->startThreadPool();
         }       
     }
@@ -166,7 +166,7 @@ int main(int argc, const char* const argv[])
             runtime.mArgC = argc-i;
             runtime.mArgV = argv+i;
 
-            LOGV("App process is starting with pid=%d, class=%s.\n",
+            ALOGV("App process is starting with pid=%d, class=%s.\n",
                  getpid(), runtime.getClassName());
             runtime.start();
         }

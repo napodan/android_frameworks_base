@@ -133,12 +133,12 @@ status_t NativeInputQueue::registerInputChannel(JNIEnv* env, jobject inputChanne
     sp<InputChannel> inputChannel = android_view_InputChannel_getInputChannel(env,
             inputChannelObj);
     if (inputChannel == NULL) {
-        LOGW("Input channel is not initialized.");
+        ALOGW("Input channel is not initialized.");
         return BAD_VALUE;
     }
 
 #if DEBUG_REGISTRATION
-    LOGD("channel '%s' - Registered", inputChannel->getName().string());
+    ALOGD("channel '%s' - Registered", inputChannel->getName().string());
 #endif
 
     sp<Looper> looper = android_os_MessageQueue_getLooper(env, messageQueueObj);
@@ -147,7 +147,7 @@ status_t NativeInputQueue::registerInputChannel(JNIEnv* env, jobject inputChanne
         AutoMutex _l(mLock);
 
         if (getConnectionIndex(inputChannel) >= 0) {
-            LOGW("Attempted to register already registered input channel '%s'",
+            ALOGW("Attempted to register already registered input channel '%s'",
                     inputChannel->getName().string());
             return BAD_VALUE;
         }
@@ -156,7 +156,7 @@ status_t NativeInputQueue::registerInputChannel(JNIEnv* env, jobject inputChanne
         sp<Connection> connection = new Connection(connectionId, inputChannel, looper);
         status_t result = connection->inputConsumer.initialize();
         if (result) {
-            LOGW("Failed to initialize input consumer for input channel '%s', status=%d",
+            ALOGW("Failed to initialize input consumer for input channel '%s', status=%d",
                     inputChannel->getName().string(), result);
             return result;
         }
@@ -178,12 +178,12 @@ status_t NativeInputQueue::unregisterInputChannel(JNIEnv* env, jobject inputChan
     sp<InputChannel> inputChannel = android_view_InputChannel_getInputChannel(env,
             inputChannelObj);
     if (inputChannel == NULL) {
-        LOGW("Input channel is not initialized.");
+        ALOGW("Input channel is not initialized.");
         return BAD_VALUE;
     }
 
 #if DEBUG_REGISTRATION
-    LOGD("channel '%s' - Unregistered", inputChannel->getName().string());
+    ALOGD("channel '%s' - Unregistered", inputChannel->getName().string());
 #endif
 
     { // acquire lock
@@ -191,7 +191,7 @@ status_t NativeInputQueue::unregisterInputChannel(JNIEnv* env, jobject inputChan
 
         ssize_t connectionIndex = getConnectionIndex(inputChannel);
         if (connectionIndex < 0) {
-            LOGW("Attempted to unregister already unregistered input channel '%s'",
+            ALOGW("Attempted to unregister already unregistered input channel '%s'",
                     inputChannel->getName().string());
             return BAD_VALUE;
         }
@@ -207,7 +207,7 @@ status_t NativeInputQueue::unregisterInputChannel(JNIEnv* env, jobject inputChan
         connection->inputHandlerObjGlobal = NULL;
 
         if (connection->messageInProgress) {
-            LOGI("Sending finished signal for input channel '%s' since it is being unregistered "
+            ALOGI("Sending finished signal for input channel '%s' since it is being unregistered "
                     "while an input message is still in progress.",
                     connection->getInputChannelName());
             connection->messageInProgress = false;
@@ -243,7 +243,7 @@ status_t NativeInputQueue::finished(JNIEnv* env, jlong finishedToken, bool ignor
         ssize_t connectionIndex = mConnectionsByReceiveFd.indexOfKey(receiveFd);
         if (connectionIndex < 0) {
             if (! ignoreSpuriousFinish) {
-                LOGI("Ignoring finish signal on channel that is no longer registered.");
+                ALOGI("Ignoring finish signal on channel that is no longer registered.");
             }
             return DEAD_OBJECT;
         }
@@ -251,14 +251,14 @@ status_t NativeInputQueue::finished(JNIEnv* env, jlong finishedToken, bool ignor
         sp<Connection> connection = mConnectionsByReceiveFd.valueAt(connectionIndex);
         if (connectionId != connection->id) {
             if (! ignoreSpuriousFinish) {
-                LOGI("Ignoring finish signal on channel that is no longer registered.");
+                ALOGI("Ignoring finish signal on channel that is no longer registered.");
             }
             return DEAD_OBJECT;
         }
 
         if (messageSeqNum != connection->messageSeqNum || ! connection->messageInProgress) {
             if (! ignoreSpuriousFinish) {
-                LOGW("Attempted to finish input twice on channel '%s'.  "
+                ALOGW("Attempted to finish input twice on channel '%s'.  "
                         "finished messageSeqNum=%d, current messageSeqNum=%d, messageInProgress=%d",
                         connection->getInputChannelName(),
                         messageSeqNum, connection->messageSeqNum, connection->messageInProgress);
@@ -270,13 +270,13 @@ status_t NativeInputQueue::finished(JNIEnv* env, jlong finishedToken, bool ignor
 
         status_t status = connection->inputConsumer.sendFinishedSignal();
         if (status) {
-            LOGW("Failed to send finished signal on channel '%s'.  status=%d",
+            ALOGW("Failed to send finished signal on channel '%s'.  status=%d",
                     connection->getInputChannelName(), status);
             return status;
         }
 
 #if DEBUG_DISPATCH_CYCLE
-        LOGD("channel '%s' ~ Finished event.",
+        ALOGD("channel '%s' ~ Finished event.",
                 connection->getInputChannelName());
 #endif
     } // release lock
@@ -286,7 +286,7 @@ status_t NativeInputQueue::finished(JNIEnv* env, jlong finishedToken, bool ignor
 
 void NativeInputQueue::handleInputChannelDisposed(JNIEnv* env,
         jobject inputChannelObj, const sp<InputChannel>& inputChannel, void* data) {
-    LOGW("Input channel object '%s' was disposed without first being unregistered with "
+    ALOGW("Input channel object '%s' was disposed without first being unregistered with "
             "the input queue!", inputChannel->getName().string());
 
     NativeInputQueue* q = static_cast<NativeInputQueue*>(data);
@@ -306,40 +306,40 @@ int NativeInputQueue::handleReceiveCallback(int receiveFd, int events, void* dat
 
         ssize_t connectionIndex = q->mConnectionsByReceiveFd.indexOfKey(receiveFd);
         if (connectionIndex < 0) {
-            LOGE("Received spurious receive callback for unknown input channel.  "
+            ALOGE("Received spurious receive callback for unknown input channel.  "
                     "fd=%d, events=0x%x", receiveFd, events);
             return 0; // remove the callback
         }
 
         connection = q->mConnectionsByReceiveFd.valueAt(connectionIndex);
         if (events & (ALOOPER_EVENT_ERROR | ALOOPER_EVENT_HANGUP)) {
-            LOGE("channel '%s' ~ Publisher closed input channel or an error occurred.  "
+            ALOGE("channel '%s' ~ Publisher closed input channel or an error occurred.  "
                     "events=0x%x", connection->getInputChannelName(), events);
             return 0; // remove the callback
         }
 
         if (! (events & ALOOPER_EVENT_INPUT)) {
-            LOGW("channel '%s' ~ Received spurious callback for unhandled poll event.  "
+            ALOGW("channel '%s' ~ Received spurious callback for unhandled poll event.  "
                     "events=0x%x", connection->getInputChannelName(), events);
             return 1;
         }
 
         status_t status = connection->inputConsumer.receiveDispatchSignal();
         if (status) {
-            LOGE("channel '%s' ~ Failed to receive dispatch signal.  status=%d",
+            ALOGE("channel '%s' ~ Failed to receive dispatch signal.  status=%d",
                     connection->getInputChannelName(), status);
             return 0; // remove the callback
         }
 
         if (connection->messageInProgress) {
-            LOGW("channel '%s' ~ Publisher sent spurious dispatch signal.",
+            ALOGW("channel '%s' ~ Publisher sent spurious dispatch signal.",
                     connection->getInputChannelName());
             return 1;
         }
 
         status = connection->inputConsumer.consume(& connection->inputEventFactory, & inputEvent);
         if (status) {
-            LOGW("channel '%s' ~ Failed to consume input event.  status=%d",
+            ALOGW("channel '%s' ~ Failed to consume input event.  status=%d",
                     connection->getInputChannelName(), status);
             connection->inputConsumer.sendFinishedSignal();
             return 1;
@@ -368,7 +368,7 @@ int NativeInputQueue::handleReceiveCallback(int receiveFd, int events, void* dat
     switch (inputEventType) {
     case AINPUT_EVENT_TYPE_KEY:
 #if DEBUG_DISPATCH_CYCLE
-        LOGD("channel '%s' ~ Received key event.", connection->getInputChannelName());
+        ALOGD("channel '%s' ~ Received key event.", connection->getInputChannelName());
 #endif
         inputEventObj = android_view_KeyEvent_fromNative(env,
                 static_cast<KeyEvent*>(inputEvent));
@@ -377,7 +377,7 @@ int NativeInputQueue::handleReceiveCallback(int receiveFd, int events, void* dat
 
     case AINPUT_EVENT_TYPE_MOTION:
 #if DEBUG_DISPATCH_CYCLE
-        LOGD("channel '%s' ~ Received motion event.", connection->getInputChannelName());
+        ALOGD("channel '%s' ~ Received motion event.", connection->getInputChannelName());
 #endif
         inputEventObj = android_view_MotionEvent_fromNative(env,
                 static_cast<MotionEvent*>(inputEvent));
@@ -390,7 +390,7 @@ int NativeInputQueue::handleReceiveCallback(int receiveFd, int events, void* dat
     }
 
     if (! inputEventObj) {
-        LOGW("channel '%s' ~ Failed to obtain DVM event object.",
+        ALOGW("channel '%s' ~ Failed to obtain DVM event object.",
                 connection->getInputChannelName());
         env->DeleteLocalRef(inputHandlerObjLocal);
         q->finished(env, finishedToken, false);
@@ -398,17 +398,17 @@ int NativeInputQueue::handleReceiveCallback(int receiveFd, int events, void* dat
     }
 
 #if DEBUG_DISPATCH_CYCLE
-    LOGD("Invoking input handler.");
+    ALOGD("Invoking input handler.");
 #endif
     env->CallStaticVoidMethod(gInputQueueClassInfo.clazz,
             dispatchMethodId, inputHandlerObjLocal, inputEventObj,
             jlong(finishedToken));
 #if DEBUG_DISPATCH_CYCLE
-    LOGD("Returned from input handler.");
+    ALOGD("Returned from input handler.");
 #endif
 
     if (env->ExceptionCheck()) {
-        LOGE("An exception occurred while invoking the input handler for an event.");
+        ALOGE("An exception occurred while invoking the input handler for an event.");
         LOGE_EX(env);
         env->ExceptionClear();
 

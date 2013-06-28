@@ -278,7 +278,7 @@ void Type::dumpLOGV(const char *prefix) const
 {
     char buf[1024];
     ObjectBase::dumpLOGV(prefix);
-    LOGV("%s   Type: x=%i y=%i z=%i mip=%i face=%i", prefix, mDimX, mDimY, mDimZ, mDimLOD, mFaces);
+    ALOGV("%s   Type: x=%i y=%i z=%i mip=%i face=%i", prefix, mDimX, mDimY, mDimZ, mDimLOD, mFaces);
     sprintf(buf, "%s element: ", prefix);
     mElement->dumpLOGV(buf);
 }
@@ -352,7 +352,7 @@ void rsi_TypeAdd(Context *rsc, RsDimension dim, size_t value)
 
     int32_t arrayNum = dim - RS_DIMENSION_ARRAY_0;
     if ((dim < 0) || (dim > RS_DIMENSION_MAX)) {
-        LOGE("rsTypeAdd: Bad dimension");
+        ALOGE("rsTypeAdd: Bad dimension");
         //error
         return;
     }

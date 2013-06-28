@@ -496,7 +496,7 @@ status_t MPEG4Extractor::parseChunk(off_t *offset, int depth) {
         case FOURCC('i', 'l', 's', 't'):
         {
             if (chunk_type == FOURCC('s', 't', 'b', 'l')) {
-                LOGV("sampleTable chunk is %d bytes long.", (size_t)chunk_size);
+                ALOGV("sampleTable chunk is %d bytes long.", (size_t)chunk_size);
 
                 if (mDataSource->flags()
                         & (DataSource::kWantsPrefetching
@@ -1078,9 +1078,9 @@ status_t MPEG4Extractor::parseTrackHeader(
     int32_t dy = U32_AT(&buffer[matrixOffset + 20]);
 
 #if 0
-    LOGI("x' = %.2f * x + %.2f * y + %.2f",
+    ALOGI("x' = %.2f * x + %.2f * y + %.2f",
          a00 / 65536.0f, a01 / 65536.0f, dx / 65536.0f);
-    LOGI("y' = %.2f * x + %.2f * y + %.2f",
+    ALOGI("y' = %.2f * x + %.2f * y + %.2f",
          a10 / 65536.0f, a11 / 65536.0f, dy / 65536.0f);
 #endif
 
@@ -1097,7 +1097,7 @@ status_t MPEG4Extractor::parseTrackHeader(
     } else if (a00 == -kFixedOne && a01 == 0 && a10 == 0 && a11 == -kFixedOne) {
         rotationDegrees = 180;
     } else {
-        LOGW("We only support 0,90,180,270 degree rotation matrices");
+        ALOGW("We only support 0,90,180,270 degree rotation matrices");
         rotationDegrees = 0;
     }
 
@@ -1384,7 +1384,7 @@ status_t MPEG4Extractor::updateAudioTrackInfoFromESDS_MPEG4Audio(
     CHECK(mLastTrack->meta->findInt32(kKeySampleRate, &prevSampleRate));
 
     if (prevSampleRate != sampleRate) {
-        LOGV("mpeg4 audio sample rate different from previous setting. "
+        ALOGV("mpeg4 audio sample rate different from previous setting. "
              "was: %d, now: %d", prevSampleRate, sampleRate);
     }
 
@@ -1394,7 +1394,7 @@ status_t MPEG4Extractor::updateAudioTrackInfoFromESDS_MPEG4Audio(
     CHECK(mLastTrack->meta->findInt32(kKeyChannelCount, &prevChannelCount));
 
     if (prevChannelCount != numChannels) {
-        LOGV("mpeg4 audio channel count different from previous setting. "
+        ALOGV("mpeg4 audio channel count different from previous setting. "
              "was: %d, now: %d", prevChannelCount, numChannels);
     }
 
@@ -1597,7 +1597,7 @@ status_t MPEG4Source::read(
         CHECK_EQ(OK, mSampleTable->getMetaDataForSample(
                     syncSampleIndex, NULL, NULL, &syncSampleTime));
 
-        LOGI("seek to time %lld us => sample at time %lld us, "
+        ALOGI("seek to time %lld us => sample at time %lld us, "
              "sync sample at time %lld us",
              seekTimeUs,
              sampleTime * 1000000ll / mTimescale,
@@ -1684,7 +1684,7 @@ status_t MPEG4Source::read(
 
         size_t nal_size = parseNALSize(src);
         if (mBuffer->range_length() < mNALLengthSize + nal_size) {
-            LOGE("incomplete NAL unit.");
+            ALOGE("incomplete NAL unit.");
 
             mBuffer->release();
             mBuffer = NULL;
@@ -1875,7 +1875,7 @@ bool SniffMPEG4(
     }
 
     if (LegacySniffMPEG4(source, mimeType, confidence)) {
-        LOGW("Identified supported mpeg4 through LegacySniffMPEG4.");
+        ALOGW("Identified supported mpeg4 through LegacySniffMPEG4.");
         return true;
     }
 

@@ -51,7 +51,7 @@ void doThrowIOE(JNIEnv* env, const char* msg) {
 
 bool GraphicsJNI::hasException(JNIEnv *env) {
     if (env->ExceptionCheck() != 0) {
-        LOGE("*** Uncaught exception returned from Java call!\n");
+        ALOGE("*** Uncaught exception returned from Java call!\n");
         env->ExceptionDescribe();
         return true;
     }
@@ -484,7 +484,7 @@ bool GraphicsJNI::setJavaPixelRef(JNIEnv* env, SkBitmap* bitmap,
             return false;
         }
         if (!r) {
-            LOGE("VM won't let us allocate %zd bytes\n", size);
+            ALOGE("VM won't let us allocate %zd bytes\n", size);
             doThrowOOME(env, "bitmap size exceeds VM budget");
             return false;
         }
@@ -558,7 +558,7 @@ bool JavaMemoryUsageReporter::reportMemory(size_t memorySize) {
         return false;
     }
     if (!r) {
-        LOGE("VM won't let us allocate %zd bytes\n", memorySize);
+        ALOGE("VM won't let us allocate %zd bytes\n", memorySize);
         doThrowOOME(env, "bitmap size exceeds VM budget");
         return false;
     }

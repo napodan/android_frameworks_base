@@ -209,7 +209,7 @@ LOG_WINDOW("Getting blob for %d,%d from %p", row, column, window);
     uint8_t type = field.type;
     if (type == FIELD_TYPE_BLOB || type == FIELD_TYPE_STRING) {
         jbyteArray byteArray = env->NewByteArray(field.data.buffer.size);
-        LOG_ASSERT(byteArray, "Native could not create new byte[]");
+        ALOG_ASSERT(byteArray, "Native could not create new byte[]");
         env->SetByteArrayRegion(byteArray, 0, field.data.buffer.size,
             (const jbyte*)window->offsetToPtr(field.data.buffer.offset));
         return byteArray;
@@ -429,7 +429,7 @@ LOG_WINDOW("Copying string for %d,%d from %p", row, column, window);
     } else if (type == FIELD_TYPE_BLOB) {
         throw_sqlite3_exception(env, "Unable to convert BLOB to string");
     } else {
-        LOGE("Unknown field type %d", type);
+        ALOGE("Unknown field type %d", type);
         throw_sqlite3_exception(env, "UNKNOWN type in copyStringToBuffer_native()");
     }
     SET_SIZE_COPIED(env, buf, sizeCopied);
@@ -687,34 +687,34 @@ int register_android_database_CursorWindow(JNIEnv * env)
 
     clazz = env->FindClass("android/database/CursorWindow");
     if (clazz == NULL) {
-        LOGE("Can't find android/database/CursorWindow");
+        ALOGE("Can't find android/database/CursorWindow");
         return -1;
     }
 
     gWindowField = env->GetFieldID(clazz, "nWindow", "I");
 
     if (gWindowField == NULL) {
-        LOGE("Error locating fields");
+        ALOGE("Error locating fields");
         return -1;
     }
 
     clazz =  env->FindClass("android/database/CharArrayBuffer");
     if (clazz == NULL) {
-        LOGE("Can't find android/database/CharArrayBuffer");
+        ALOGE("Can't find android/database/CharArrayBuffer");
         return -1;
     }
 
     gBufferField = env->GetFieldID(clazz, "data", "[C");
 
     if (gBufferField == NULL) {
-        LOGE("Error locating fields data in CharArrayBuffer");
+        ALOGE("Error locating fields data in CharArrayBuffer");
         return -1;
     }
 
     gSizeCopiedField = env->GetFieldID(clazz, "sizeCopied", "I");
 
     if (gSizeCopiedField == NULL) {
-        LOGE("Error locating fields sizeCopied in CharArrayBuffer");
+        ALOGE("Error locating fields sizeCopied in CharArrayBuffer");
         return -1;
     }
 

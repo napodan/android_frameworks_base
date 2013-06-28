@@ -39,7 +39,7 @@ AudioSource::AudioSource(
       mPrevLostBytes(0),
       mGroup(NULL) {
 
-    LOGV("sampleRate: %d, channels: %d", sampleRate, channels);
+    ALOGV("sampleRate: %d, channels: %d", sampleRate, channels);
     CHECK(channels == 1 || channels == 2);
     uint32_t flags = AudioRecord::RECORD_AGC_ENABLE |
                      AudioRecord::RECORD_NS_ENABLE  |
@@ -119,7 +119,7 @@ status_t AudioSource::stop() {
     mStarted = false;
 
     if (mCollectStats) {
-        LOGI("Total lost audio frames: %lld",
+        ALOGI("Total lost audio frames: %lld",
             mTotalLostFrames + (mPrevLostBytes >> 1));
     }
 
@@ -159,13 +159,13 @@ static int skipFrame(int64_t timestampUs,
 
     // Safe guard against the abuse of the kSkipFrame_Option.
     if (skipFrameUs - timestampUs >= 1E6) {
-        LOGE("Frame skipping requested is way too long: %lld us",
+        ALOGE("Frame skipping requested is way too long: %lld us",
             skipFrameUs - timestampUs);
 
         return -1;
     }
 
-    LOGV("skipFrame: %lld us > timestamp: %lld us",
+    ALOGV("skipFrame: %lld us > timestamp: %lld us",
         skipFrameUs, timestampUs);
 
     return 1;
@@ -288,7 +288,7 @@ status_t AudioSource::read(
 
         ssize_t n = mRecord->read(buffer->data(), buffer->size());
         if (n <= 0) {
-            LOGE("Read from AudioRecord returns: %ld", n);
+            ALOGE("Read from AudioRecord returns: %ld", n);
             buffer->release();
             return UNKNOWN_ERROR;
         }
@@ -327,7 +327,7 @@ status_t AudioSource::read(
         buffer->meta_data()->setInt64(kKeyDriftTime, readTimeUs - mInitialReadTimeUs);
         CHECK(timestampUs > mPrevSampleTimeUs);
         mPrevSampleTimeUs = timestampUs;
-        LOGV("initial delay: %lld, sample rate: %d, timestamp: %lld",
+        ALOGV("initial delay: %lld, sample rate: %d, timestamp: %lld",
                 mStartTimeUs, sampleRate, timestampUs);
 
         buffer->set_range(0, n);
@@ -358,7 +358,7 @@ int16_t AudioSource::getMaxAmplitude() {
     }
     int16_t value = mMaxAmplitude;
     mMaxAmplitude = 0;
-    LOGV("max amplitude since last call: %d", value);
+    ALOGV("max amplitude since last call: %d", value);
     return value;
 }
 

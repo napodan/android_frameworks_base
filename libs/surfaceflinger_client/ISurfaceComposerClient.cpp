@@ -162,7 +162,7 @@ status_t BnSurfaceComposerClient::onTransact(
          if (!checkCallingPermission(
                  String16("android.permission.ACCESS_SURFACE_FLINGER")))
          {
-             LOGE("Permission Denial: "
+             ALOGE("Permission Denial: "
                      "can't openGlobalTransaction pid=%d, uid=%d", pid, uid);
              return PERMISSION_DENIED;
          }
