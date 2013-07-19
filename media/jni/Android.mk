@@ -21,7 +21,11 @@ LOCAL_SHARED_LIBRARIES := \
     libcutils \
     libsurfaceflinger_client \
     libstagefright \
+    libexif \
     libcamera_client
+
+LOCAL_REQUIRED_MODULES := \
+    libexif_jni
 
 LOCAL_STATIC_LIBRARIES :=
 
