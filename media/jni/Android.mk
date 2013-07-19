@@ -24,10 +24,14 @@ LOCAL_SHARED_LIBRARIES := \
     libcutils \
     libsurfaceflinger_client \
     libstagefright \
+    libexif \
     libcamera_client \
 	libsqlite
 
 LOCAL_STATIC_LIBRARIES := libmtp libusbhost
+
+LOCAL_REQUIRED_MODULES := \
+    libexif_jni
 
 LOCAL_C_INCLUDES += \
     external/tremor/Tremor \
