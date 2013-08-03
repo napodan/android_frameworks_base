@@ -883,8 +883,6 @@ com.ibm.icu4jni.text.NativeBreakIterator
 com.ibm.icu4jni.text.NativeCollation
 com.ibm.icu4jni.text.NativeDecimalFormat
 com.ibm.icu4jni.text.NativeDecimalFormat$FieldPositionIterator
-com.ibm.icu4jni.util.ICU
-com.ibm.icu4jni.util.LocaleData
 dalvik.system.BlockGuard
 dalvik.system.BlockGuard$1
 dalvik.system.BlockGuard$2
@@ -1382,6 +1380,8 @@ javax.net.ssl.X509KeyManager
 javax.net.ssl.X509TrustManager
 javax.security.auth.x500.X500Principal
 libcore.base.Objects
+libcore.icu.ICU
+libcore.icu.LocaleData
 libcore.icu.NativeIDN
 libcore.icu.NativeNormalizer
 libcore.icu.NativePluralRules
