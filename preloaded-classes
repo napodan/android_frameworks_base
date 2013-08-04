@@ -1376,7 +1376,6 @@ javax.net.ssl.X509ExtendedKeyManager
 javax.net.ssl.X509KeyManager
 javax.net.ssl.X509TrustManager
 javax.security.auth.x500.X500Principal
-libcore.base.Objects
 libcore.icu.ICU
 libcore.icu.LocaleData
 libcore.icu.NativeBreakIterator
@@ -1388,6 +1387,7 @@ libcore.icu.NativePluralRules
 libcore.icu.TimeZones
 libcore.icu.TimeZones$CachedTimeZones
 libcore.io.IoUtils
+libcore.util.Objects
 org.apache.commons.logging.Log
 org.apache.commons.logging.LogFactory
 org.apache.commons.logging.impl.Jdk14Logger
