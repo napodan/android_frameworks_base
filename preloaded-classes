@@ -879,10 +879,7 @@ com.ibm.icu4jni.charset.CharsetEncoderICU
 com.ibm.icu4jni.charset.CharsetICU
 com.ibm.icu4jni.charset.NativeConverter
 com.ibm.icu4jni.common.ErrorCode
-com.ibm.icu4jni.text.NativeBreakIterator
 com.ibm.icu4jni.text.NativeCollation
-com.ibm.icu4jni.text.NativeDecimalFormat
-com.ibm.icu4jni.text.NativeDecimalFormat$FieldPositionIterator
 dalvik.system.BlockGuard
 dalvik.system.BlockGuard$1
 dalvik.system.BlockGuard$2
@@ -1382,6 +1379,9 @@ javax.security.auth.x500.X500Principal
 libcore.base.Objects
 libcore.icu.ICU
 libcore.icu.LocaleData
+libcore.icu.NativeBreakIterator
+libcore.icu.NativeDecimalFormat
+libcore.icu.NativeDecimalFormat$FieldPositionIterator
 libcore.icu.NativeIDN
 libcore.icu.NativeNormalizer
 libcore.icu.NativePluralRules
