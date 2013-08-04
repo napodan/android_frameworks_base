@@ -1386,8 +1386,17 @@ libcore.icu.NativeNormalizer
 libcore.icu.NativePluralRules
 libcore.icu.TimeZones
 libcore.icu.TimeZones$CachedTimeZones
+libcore.io.BufferIterator
 libcore.io.IoUtils
+libcore.util.BasicLruCache
+libcore.util.CollectionUtils
+libcore.util.CollectionUtils$1
+libcore.util.CollectionUtils$1$1
+libcore.util.EmptyArray
+libcore.util.MutableInt
+libcore.util.MutableLong
 libcore.util.Objects
+libcore.util.ZoneInfo
 org.apache.commons.logging.Log
 org.apache.commons.logging.LogFactory
 org.apache.commons.logging.impl.Jdk14Logger
