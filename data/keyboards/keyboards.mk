@@ -12,19 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-LOCAL_PATH:= $(call my-dir)
+# Warning: this is actually a product definition, to be inherited from
 
-include $(CLEAR_VARS)
+include $(LOCAL_PATH)/common.mk
 
-LOCAL_MODULE_TAGS := tests
+PRODUCT_COPY_FILES := $(foreach file,$(keylayouts),\
+    frameworks/base/data/keyboards/$(file):system/usr/keylayout/$(file))
 
-LOCAL_SRC_FILES := $(call all-java-files-under, src) \
-				   ../../../coretests/src/android/app/DownloadManagerBaseTest.java
+PRODUCT_COPY_FILES += $(foreach file,$(keycharmaps),\
+    frameworks/base/data/keyboards/$(file):system/usr/keychars/$(file))
 
-LOCAL_STATIC_JAVA_LIBRARIES := android-common frameworks-core-util-lib
-LOCAL_JAVA_LIBRARIES := android.test.runner
-LOCAL_SDK_VERSION := current
-
-LOCAL_PACKAGE_NAME := DownloadManagerTestApp
-
-include $(BUILD_PACKAGE)
+PRODUCT_COPY_FILES += $(foreach file,$(keyconfigs),\
+    frameworks/base/data/keyboards/$(file):system/usr/idc/$(file))
