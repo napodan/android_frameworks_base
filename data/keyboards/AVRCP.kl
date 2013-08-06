@@ -12,19 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-LOCAL_PATH:= $(call my-dir)
+# Key layout used for Bluetooth AVRCP support.
 
-include $(CLEAR_VARS)
-
-LOCAL_MODULE_TAGS := tests
-
-LOCAL_SRC_FILES := $(call all-java-files-under, src) \
-				   ../../../coretests/src/android/app/DownloadManagerBaseTest.java
-
-LOCAL_STATIC_JAVA_LIBRARIES := android-common frameworks-core-util-lib
-LOCAL_JAVA_LIBRARIES := android.test.runner
-LOCAL_SDK_VERSION := current
-
-LOCAL_PACKAGE_NAME := DownloadManagerTestApp
-
-include $(BUILD_PACKAGE)
+key 200   MEDIA_PLAY          WAKE
+key 201   MEDIA_PAUSE         WAKE
+key 166   MEDIA_STOP          WAKE
+key 163   MEDIA_NEXT          WAKE
+key 165   MEDIA_PREVIOUS      WAKE
+key 168   MEDIA_REWIND        WAKE
+key 208   MEDIA_FAST_FORWARD  WAKE

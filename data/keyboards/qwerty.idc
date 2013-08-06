@@ -12,19 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-LOCAL_PATH:= $(call my-dir)
+#
+# Emulator keyboard configuration file #1.
+#
 
-include $(CLEAR_VARS)
+touch.deviceType = touchScreen
+touch.orientationAware = 1
 
-LOCAL_MODULE_TAGS := tests
+keyboard.layout = qwerty
+keyboard.characterMap = qwerty
+keyboard.orientationAware = 1
+keyboard.builtIn = 1
 
-LOCAL_SRC_FILES := $(call all-java-files-under, src) \
-				   ../../../coretests/src/android/app/DownloadManagerBaseTest.java
-
-LOCAL_STATIC_JAVA_LIBRARIES := android-common frameworks-core-util-lib
-LOCAL_JAVA_LIBRARIES := android.test.runner
-LOCAL_SDK_VERSION := current
-
-LOCAL_PACKAGE_NAME := DownloadManagerTestApp
-
-include $(BUILD_PACKAGE)
+cursor.mode = navigation
+cursor.orientationAware = 1
