@@ -1,4 +1,4 @@
-# Copyright (C) 2010 The Android Open Source Project
+# Copyright (C) 2013 The Android Open Source Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,19 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-LOCAL_PATH:= $(call my-dir)
+# MadCatz FPS Pro
 
-include $(CLEAR_VARS)
+key 304 BUTTON_A
+key 305 BUTTON_B
+key 307 BUTTON_X
+key 308 BUTTON_Y
+key 310 BUTTON_L1
+key 311 BUTTON_R1
+key 315 BUTTON_START
+key 314 BACK
+key 316 HOME
+key 317 BUTTON_THUMBL
+key 318 BUTTON_THUMBR
 
-LOCAL_MODULE_TAGS := tests
-
-LOCAL_SRC_FILES := $(call all-java-files-under, src) \
-				   ../../../coretests/src/android/app/DownloadManagerBaseTest.java
-
-LOCAL_STATIC_JAVA_LIBRARIES := android-common frameworks-core-util-lib
-LOCAL_JAVA_LIBRARIES := android.test.runner
-LOCAL_SDK_VERSION := current
-
-LOCAL_PACKAGE_NAME := DownloadManagerTestApp
-
-include $(BUILD_PACKAGE)
+axis 0x00 X
+axis 0x01 Y
+axis 0x03 Z
+axis 0x04 RZ
+axis 0x05 RTRIGGER
+axis 0x02 LTRIGGER
+axis 0x10 HAT_X
+axis 0x11 HAT_Y
