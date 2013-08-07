@@ -168,6 +168,7 @@ LOCAL_C_INCLUDES += \
 LOCAL_SHARED_LIBRARIES := \
 	libexpat \
 	libnativehelper \
+	liblog \
 	libcutils \
 	libutils \
 	libbinder \

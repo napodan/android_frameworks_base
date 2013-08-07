@@ -25,12 +25,13 @@ endif
 
 LOCAL_C_INCLUDES += $(TOP)/frameworks/base/include/media/stagefright/openmax
 
-LOCAL_SHARED_LIBRARIES :=       \
-        libbinder               \
-        libmedia                \
-        libutils                \
-        libui                   \
-        libcutils               \
+LOCAL_SHARED_LIBRARIES :=               \
+        libbinder                       \
+        libmedia                        \
+        libutils                        \
+        liblog                          \
+        libui                           \
+        libcutils                       \
         libstagefright_color_conversion
 
 ifneq ($(BUILD_WITHOUT_PV),true)

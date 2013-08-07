@@ -18,13 +18,14 @@ LOCAL_C_INCLUDES += \
 
 LOCAL_SHARED_LIBRARIES := \
     libandroid_runtime \
-	libcutils \
-	libhardware \
-	libhardware_legacy \
-	libnativehelper \
+    libcutils \
+    liblog \
+    libhardware \
+    libhardware_legacy \
+    libnativehelper \
     libsystem_server \
-	libutils \
-	libui \
+    libutils \
+    libui \
     libsurfaceflinger_client
 
 ifeq ($(TARGET_SIMULATOR),true)

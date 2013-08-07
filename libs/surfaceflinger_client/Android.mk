@@ -15,7 +15,8 @@ LOCAL_SHARED_LIBRARIES := \
 	libutils \
 	libbinder \
 	libhardware \
-	libui
+	libui \
+	liblog \
 
 LOCAL_MODULE:= libsurfaceflinger_client
 
