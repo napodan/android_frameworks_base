@@ -20,6 +20,7 @@ LOCAL_SHARED_LIBRARIES := \
         libbinder         \
         libmedia          \
         libutils          \
+        liblog            \
         libcutils         \
         libui             \
         libsonivox        \

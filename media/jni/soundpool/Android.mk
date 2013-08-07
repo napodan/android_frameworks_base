@@ -7,6 +7,7 @@ LOCAL_SRC_FILES:= \
 	SoundPoolThread.cpp
 
 LOCAL_SHARED_LIBRARIES := \
+	liblog \
 	libcutils \
 	libutils \
 	libbinder \

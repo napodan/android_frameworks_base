@@ -59,7 +59,8 @@ LOCAL_SHARED_LIBRARIES := \
         libsonivox        \
         libvorbisidec     \
         libsurfaceflinger_client \
-        libcamera_client
+        libcamera_client \
+        liblog \
 
 LOCAL_STATIC_LIBRARIES := \
         libstagefright_aacdec \

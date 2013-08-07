@@ -10,7 +10,8 @@ LOCAL_C_INCLUDES := \
     $(call include-path-for, system-core)/cutils
 
 LOCAL_SHARED_LIBRARIES := \
-    libcutils
+    libcutils \
+    liblog \
 
 LOCAL_STATIC_LIBRARIES :=
 

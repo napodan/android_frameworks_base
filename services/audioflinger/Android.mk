@@ -1,7 +1,5 @@
 LOCAL_PATH:= $(call my-dir)
 
-#AUDIO_POLICY_TEST := true
-#ENABLE_AUDIO_DUMP := true
 
 include $(CLEAR_VARS)
 
@@ -24,6 +22,7 @@ endif
 LOCAL_SHARED_LIBRARIES := \
     libcutils \
     libutils \
+    liblog \
     libbinder \
     libmedia \
     libhardware_legacy
@@ -83,8 +82,10 @@ LOCAL_SRC_FILES:=               \
     AudioPolicyService.cpp
 
 LOCAL_SHARED_LIBRARIES := \
+    libdl \
     libcutils \
     libutils \
+    liblog \
     libbinder \
     libmedia \
     libhardware_legacy \
@@ -95,12 +96,6 @@ ifeq ($(strip $(BOARD_USES_GENERIC_AUDIO)),true)
   LOCAL_CFLAGS += -DGENERIC_AUDIO
 else
   LOCAL_SHARED_LIBRARIES += libaudio libaudiopolicy
-endif
-
-ifeq ($(TARGET_SIMULATOR),true)
- LOCAL_LDLIBS += -ldl
-else
- LOCAL_SHARED_LIBRARIES += libdl
 endif
 
 

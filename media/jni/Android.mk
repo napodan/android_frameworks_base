@@ -21,6 +21,7 @@ LOCAL_SHARED_LIBRARIES := \
     libmedia \
     libskia \
     libui \
+    liblog \
     libcutils \
     libsurfaceflinger_client \
     libstagefright \

@@ -21,14 +21,14 @@ LOCAL_PATH:= $(call my-dir)
 include $(CLEAR_VARS)
 LOCAL_SRC_FILES := keystore.c
 LOCAL_C_INCLUDES := external/openssl/include
-LOCAL_SHARED_LIBRARIES := libcutils libcrypto
+LOCAL_SHARED_LIBRARIES := libcutils libcrypto liblog
 LOCAL_MODULE:= keystore
 include $(BUILD_EXECUTABLE)
 
 include $(CLEAR_VARS)
 LOCAL_SRC_FILES := keystore_cli.c
 LOCAL_C_INCLUDES := external/openssl/include
-LOCAL_SHARED_LIBRARIES := libcutils libcrypto
+LOCAL_SHARED_LIBRARIES := libcutils libcrypto liblog
 LOCAL_MODULE:= keystore_cli
 LOCAL_MODULE_TAGS := debug
 include $(BUILD_EXECUTABLE)

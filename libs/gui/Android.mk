@@ -10,11 +10,12 @@ LOCAL_SRC_FILES:= \
 	SensorManager.cpp
 
 LOCAL_SHARED_LIBRARIES := \
+	libbinder \
 	libcutils \
 	libutils \
-	libbinder \
 	libhardware \
-	libhardware_legacy
+	libhardware_legacy \
+	liblog
 
 LOCAL_MODULE:= libgui
 
