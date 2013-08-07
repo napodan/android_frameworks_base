@@ -5,17 +5,11 @@ LOCAL_SRC_FILES:= \
 	bootanimation_main.cpp \
 	BootAnimation.cpp
 
-# need "-lrt" on Linux simulator to pick up clock_gettime
-ifeq ($(TARGET_SIMULATOR),true)
-	ifeq ($(HOST_OS),linux)
-		LOCAL_LDLIBS += -lrt
-	endif
-endif
-
 LOCAL_CFLAGS += -DGL_GLEXT_PROTOTYPES -DEGL_EGLEXT_PROTOTYPES
 
 LOCAL_SHARED_LIBRARIES := \
 	libcutils \
+	liblog \
 	libutils \
 	libbinder \
     libui \

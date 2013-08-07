@@ -35,17 +35,11 @@ LOCAL_SRC_FILES:= \
     fixedfft.cpp.arm
 
 LOCAL_SHARED_LIBRARIES := \
-	libui libcutils libutils libbinder libsonivox libicuuc libexpat libsurfaceflinger_client libcamera_client
+	libui liblog libcutils libutils libbinder libsonivox libicuuc libexpat \
+        libcamera_client libsurfaceflinger_client \
+        libdl
 
 LOCAL_MODULE:= libmedia
-
-ifeq ($(TARGET_OS)-$(TARGET_SIMULATOR),linux-true)
-LOCAL_LDLIBS += -ldl -lpthread
-endif
-
-ifneq ($(TARGET_SIMULATOR),true)
-LOCAL_SHARED_LIBRARIES += libdl
-endif
 
 LOCAL_C_INCLUDES := \
     $(JNI_H_INCLUDE) \

@@ -23,7 +23,8 @@ LOCAL_SHARED_LIBRARIES := \
     libmediaplayerservice \
 	libutils \
 	libbinder \
-	libcutils
+	libcutils \
+	liblog
 
 LOCAL_MODULE:= libsystem_server
 

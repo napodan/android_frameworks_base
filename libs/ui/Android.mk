@@ -25,18 +25,19 @@ LOCAL_SRC_FILES:= \
 
 LOCAL_SHARED_LIBRARIES := \
 	libcutils \
-	libutils \
 	libEGL \
 	libbinder \
 	libpixelflinger \
 	libhardware \
-	libhardware_legacy
-
-LOCAL_MODULE:= libui
+	libhardware_legacy \
+	libutils \
+	liblog
 
 ifeq ($(TARGET_SIMULATOR),true)
     LOCAL_LDLIBS += -lpthread
 endif
+
+LOCAL_MODULE:= libui
 
 include $(BUILD_SHARED_LIBRARY)
 

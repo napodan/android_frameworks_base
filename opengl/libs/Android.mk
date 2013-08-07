@@ -13,7 +13,7 @@ LOCAL_SRC_FILES:= 	       \
 	EGL/Loader.cpp 	       \
 #
 
-LOCAL_SHARED_LIBRARIES += libcutils libutils
+LOCAL_SHARED_LIBRARIES += libcutils libutils liblog
 LOCAL_LDLIBS := -lpthread -ldl
 LOCAL_MODULE:= libEGL
 

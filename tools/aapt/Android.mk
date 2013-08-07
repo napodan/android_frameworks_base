@@ -38,7 +38,8 @@ LOCAL_STATIC_LIBRARIES := \
 	libutils \
 	libcutils \
 	libexpat \
-	libpng
+	libpng \
+	liblog
 
 ifeq ($(HOST_OS),linux)
 LOCAL_LDLIBS += -lrt -lpthread
