@@ -13,6 +13,7 @@ LOCAL_SHARED_LIBRARIES := \
 	libnativehelper \
 	libmedia \
 	libutils \
+	liblog \
 	libcutils
 
 ifeq ($(TARGET_SIMULATOR),true)

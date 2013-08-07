@@ -2,8 +2,6 @@
 # OpenGL ES JNI sample
 # This makefile builds both an activity and a shared library.
 #########################################################################
-ifneq ($(TARGET_SIMULATOR),true) # not 64 bit clean
-
 TOP_LOCAL_PATH:= $(call my-dir)
 
 # Build activity
@@ -39,6 +37,7 @@ LOCAL_SRC_FILES:= \
 
 LOCAL_SHARED_LIBRARIES := \
 	libutils \
+	liblog \
 	libEGL \
 	libGLESv1_CM
 
@@ -46,8 +45,6 @@ LOCAL_MODULE := libgljni
 
 LOCAL_ARM_MODE := arm
 
-LOCAL_PRELINK_MODULE := false
+
 
 include $(BUILD_SHARED_LIBRARY)
-
-endif # TARGET_SIMULATOR

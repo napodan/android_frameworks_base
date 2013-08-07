@@ -20,14 +20,15 @@ ifeq ($(TARGET_OS)-$(TARGET_SIMULATOR),linux-true)
 LOCAL_LDLIBS += -ldl -lpthread
 endif
 
-LOCAL_SHARED_LIBRARIES :=     		\
-	libcutils             			\
+LOCAL_SHARED_LIBRARIES :=     \
+    libbinder                   \
+    libcamera_client            \
+    libcutils                   \
+    liblog                      \
 	libutils              			\
-	libbinder             			\
 	libvorbisidec         			\
 	libsonivox            			\
 	libmedia              			\
-	libcamera_client      			\
 	libandroid_runtime    			\
 	libstagefright        			\
 	libstagefright_omx    			\

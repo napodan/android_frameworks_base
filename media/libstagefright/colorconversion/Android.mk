@@ -14,6 +14,7 @@ LOCAL_SHARED_LIBRARIES :=       \
         libutils                \
         libui                   \
         libcutils				\
+	liblog \
         libsurfaceflinger_client\
         libcamera_client
 

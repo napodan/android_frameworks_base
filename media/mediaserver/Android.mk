@@ -1,4 +1,3 @@
-ifndef TARGET_PROVIDES_MEDIASERVER
 LOCAL_PATH:= $(call my-dir)
 include $(CLEAR_VARS)
 
@@ -10,6 +9,7 @@ LOCAL_SHARED_LIBRARIES := \
 	libcameraservice \
 	libmediaplayerservice \
 	libutils \
+	liblog \
 	libbinder
 
 base := $(LOCAL_PATH)/../..
@@ -22,4 +22,3 @@ LOCAL_C_INCLUDES := \
 LOCAL_MODULE:= mediaserver
 
 include $(BUILD_EXECUTABLE)
-endif

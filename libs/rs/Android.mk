@@ -23,10 +23,6 @@ include $(BUILD_HOST_EXECUTABLE)
 # TODO: This should go into build/core/config.mk
 RSG_GENERATOR:=$(LOCAL_BUILT_MODULE)
 
-
-
-# Build render script lib ====================
-
 include $(CLEAR_VARS)
 LOCAL_MODULE := libRS
 
@@ -68,11 +64,6 @@ rs_generated_source += $(GEN)
 
 LOCAL_GENERATED_SOURCES += $(GEN)
 
-# libRS needs libacc, which isn't 64-bit clean, and so can't be built
-# for the simulator on gHardy, and therefore libRS needs to be excluded
-# from the simulator as well.
-ifneq ($(TARGET_SIMULATOR),true)
-
 LOCAL_SRC_FILES:= \
 	rsAdapter.cpp \
 	rsAllocation.cpp \
@@ -112,7 +103,7 @@ ifeq ($(TARGET_BOARD_PLATFORM), s5pc110)
 	LOCAL_CFLAGS += -DHAS_CONTEXT_PRIORITY
 endif
 
-LOCAL_SHARED_LIBRARIES += libcutils libutils libEGL libGLESv1_CM libGLESv2 libui libbcc
+LOCAL_SHARED_LIBRARIES += liblog libcutils libutils libEGL libGLESv1_CM libGLESv2 libui libbcc
 
 LOCAL_STATIC_LIBRARIES := libft2
 
@@ -129,4 +120,3 @@ include $(addprefix $(LOCAL_PATH)/,$(addsuffix /Android.mk,\
     java \
     ))
 
-endif #simulator
