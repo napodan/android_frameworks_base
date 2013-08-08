@@ -2,20 +2,17 @@
 LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 
-ifneq ($(TARGET_SIMULATOR),true)
-
 # Build the unit tests.
 test_src_files := \
-	ObbFile_test.cpp \
 	Looper_test.cpp \
 	String8_test.cpp
 
 shared_libraries := \
-	libz \
-	liblog \
-	libcutils \
-	libutils \
-	libstlport
+    libz \
+    liblog \
+    libcutils \
+    libutils \
+    libstlport
 
 static_libraries := \
 	libgtest \
@@ -29,8 +26,6 @@ c_includes := \
     external/gtest/include \
     external/stlport/stlport
 
-module_tags := eng tests
-
 $(foreach file,$(test_src_files), \
     $(eval include $(CLEAR_VARS)) \
     $(eval LOCAL_SHARED_LIBRARIES := $(shared_libraries)) \
@@ -41,5 +36,3 @@ $(foreach file,$(test_src_files), \
     $(eval LOCAL_MODULE_TAGS := $(module_tags)) \
     $(eval include $(BUILD_EXECUTABLE)) \
 )
-
-endif
