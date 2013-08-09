@@ -12,28 +12,39 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-LOCAL_PATH:= $(call my-dir)
-include $(CLEAR_VARS)
+# We have to use BUILD_PREBUILT instead of PRODUCT_COPY_FIES,
+# because SMALLER_FONT_FOOTPRINT is only available in Android.mks.
 
-copy_from :=                \
-    DroidSans.ttf           \
-    DroidSans-Bold.ttf      \
-    DroidSansArabic.ttf     \
-    DroidSansHebrew.ttf     \
-    DroidSansThai.ttf       \
-    DroidSerif-Regular.ttf  \
-    DroidSerif-Bold.ttf     \
-    DroidSerif-Italic.ttf   \
-    DroidSerif-BoldItalic.ttf   \
-    DroidSansMono.ttf        \
-    Clockopia.ttf
+LOCAL_PATH := $(call my-dir)
 
-ifneq ($(NO_FALLBACK_FONT),true)
-ifeq ($(filter %system/fonts/DroidSansFallback.ttf,$(PRODUCT_COPY_FILES)),)
-    # if the product makefile has set the the fallback font, don't override it.
-    copy_from += DroidSansFallback.ttf
-endif
-endif
+################################
+# Build the rest font files as prebuilt.
 
-copy_file_pairs := $(foreach cf,$(copy_from),$(LOCAL_PATH)/$(cf):system/fonts/$(cf))
-PRODUCT_COPY_FILES += $(copy_file_pairs)
+# $(1): The source file name in LOCAL_PATH.
+#       It also serves as the module name and the dest file name.
+define build-one-font-module
+$(eval include $(CLEAR_VARS))\
+$(eval LOCAL_MODULE := $(1))\
+$(eval LOCAL_SRC_FILES := $(1))\
+$(eval LOCAL_MODULE_CLASS := ETC)\
+$(eval LOCAL_MODULE_TAGS := optional)\
+$(eval LOCAL_MODULE_PATH := $(TARGET_OUT)/fonts)\
+$(eval include $(BUILD_PREBUILT))
+endef
+
+font_src_files := \
+	Clockopia.ttf \
+	DroidSans-Bold.ttf \
+	DroidSans.ttf \
+	DroidSansArabic.ttf \
+	DroidSansFallback.ttf \
+	DroidSansHebrew.ttf \
+	DroidSansMono.ttf \
+	DroidSansThai.ttf \
+	DroidSerif-Bold.ttf \
+	DroidSerif-BoldItalic.ttf \
+	DroidSerif-Italic.ttf \
+	DroidSerif-Regular.ttf \
+
+
+$(foreach f, $(font_src_files), $(call build-one-font-module, $(f)))
