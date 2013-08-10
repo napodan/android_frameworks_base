@@ -3499,7 +3499,13 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
      * </ul>
      * There are subclasses of LayoutParams for different subclasses of
      * ViewGroup. For example, AbsoluteLayout has its own subclass of
-     * LayoutParams which adds an X and Y value.
+     * LayoutParams which adds an X and Y value.</p>
+     *
+     * <div class="special reference">
+     * <h3>Developer Guides</h3>
+     * <p>For more information about creating user interface layouts, read the
+     * <a href="{@docRoot}guide/topics/ui/declaring-layout.html">XML Layouts</a> developer
+     * guide.</p></div>
      *
      * @attr ref android.R.styleable#ViewGroup_Layout_layout_height
      * @attr ref android.R.styleable#ViewGroup_Layout_layout_width
@@ -3510,6 +3516,7 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
          * FILL_PARENT means that the view wants to be as big as its parent,
          * minus the parent's padding, if any. This value is deprecated
          * starting in API Level 8 and replaced by {@link #MATCH_PARENT}.
+         * @deprecated
          */
         @SuppressWarnings({"UnusedDeclaration"})
         @Deprecated
