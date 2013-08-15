@@ -161,30 +161,6 @@ public final class SQLiteDebug {
      */
     public static native void getPagerStats(PagerStats stats);
 
-    /**
-     * Returns the size of the SQLite heap.
-     * @return The size of the SQLite heap in bytes.
-     */
-    public static native long getHeapSize();
-
-    /**
-     * Returns the amount of allocated memory in the SQLite heap.
-     * @return The allocated size in bytes.
-     */
-    public static native long getHeapAllocatedSize();
-
-    /**
-     * Returns the amount of free memory in the SQLite heap.
-     * @return The freed size in bytes.
-     */
-    public static native long getHeapFreeSize();
-
-    /**
-     * Determines the number of dirty belonging to the SQLite
-     * heap segments of this process.  pages[0] returns the number of
-     * shared pages, pages[1] returns the number of private pages
-     */
-    public static native void getHeapDirtyPages(int[] pages);
 
     private static int sNumActiveCursorsFinalized = 0;
 
