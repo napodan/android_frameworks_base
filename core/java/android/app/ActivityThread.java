@@ -687,7 +687,6 @@ public final class ActivityThread {
             int binderProxyObjectCount = Debug.getBinderProxyObjectCount();
             int binderDeathObjectCount = Debug.getBinderDeathObjectCount();
             int openSslSocketCount = OpenSSLSocketImpl.getInstanceCount();
-            long sqliteAllocated = SQLiteDebug.getHeapAllocatedSize() / 1024;
             SQLiteDebug.PagerStats stats = SQLiteDebug.getDatabaseInfo();
 
             // Check to see if we were called by checkin server. If so, print terse format.
@@ -761,7 +760,6 @@ public final class ActivityThread {
                 pw.print(openSslSocketCount); pw.print(',');
 
                 // SQL
-                pw.print(sqliteAllocated); pw.print(',');
                 pw.print(stats.memoryUsed / 1024); pw.print(',');
                 pw.print(stats.pageCacheOverflo / 1024); pw.print(',');
                 pw.print(stats.largestMemAlloc / 1024); pw.print(',');
@@ -811,8 +809,7 @@ public final class ActivityThread {
             // SQLite mem info
             pw.println(" ");
             pw.println(" SQL");
-            printRow(pw, TWO_COUNT_COLUMNS_DB, "heap:", sqliteAllocated, "MEMORY_USED:",
-                    stats.memoryUsed / 1024);
+            printRow(pw, ONE_COUNT_COLUMN, "MEMORY_USED:", stats.memoryUsed / 1024);
             printRow(pw, TWO_COUNT_COLUMNS_DB, "PAGECACHE_OVERFLOW:",
                     stats.pageCacheOverflo / 1024, "MALLOC_SIZE:", stats.largestMemAlloc / 1024);
             pw.println(" ");
