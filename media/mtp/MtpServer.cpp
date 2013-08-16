@@ -572,7 +572,8 @@ MtpResponseCode MtpServer::doSendObject() {
     mData.reset();
 
     mtp_file_range  mfr;
-    mfr.fd = open(mSendObjectFilePath, O_RDWR | O_CREAT | O_TRUNC);
+    mfr.fd = open(mSendObjectFilePath, O_RDWR | O_CREAT | O_TRUNC, 
+            S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
     if (mfr.fd < 0) {
         return MTP_RESPONSE_GENERAL_ERROR;
     }
