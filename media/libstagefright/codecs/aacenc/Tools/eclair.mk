@@ -63,8 +63,8 @@ CCTINC:=-I$(TCROOTPATH)/system/core/include \
 	-I$(TCROOTPATH)/hardware/libhardware/include \
 	-I$(TCROOTPATH)/hardware/ril/include \
 	-I$(TCROOTPATH)/hardware/libhardware_legacy/include \
-	-I$(TCROOTPATH)/dalvik/libnativehelper/include \
-	-I$(TCROOTPATH)/dalvik/libnativehelper/include/nativehelper \
+	-I$(TCROOTPATH)/libnativehelper/include \
+	-I$(TCROOTPATH)/libnativehelper/include/nativehelper \
 	-I$(TCROOTPATH)/frameworks/base/include \
 	-I$(TCROOTPATH)/frameworks/base/core/jni \
 	-I$(TCROOTPATH)/frameworks/base/libs/audioflinger \

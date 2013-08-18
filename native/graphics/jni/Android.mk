@@ -26,7 +26,7 @@ LOCAL_C_INCLUDES += \
 	external/skia/include/core \
 	frameworks/base/native/include \
 	frameworks/base/core/jni/android/graphics \
-	dalvik/libnativehelper/include/nativehelper
+	libnativehelper/include/nativehelper
 
 LOCAL_MODULE:= libjnigraphics
 
