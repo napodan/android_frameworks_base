@@ -162,7 +162,7 @@ again:
             bufit++;
     }
 
-    *bufit = NULL;
+    *bufit = '\0';
 
     // Simple validation. Must be all ASCII.
     // (we sometimes send non-ASCII UTF-8 in address book, but should
@@ -172,7 +172,7 @@ again:
         IF_ALOGV() ALOG(LOG_VERBOSE, "Bluetooth AT recv", "%s", buf);
     } else {
         ALOGW("Ignoring invalid AT command: %s", buf);
-        buf[0] = NULL;
+        buf[0] = '\0';
     }
 
     return buf;
