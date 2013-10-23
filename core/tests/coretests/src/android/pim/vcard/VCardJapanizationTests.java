@@ -16,11 +16,15 @@
 package android.pim.vcard;
 
 import android.content.ContentValues;
+<<<<<<< HEAD
 import android.pim.vcard.test_utils.ContactEntry;
 import android.pim.vcard.test_utils.ContentValuesBuilder;
 import android.pim.vcard.test_utils.PropertyNodesVerifierElem;
 import android.pim.vcard.test_utils.PropertyNodesVerifierElem.TypeSet;
 import android.pim.vcard.test_utils.VCardTestsBase;
+=======
+import android.pim.vcard.PropertyNodesVerifierElem.TypeSet;
+>>>>>>> 82b8b686521323948cd76946e9bd6d6be019797d
 import android.provider.ContactsContract.CommonDataKinds.Nickname;
 import android.provider.ContactsContract.CommonDataKinds.Note;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
@@ -115,10 +119,17 @@ public class VCardJapanizationTests extends VCardTestsBase {
                 .put(StructuredName.PHONETIC_GIVEN_NAME, "\u305F\u308D\u3046");
 
         final ContentValues contentValues =
+<<<<<<< HEAD
             ("SHIFT_JIS".equalsIgnoreCase(charset) ?
                     (VCardConfig.isVersion21(vcardType) ? mContentValuesForQPAndSJis :
                         mContentValuesForSJis) :
                     (VCardConfig.isVersion21(vcardType) ? mContentValuesForQPAndUtf8 : null));
+=======
+            (VCardConfig.shouldUseShiftJisForExport(vcardType) ?
+                    (VCardConfig.isV30(vcardType) ? mContentValuesForSJis :
+                            mContentValuesForQPAndSJis) :
+                    (VCardConfig.isV30(vcardType) ? null : mContentValuesForQPAndUtf8));
+>>>>>>> 82b8b686521323948cd76946e9bd6d6be019797d
         PropertyNodesVerifierElem elem = mVerifier.addPropertyNodesVerifierElemWithEmptyName();
         elem.addExpectedNode("X-PHONETIC-LAST-NAME", "\u3084\u307E\u3060",
                         contentValues)
@@ -215,11 +226,19 @@ public class VCardJapanizationTests extends VCardTestsBase {
                 .put(StructuredPostal.TYPE, StructuredPostal.TYPE_CUSTOM)
                 .put(StructuredPostal.LABEL, "\u304A\u3082\u3061\u304B\u3048\u308A");
 
+<<<<<<< HEAD
         ContentValues contentValues = ("UTF-8".equalsIgnoreCase(charset) ?
                 (VCardConfig.isVersion21(vcardType) ? mContentValuesForQPAndSJis :
                     mContentValuesForSJis) :
                 (VCardConfig.isVersion21(vcardType) ? mContentValuesForQPAndUtf8 :
                     mContentValuesForUtf8));
+=======
+        ContentValues contentValues = (VCardConfig.shouldUseShiftJisForExport(vcardType) ?
+                (VCardConfig.isV30(vcardType) ? mContentValuesForSJis :
+                    mContentValuesForQPAndSJis) :
+                (VCardConfig.isV30(vcardType) ? mContentValuesForUtf8 :
+                    mContentValuesForQPAndUtf8));
+>>>>>>> 82b8b686521323948cd76946e9bd6d6be019797d
 
         PropertyNodesVerifierElem elem = mVerifier.addPropertyNodesVerifierElemWithEmptyName();
         // LABEL must be ignored in vCard 2.1. As for vCard 3.0, the current behavior is

@@ -61,11 +61,31 @@ public class VNodeBuilder implements VCardInterpreter {
     private boolean mStrictLineBreakParsing;
     
     public VNodeBuilder() {
+<<<<<<< HEAD:core/tests/coretests/src/android/pim/vcard/test_utils/VNodeBuilder.java
         this(VCardConfig.DEFAULT_IMPORT_CHARSET, false);
     }
 
     public VNodeBuilder(String targetCharset, boolean strictLineBreakParsing) {
         mSourceCharset = VCardConfig.DEFAULT_INTERMEDIATE_CHARSET;
+=======
+        this(VCardConfig.DEFAULT_IMPORT_CHARSET, TARGET_CHARSET, false);
+    }
+
+    public VNodeBuilder(String charset, boolean strictLineBreakParsing) {
+        this(null, charset, strictLineBreakParsing);
+    }
+    
+    /**
+     * @hide sourceCharset is temporal. 
+     */
+    public VNodeBuilder(String sourceCharset, String targetCharset,
+            boolean strictLineBreakParsing) {
+        if (sourceCharset != null) {
+            mSourceCharset = sourceCharset;
+        } else {
+            mSourceCharset = VCardConfig.DEFAULT_IMPORT_CHARSET;
+        }
+>>>>>>> 82b8b686521323948cd76946e9bd6d6be019797d:core/tests/coretests/src/android/pim/vcard/VNodeBuilder.java
         if (targetCharset != null) {
             mTargetCharset = targetCharset;
         } else {
