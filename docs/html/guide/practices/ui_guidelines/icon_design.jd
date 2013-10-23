@@ -285,6 +285,852 @@ Generalized Screen Densities</th></tr>
     </tbody>
   </table>
 
+<<<<<<< HEAD
+=======
+<h2 id="launcherstructure">Launcher Icon</h2>
+
+<p>A Launcher icon is a graphic that represents your application on the device’s
+Home screen and in the Launcher window.  </p>
+
+<p>The user opens the Launcher by touching the icon at the bottom of the Home
+screen. The Launcher opens and exposes the icons for all of the installed 
+applications, which are arranged in a grid. The user selects an application and 
+opens it by touching the Launcher icon or by means of any hardware navigation 
+controls available, such as a trackball or d-pad. </p>
+
+<p>The user can also drag an icon out of the Launcher window and onto the Home
+screen itself, for more convenient access to the application. In this case, the
+system displays your application's Launcher icon against the Home screen
+wallpaper, rendering it at the same dimensions as it is rendered inside the
+Launcher.</p>
+
+<p>The system manages the scaling of all Launcher icons so that they rendered at
+a uniform height and width. The actual pixel dimensions of the rendered Launcher
+icons on any given device varies, based on the size and pixel-density
+characteristics of the device's screen. To ensure the best possible rendering
+for your icons, supply versions of the icons that are designed for low, medium,
+and high density screens. For information, see <a
+href="#icon_sets">Providing Density-Specific Icon Sets</a>, above, or <a
+href="#design_tips">Tips for Designers</a>, below.</p>
+
+<h3 id="style">Style</h3>
+
+<p>The launcher icons that you create should follow the general style principles
+below. The guidelines aren't meant to restrict what you can do with your icons,
+but rather they are meant to emphasize the common approaches that your icons can
+share with others on the device. Figure 1, at right, provides examples.  </p>
+
+<div class="figure" style="padding:3em">
+  <img src="{@docRoot}images/icon_design/IconGraphic_Icons_i.png" 
+    width="340">
+  <p class="caption" style="margin:0;padding:0;margin-left:36px;">
+  <strong>Figure 1.</strong> Illustration of Launcher icon style.</p>
+</div>
+
+<p>Clean and contemporary:</p>
+
+<ul>
+  <li>Launcher icons should be current and sometimes quirky, but they should not
+appear aged or ragged. You should avoid overused symbolic metaphors whenever
+possible.</li>
+</ul>
+
+<p>Simple and iconic:</p>
+<ul>
+  <li> Android Launcher icons are caricatural in nature; your icons should be
+highly simplified and exaggerated, so that they are appropriate for use at small
+sizes. Your icons should not be overly complicated. </li>
+  <li>Try featuring a single part of an application as a symbolic
+representation of the whole (for example, the Music icon features a speaker).
+</li>
+  <li>Consider using natural outlines and shapes, both geometric and organic,
+with a realistic (but never photorealistic) rendering. </li>
+  <li>Your icons <em>should not</em> present a cropped view of a larger
+image.</li>
+</ul>
+
+<p>Tactile and textured:</p>
+<ul>
+  <li>Icons should feature non-glossy, textured material. See
+  <a href="#materials-colors">Materials and colors</a>, below, for more
+  information.</li>
+</ul>
+
+<p>Forward-facing and top-lit:</p>
+<ul>
+  <li><em>New for Android 2.0 and later platforms</em>: Android Launcher
+icons should be forward-facing, with very little perspective, and they
+should be top-lit.</li>
+</ul>
+
+Additionally, note all icons will have separate text labels, so rather than
+working to include embedded text in the design of of your icons, focus your
+efforts on the icon's visual distinctiveness and memorability instead.</p>
+
+<p>To look at more examples of the Launcher icons used by built-in Android
+applications, see <a href="#launcherapx">Standard Launcher Icons</a> in the
+Icons Appendix of this document. </p>
+
+
+
+<h3 id="dodonts">Do's and Don'ts</h3>
+
+<p>Below are some "do and don't" examples to consider when creating icons for
+your application.  </p>
+
+
+<table>
+<tr>
+<td style="border:0;width:50%;">
+
+<h4>Android Launcher icons are...</h4>
+
+<ul>
+<li>Modern, minimal, matte, tactile, and textured</li>
+<li>Forward-facing and top-lit, whole, limited in color
+palette</li>
+</ul>
+</td>
+<td style="border:0;width:50%;">
+
+<h4>Android Launcher icons are not...</h4>
+
+<ul>
+<li>Antique, over-complicated, glossy, flat vector</li>
+<li>Rotated, Cropped, Over-Saturated</li>
+</ul>
+</td>
+</tr>
+<tr>
+</table>
+
+<div style="margin-left:2em">
+<img src="{@docRoot}images/icon_design/IconGraphic_DosDonts.png" alt="Side-by-side examples
+of good/bad icon design." />
+<p class="caption" style="margin-top:.5em;">
+<strong>Figure 2.</strong> Side-by-side examples of "do's and don'ts" for
+Android launcher icons. </p>
+</div>
+
+<h3 id="materials-colors">Materials and colors</h3>
+
+<p>Launcher icons should make use of tactile, top-lit, textured materials. Even
+if your icon is just a simple shape, you should try to render in a way that
+makes it appear to be sculpted from some real-world material.</p>
+
+<p>The Launcher icons for the platform's default applications use the set of
+materials shown in Figure 3, below. Your icons can use these materials or you
+can create new materials.</p>
+
+<p>Android launcher icons usually consist of a smaller shape within a
+larger base shape and combine one neutral and one primary color. Icons may
+use a combination of neutral colors but should maintain a fairly high level of
+contrast. Icons should not use more than one primary color per icon, if
+possible.</p>
+
+<p>Launcher icons should use a limited color palette that includes a range
+of neutral and primary colors. The icons should not be over-saturated.</p>
+
+<p>The recommended color palette to use for Launcher icons is shown in Figure 4.
+You can use elements of the palette for both the base color and the highlight
+color. You can use the colors of the palette in conjunction with a
+white-to-black vertical linear gradient overlay. This creates the impression
+that the icon is lit from above and keeps the color less saturated.</p>
+
+
+
+<div style="margin:2em">
+<img src="{@docRoot}images/icon_design/IconGraphic_Materials.png" width="450" style="padding-top:2px;">
+<p class="caption" style="margin-top:.5em;">
+<strong>Figure 3.</strong> Example materials that you can use to create
+your icons.</p>
+</div>
+
+<div style="margin:2em">
+<img src="{@docRoot}images/icon_design/IconGraphic_AccentColor.png" width="450">
+<p class="caption" xstyle="margin-top:.5em;">
+<strong>Figure 4.</strong> Examples of materials combined with base
+and highlight colors from the recommended palette.</p>
+</div>
+
+
+<p>When you combine the materials above with a color highlight from the
+recommended pallete, you can create materials combinations such as those shown
+in Figure 5. To get you started, the <a href="#templatespack">icons pack</a>
+includes a Photoshop template file (<code>Launcher-icon-template.psd</code>)
+that provides all of the default materials, colors, and gradients. </p>
+
+<div style="margin:2em">
+<img src="{@docRoot}images/icon_design/IconGraphic_Colors.png" width="450" style="padding-top:2px;">
+<p class="caption" style="margin-top:.5em;">
+<strong>Figure 5.</strong> Recommended color palette for icons.</p>
+</div>
+
+
+<h3 id="size">Size and positioning</h3>
+
+<p>Launcher icons should use a variety of shapes and forms and those must be
+scaled and positioned to create consistent visual weight.</p>
+
+<p>Launcher icons should use a variety of shapes and forms and those must be
+scaled and positioned inside the asset to create consistent visual weight with
+other </p>
+
+<p>Figure 6 illustrates various ways of positioning the icon inside the asset.
+As detailed in the table below, you should size the icons <em>smaller than the
+actual bounds of the asset</em>, to create a consistent visual weight and to
+allow for the inclusion of shadows. If your icon is square or nearly square, it
+should be scaled even smaller.</p>
+
+
+<ul>
+<li>The bounding box for the full asset is shown in red.</li>
+<li>The recommended bounding box for the actual icon itself is shown in blue.
+The icon box is sized smaller than the full asset box so that there is space to
+include shadows and special icon treatments. </li>
+<li>The recommended bounding box for an icon that is square is shown in orange.
+The box for square icons is smaller than that for other icons to establish a
+consistent visual weight across the two types.</li>
+</ul>
+
+<table style="margin:2.5em 0 1em 0;">
+<tr>
+
+<td style="border:0;padding-left:72;">
+<ol class="nolist">
+  <li>Icon dimensions for high-density (<code>hdpi</code>) screens:</li>
+  <ol class="nolist">
+    <li>Full Asset: 72 x 72 px</li>
+    <li>Icon: 60 x 60 px</li>
+    <li>Square Icon: 56 x 56 px</li>
+  </ol>
+  </li>
+</ol>
+</td>
+<td style="border:0;">
+  <img src="{@docRoot}images/icon_design/IconGraphic_OpticalSize_l.png"
+   style="padding:0;margin:0;" width="450">
+</td>
+</tr>
+<tr>
+<td style="border:0;">
+  <ol class="nolist">
+  <li>Icon Dimensions for medium-density (<code>mdpi</code>) screens:</li>
+    <ol class="nolist">
+      <li>Full Asset: 48 x 48 px</li>
+      <li>Icon: 40 x 40 px</li>
+      <li>Square Icon: 38 x 38 px</li>
+    </ol>
+  </li>
+</ol>
+</td>
+
+<td style="border:0;padding-left:72;">
+ <img src="{@docRoot}images/icon_design/IconGraphic_OpticalSize_s.png"
+ style="padding:0;margin:0;" width="450">
+</td>
+</tr>
+<tr>
+<td style="border:0;">
+  <ol class="nolist">
+  <li>Icon Dimensions for low-density (<code>ldpi</code>) screens:</li>
+    <ol class="nolist">
+      <li>Full Asset: 36 x 36 px</li>
+      <li>Icon: 30 x 30 px</li>
+      <li>Square Icon: 28 x 28 px</li>
+    </ol>
+  </li>
+</ol>
+</td>
+
+<td style="border:0;padding-left:72;">
+ <img src="{@docRoot}images/icon_design/IconGraphic_OpticalSize_ldpi.png"
+ style="padding:0;margin:0;" width="450">
+
+ <p class="caption" style="margin:0;padding:0;margin-top:1.5em;"><strong>Figure
+ 6.</strong> Icon sizing and positioning inside the bounds of the
+ icon asset.</p>
+</td>
+</tr>
+
+</table>
+
+
+
+<h3>Using the Launcher Icon Template</h3>
+
+<p>Included in the Android Icon Templates Pack 2.0 is a template containing
+palettes for default icon materials and colors. The template is provided in .psd
+format for Adobe Photoshop or similar raster image editor. </p>
+
+<p>To get started, first <a
+href="{@docRoot}shareables/icon_templates-v2.0.zip">download the Android Icon
+Templates Pack 2.0 &raquo;</a>. </p>
+
+<p>Once you've downloaded the pack, unzip it and open the file
+<code>Launcher-icon-template.psd</code> in Adobe Photoshop or similar raster
+image editing program. Notice the palettes for materials and colors.  You can
+use as the template as a starting point for creating your Launcher icons. </p>
+
+<p>After you create your icon, you can add a shadow effect according to the
+specification below, as appropriate for the size of image you are creating. </p>
+
+
+<table style="margin:2.5em 0 1em 0;">
+<tr>
+
+<td style="border:0;padding-left:72;">
+  <img src="{@docRoot}images/icon_design/IconGraphic_Shadow_WVGA.png"
+   style="padding:0;margin:0;" width="450">
+</td>
+<td style="border:0;">
+<p style="padding-top:.5em;">Shadow for WVGA (high density) sreens:</p>
+  <ol class="nolist">
+    <li>Effect: Drop Shadow</li>
+    <li>Color: #000000</li>
+    <li>Blend Mode: Multiply</li>
+    <li>Opacity: 75%</li>
+    <li>Angle: 90°</li>
+    <li>Distance: 2px</li>
+    <li>Spread: 0% </li>
+    <li>Size: 5px </li>
+  </ol>
+</li>
+</ol>
+</td>
+</tr>
+<tr>
+<td style="border:0;padding-left:72;">
+  <img src="{@docRoot}images/icon_design/IconGraphic_Shadow_HVGA.png"
+   style="padding:0;margin:0;" width="450">
+</td>
+
+<td style="border:0;">
+<p style="padding-top:.5em;">Shadow for HVGA (medium density) sreens:</p>
+  <ol class="nolist">
+    <li>Effect: Drop Shadow</li>
+    <li>Color: #000000</li>
+    <li>Blend Mode: Multiply</li>
+    <li>Opacity: 75%</li>
+    <li>Angle: 90°</li>
+    <li>Distance: 1px</li>
+    <li>Spread: 0% </li>
+    <li>Size: 3px </li>
+  </ol>
+</li>
+</ol>
+</td>
+</tr>
+</table>
+
+<p>When the shadow is added and the icon is complete, export it as a PNG file
+with transparency enabled, ensuring that you size the icon at 72 x 72px for
+high-density screens and 48 x 48px for medium density screens. For more
+information about why you should provide different Launcher assets for high-,
+medium, and low-density screens, see <a
+href="{@docRoot}guide/practices/screens_support.html">Supporting Multiple
+Screens</a>.</p>
+
+
+
+<h2 id="menustructure">Menu icon</h2>
+
+<p>Menu icons are graphical elements placed in the pop-up menu shown to users
+when they press the Menu button. They are drawn in a flat-front perspective.
+Elements in a menu icon must not be visualized in 3D or perspective.</p>
+
+<h4>Structure</h4>
+
+<ul>
+<li>In order to maintain consistency, all menu icons must use the same
+primary palette and the same effects. For more information, see the
+menu icon <a href="#menupalette">color palette</a>. </li>
+
+<li>Menu icons should include rounded corners, but only when logically
+appropriate. For example, in Figure 7 the logical place for rounded corners is
+the roof and not the rest of the building.</span></li>
+
+<li>All dimensions specified on this page are based on a 48x48 pixel artboard 
+size with a 6 pixel safeframe.</li>
+
+<li>The menu icon effect (the outer glow) described in <a
+href="#menulight">Light, effects, and shadows</a> can overlap the 6px safeframe,
+but only when necessary. The base shape must always stay inside the
+safeframe.</li>
+
+<li><strong>Final art must be exported as a transparent PNG file.</strong></li>
+
+<li>Templates for creating menu icons in Adobe Photoshop are available in the 
+Icon Templates Pack.</li>
+</ul>
+
+<table class="image-caption">
+<tr>
+<td class="image-caption-i" style="padding-right:0">
+  <img src="{@docRoot}images/icon_design/menu_structure.png" alt="A view of menu
+icon structure." />
+</td>
+<td class="image-caption-c">
+  <div class="caption grad-rule-top">
+    <p><strong>Figure 7. </strong>Safeframe and corner-rounding for menu
+icons. Icon size is 48x48.</p>
+  </div>
+</td>
+</tr>
+</table>
+
+
+<h4 id="menulight">Light, effects, and shadows</h4>
+
+<p>Menu icons are flat and pictured face on. A slight deboss and some other
+effects, which are shown below, are used to create depth.</p>
+
+<table class="image-caption">
+<tr>
+<td class="image-caption-i">
+  <img src="{@docRoot}images/icon_design/menu_light.png" alt="A view of light, effects, and shadows for menu icons."/>
+</td>
+<td class="image-caption-c">
+  <div class="caption grad-rule-top">
+    <p><strong>Figure 8. </strong>Light, effects, and shadows for menu icons.</p>
+    <div class="image-caption-nested">
+    <table style="margin-top:0;">
+    <tr><td style="padding-right:1em"><em>1.</em></td><td>Front part:</td><td>Use fill gradient from primary color palette</td></tr>
+    <tr><td><em>2.</em></td><td>Inner shadow:</td><td>black | 20 % opacity<br>angle 90° | distance 2px<br>size 2px</td></tr>
+    <tr><td><em>3.</em></td><td>Outer glow:</td><td>white | 55% opacity <br>spread 10% | size 3px</td></tr>
+    <tr><td><em>5.</em></td><td>Inner bevel:</td><td>depth 1% | direction down size 0px<br>angle 90° | altitude 10°<br>highlight white 70% opacity<br>shadow black 25% opacity</td></tr>
+    </table>
+    </div>
+  </div>
+</td>
+</tr>
+</table>
+
+<table style="margin:0px;padding:0px;">
+<tr>
+<td style="border:0;width:350px;">
+
+<h4 id="menupalette">Color palette</h4>
+
+<table style="margin:0px;padding:0px;">
+<tr>
+<td class="image-caption-i"><img src="{@docRoot}images/icon_design/menu_palette_white.png" alt="Color palette, white" style="margin:.5em 0 0 0;" /></td>
+<td class="image-caption-c" style="padding-top:.5em;">White<br>r 0 | g 0 | b 0<br>Used for outer glow and bevel highlight.</td>
+</tr>
+
+<tr>
+<td class="image-caption-i"><img src="{@docRoot}images/icon_design/menu_palette_gradient_medium.png" alt="Color palette, medium gradient" style="margin:.5em 0 0 0;" /></td>
+<td class="image-caption-c" style="padding-top:.5em;">Fill gradient<br><em>1:&nbsp;&nbsp;</em>r 163 | g 163 | b 163<br><em>2:&nbsp;&nbsp;</em>r 120 | g 120 | b 120<br>Used as color fill.</td>
+</tr>
+
+<tr>
+<td class="image-caption-i"><img src="{@docRoot}images/icon_design/menu_palette_black.png" alt="Color palette, black" style="margin:.5em 0 0 0;" /></td>
+<td class="image-caption-c" style="padding-top:.5em;">Black<br>r 255 | g 255 | b 255<br>Used for inner shadow and bevel shadow.</td>
+</tr>
+
+</table>
+
+</td>
+
+<td style="border:0;width:350px">
+
+<h4 id="menusteps">Step by step</h4>
+
+<ol>
+<li>Create the basic shapes using a tool like Adobe Illustrator.</li>
+<li>Import the shape into a tool like Adobe Photoshop and scale to fit an image
+of 48x48 px on a transparent background. Mind the safeframe.</li>
+<li>Add the effects seen as described in Figure 8.</li>
+<li>Export the icon at 48x48 as a PNG file with transparency enabled.</li>
+</ol>
+
+</td>
+</tr>
+</table>
+
+<h4 id="dodonts_menu">"Do's and don'ts"</h4>
+
+<p>Below are some "do and don't" examples to consider when creating menu icons for
+your application. </p>
+
+
+<img src="{@docRoot}images/icon_design/do_dont_menuicons.png" style="padding:0;margin:0;padding-right:30%" width="400">
+
+
+<h2 id="statusbarstructure">Status bar icon</h2>
+
+<p>Status bar icons are used to represent notifications from your application in
+the status bar. Graphically, they are very similar to menu icons, but are
+smaller and higher in contrast.</p>
+
+<h4>Structure</h4>
+
+<ul>
+<li>Rounded corners must always be applied to the base shape and to the details
+of a status bar icon shown Figure 9.</li>
+
+<li>All dimensions specified are based on a 25x25 pixel artboard size with a 2
+pixel safeframe.</li>
+
+<li>Status bar icons can overlap the safeframe to the left and right when
+necessary, but must not overlap the safeframe at the top and bottom.</li>
+
+<li><strong>Final art must be exported as a transparent PNG file.</strong></li>
+
+<li>Templates for creating status bar icons using Adobe Photoshop are available
+in the Icon Templates Pack.</li>
+</ul>
+
+<table class="image-caption">
+<tr>
+<td class="image-caption-i" style="padding-right:0">
+  <img src="{@docRoot}images/icon_design/statusbar_structure.png" alt="A view of
+status bar icon structure." />
+</td>
+<td class="image-caption-c">
+  <div class="caption grad-rule-top">
+    <p><strong>Figure 9. </strong>Safeframe and corner-rounding for status bar
+icons. Icon size is 25x25.</p>
+  </div>
+</td>
+</tr>
+</table>
+
+
+<h4 id="statusbarlight">Light, effects, and shadows</h4>
+
+<p>Status bar icons are slightly debossed, high in contrast, and pictured
+face-on to enhance clarity at small sizes.</p>
+
+<table class="image-caption">
+<tr>
+<td class="image-caption-i">
+  <img src="{@docRoot}images/icon_design/statusbar_light.png" alt="A view of
+light, effects, and shadows for status bar icons."/>
+</td>
+<td class="image-caption-c">
+  <div class="caption grad-rule-top">
+    <p><strong>Figure 10. </strong>Light, effects, and shadows for status bar icons.</p>
+    <div class="image-caption-nested">
+    <table style="margin-top:0;">
+    <tr><td style="padding-right:1em"><em>1.</em></td><td>Front part:</td><td>Use fill gradient from primary color palette</td></tr>
+    <tr><td><em>2.</em></td><td>Inner bevel:</td><td>depth 100% | direction down<br>size 0px | angle 90° |<br>altitude 30°<br>highlight white 75% opacity<br>shadow black 75% opacity</td></tr>
+    <tr><td><em>3.</em></td><td>Detail:</td><td>white</td></tr>
+    <tr><td><em>4.</em></td><td>Disabled detail:</td><td>grey gradient from palette<br>+ inner bevel: smooth | depth 1% | direction down | size 0px | angle 117° | <br>altitude 42° | highlight white 70% | no shadow</td></tr>
+    </table>
+    </div>
+  </div>
+</td>
+</tr>
+</table>
+
+<table style="margin:0px;padding:0px;">
+<tr>
+<td style="border:0;width:350px;">
+
+<h4 id="menupalette">Color palette</h4>
+
+<p>Only status bar icons related to the phone function use full color; all other status bar icons should remain monochromatic.</p>
+
+<table style="margin:0px;padding:0px;">
+<tr>
+<td class="image-caption-i"><img src="{@docRoot}images/icon_design/statusbar_palette_white.png" alt="Color palette, white" style="margin:.5em 0 0 0;" /></td>
+<td class="image-caption-c" style="padding-top:.5em;">White<br>r 0 | g 0 | b 0<br>Used for details within the icons and bevel highlight.</td>
+</tr>
+
+<tr>
+<td class="image-caption-i"><img src="{@docRoot}images/icon_design/statusbar_palette_fill.png" alt="Color palette, grey gradient" style="margin:.5em 0 0 0;" /></td>
+<td class="image-caption-c" style="padding-top:.5em;">Grey gradient<br><em>1:&nbsp;&nbsp;</em>r 169 | g 169 | b 169<br><em>2:&nbsp;&nbsp;</em>r 126 | g 126 | b 126<br>Used for disabled details within the icon.</td>
+</tr>
+
+<tr>
+<td class="image-caption-i"><img src="{@docRoot}images/icon_design/statusbar_palette_grey.png" alt="Color palette, fill gradient" style="margin:.5em 0 0 0;" /></td>
+<td class="image-caption-c" style="padding-top:.5em;">Fill gradient<br><em>1:&nbsp;&nbsp;</em>1 r 105 | g 105 | b 105<br><em>2:&nbsp;&nbsp;</em>r 10   | g 10   | b 10<br>Used as color fill.</td>
+</tr>
+
+<tr>
+<td class="image-caption-i"><img src="{@docRoot}images/icon_design/statusbar_palette_black.png" alt="Color palette, black" style="margin:.5em 0 0 0;" /></td>
+<td class="image-caption-c" style="padding-top:.5em;">Black<br>r 255 | g 255 | b 255<br>Used for bevel shadow.</td>
+</tr>
+
+</table>
+
+</td>
+
+<td style="border:0;width:350px">
+
+<h4 id="menusteps">Step by step</h4>
+
+<ol>
+<li>In a tool like Adobe Photoshop, create the base shape within a 25x25 px
+image on a transparent background. Mind the safeframe, and keep the upper and
+lower 2 pixels free.</li>
+<li>Add rounded corners as specified in Figure 9.</li>
+<li>Add light, effects, and shadows as specified in Figure 10.</li>
+<li>Export the icon at 25x25 as a PNG file with transparency enabled.</li>
+</ol>
+
+</td>
+</tr>
+</table>
+
+
+<h4 id="dodonts_status">"Do's and don'ts"</h4>
+
+<p>Below are some "do and don't" examples to consider when creating status bar icons for
+your application. </p>
+
+
+<img src="{@docRoot}images/icon_design/do_dont_statusicons.png" style="padding:0;margin:0;padding-right:30%" width="400">
+
+
+
+<h2 id="tabstructure">Tab icon</h2>
+
+<p>Tab icons are graphical elements used to represent individual tabs in a
+multi-tab interface. Each tab icon has two states: unselected and selected.</p>
+
+<h4>Structure</h4>
+
+<ul>
+<li>Unselected tab icons have the same fill gradient and effects as menu icons,
+but with no outer glow.</li>
+
+<li>Selected tab icons look just like unselected tab icons, but with a fainter
+inner shadow, and have the same front part gradient as dialog icons.</li>
+
+<li>Tab icons have a 1 px safeframe which should only be overlapped for the edge
+of the anti-alias of a round shape.</li>
+
+<li>All dimensions specified on this page are based on a 32x32 px artboard size.
+Keep 1 px of padding around the bounding box inside the Photoshop template.</li>
+
+<li><strong>Final art must be exported as a 32x32 px transparent PNG
+file.</strong></li>
+
+<li>Templates for creating tab icons in Adobe Photoshop are available in the
+Icon Templates Pack.</li>
+</ul>
+
+<table class="image-caption">
+<tr>
+<td class="image-caption-i" style="padding-right:0">
+  <img src="{@docRoot}images/icon_design/tab_icon_unselected.png" alt="A view of
+unselected tab icon structure." />
+</td>
+<td class="image-caption-c">
+  <div class="caption grad-rule-top">
+    <p><strong>Figure 11. </strong>Safeframe and fill gradient for unselected tab
+icons. Icon size is 32x32.</p>
+  </div>
+</td>
+</tr>
+<tr>
+<td class="image-caption-i" style="padding-right:0">
+  <img src="{@docRoot}images/icon_design/tab_icon_selected.png" alt="A view of
+selected tab icon structure." />
+</td>
+<td class="image-caption-c">
+  <div class="caption grad-rule-top">
+    <p><strong>Figure 12. </strong>Safeframe and fill gradient for tab icons in
+selected state. Icon size is 32x32.</p>
+  </div>
+</td>
+</tr>
+</table>
+
+<h3 id="unselectedtabdetails">Unselected tab icon</h3>
+
+<h4 id="unselectedtablight">Light, effects, and shadows</h4>
+
+<p>Unselected tab icons look just like the selected tab icons, but with a
+fainter inner shadow, and the same front part gradient as the dialog icons.</p>
+
+<table class="image-caption">
+<tr>
+<td class="image-caption-i">
+  <img src="{@docRoot}images/icon_design/tab_unselected_light.png" alt="A view
+of light, effects, and shadows for unselected tab icons."/>
+</td>
+<td class="image-caption-c">
+  <div class="caption grad-rule-top">
+    <p><strong>Figure 13. </strong>Light, effects, and shadows for unselected
+tab icons.</p>
+    <div class="image-caption-nested">
+    <table style="margin-top:0;">
+    <tr><td style="padding-right:1em"><em>1.</em></td><td>Front part:</td><td>gradient overlay | angle 90°<br>bottom color: r 223 | g 223 | b 223<br>top color: r 249 | g 249 | b 249<br>bottom color location: 0%<br>top color location: 75%</td></tr>
+    <tr><td><em>2.</em></td><td>Inner shadow:</td><td>black | 10 % opacity | angle 90° distance 2px | size 2px</td></tr>
+    <tr><td><em>3.</em></td><td>Inner bevel:</td><td>depth 1% | direction down | size 0px | angle 90° | altitude 10°<br>highlight white 70% opacity<br>shadow black 25% opacity</td></tr>
+    </table>
+    </div>
+  </div>
+</td>
+</tr>
+</table>
+
+
+<table style="margin:0px;padding:0px;">
+<tr>
+<td style="border:0;width:350px;">
+
+<h4 id="menusteps">Step by step</h4>
+
+<ol>
+<li>Create the basic shapes using a tool like Adobe Illustrator.</li>
+<li>Import the shape to a tool like Adobe Photoshop and scale to fit an image of
+32x32 px on a transparent background.</li>
+<li>Add the effects seen in Figure 13 for the unselected state filter.</li>
+<li>Export the icon at 32x32 as a PNG file with transparency enabled.</li>
+</ol>
+
+</td>
+</tr>
+</table>
+
+<h3 id="selectedtabdetails">Selected tab icon</h3>
+
+<p>The selected tab icons have the same fill gradient and effects as the menu
+icon, but with no outer glow.</p>
+
+<table class="image-caption">
+<tr>
+<td class="image-caption-i">
+  <img src="{@docRoot}images/icon_design/tab_selected_light.png" alt="A view of
+light, effects, and shadows for selected tab icons."/>
+</td>
+<td class="image-caption-c">
+  <div class="caption grad-rule-top">
+    <p><strong>Figure 14. </strong>Light, effects, and shadows for selected tab
+icons.</p>
+    <div class="image-caption-nested">
+    <table style="margin-top:0;">
+    <tr><td style="padding-right:1em"><em>1.</em></td><td>Front part:</td><td>Use fill gradient from color palette.</td></tr>
+    <tr><td><em>2.</em></td><td>Inner shadow:</td><td>black | 20% opacity | <br>angle 90° | distance 2px | <br>size 2px</td></tr>
+    <tr><td><em>3.</em></td><td>Inner bevel:</td><td>depth 1% | direction down | size 0px | angle 90° | <br>altitude 10°<br>highlight white 70% opacity<br>shadow black 25% opacity</td></tr>
+    </table>
+    </div>
+  </div>
+</td>
+</tr>
+</table>
+
+<table style="margin:0px;padding:0px;">
+<tr>
+<td style="border:0;width:350px;">
+
+<h4 id="menupalette">Color palette</h4>
+
+<table style="margin:0px;padding:0px;">
+<tr>
+<td class="image-caption-i"><img src="{@docRoot}images/icon_design/menu_palette_gradient_medium.png" alt="Color palette, fill gradient" style="margin:.5em 0 0 0;" /></td>
+<td class="image-caption-c" style="padding-top:.5em;">Fill gradient<br><em>1:&nbsp;&nbsp;</em>r 163 | g 163 | b 163<br><em>2:&nbsp;&nbsp;</em>r 120 | g 120 | b 120<br>Used as color fill on unselected tab icons.</td>
+</tr>
+
+</table>
+
+</td>
+
+<td style="border:0;width:350px">
+
+<h4 id="menusteps">Step by step</h4>
+
+<ol>
+<li>Create the basic shape using a tool like Adobe Illustrator.</li>
+<li>Import the shape into a tool like Adobe Photoshop and scale to fit a 32x32
+px artboard with a transparent background. </li>
+<li>Add the effects seen in Figure 14 for the selected state filter.</li>
+<li>Export the icon at 32x32 as a PNG file with transparency enabled.</li>
+</ol>
+
+</td>
+</tr>
+</table>
+
+
+<h2 id="dialogstructure">Dialog icon</h2>
+
+<p>Dialog icons are shown in pop-up dialog boxes that prompt the user for
+interaction. They use a light gradient and inner
+shadow in order to stand out against a dark background.</p>
+
+<h4>Structure</h4>
+
+<ul>
+<li>Dialog icons have a 1 pixel safeframe. The base shape must fit within the
+safeframe, but the anti-alias of a round shape can overlap the safeframe. <span
+class="body-copy"></li>
+
+<li>All dimensions specified on this page are based on a 32x32 pixel artboard size
+in Adobe Photoshop. Keep 1 pixel of padding around the bounding box inside the
+Photoshop template.</li>
+
+<li><strong>Final art must be exported as a transparent PNG file.</strong></li>
+
+<li>Templates for creating dialog icons in Adobe Photoshop are available in the
+Icon Templates Pack.</li>
+</ul>
+
+<table class="image-caption">
+<tr>
+<td class="image-caption-i" style="padding-right:0">
+  <img src="{@docRoot}images/icon_design/dialog_icon.png" alt="A view of dialog
+icon structure." />
+</td>
+<td class="image-caption-c">
+  <div class="caption grad-rule-top">
+    <p><strong>Figure 15. </strong>Safeframe and fill gradient for dialog icons.
+Icon size is 32x32.</p>
+  </div>
+</td>
+</tr>
+</table>
+
+
+<h4 id="dialoglight">Light, effects, and shadows</h4>
+
+<p>Dialog icons are flat and pictured face-on. In order to stand out against a
+dark background, they are built up using a light gradient and inner shadow.</p>
+
+<table class="image-caption">
+<tr>
+<td class="image-caption-i">
+  <img src="{@docRoot}images/icon_design/dialog_light.png" alt="A view of light,
+effects, and shadows for dialog icons."/>
+</td>
+<td class="image-caption-c">
+  <div class="caption grad-rule-top">
+    <p><strong>Figure 16. </strong>Light, effects, and shadows for dialog
+icons.</p>
+    <div class="image-caption-nested">
+    <table style="margin-top:0;">
+    <tr><td style="padding-right:1em"><em>1.</em></td><td>Front part:</td><td>gradient overlay | angle 90°<br>bottom: r 223 | g 223 | b 223<br>top: r 249 | g 249 | b 249<br>bottom color location: 0%<br>top color location: 75%</td></tr>
+    <tr><td><em>2.</em></td><td>Inner shadow:</td><td>black | 25% opacity | <br>angle -90° | distance 1px | size 0px</td></tr>
+    </table>
+    </div>
+  </div>
+</td>
+</tr>
+</table>
+
+
+<table style="margin:0px;padding:0px;">
+<tr>
+<td style="border:0;width:350px;">
+
+<h4 id="menusteps">Step by step</h4>
+
+<ol>
+<li>Create the basic shapes using a tool like Adobe Illustrator.</li>
+<li>Import the shape into a tool like Adobe Photoshop and scale to fit an image
+of 32x32 px on a transparent background. </li>
+<li>Add the effects seen in Figure 16 for the proper filter.</li>
+<li>Export the icon at 32x32 as a PNG file with transparency enabled.</li>
+</ol>
+
+</td>
+</tr>
+</table>
+>>>>>>> 7f9b1fa6719dde575f8ea9858313358733fbd6c9
 
 
 
@@ -294,7 +1140,11 @@ Generalized Screen Densities</th></tr>
 drawable assets for your application. The tips assume that you are using
 Adobe Photoshop or a similar raster and vector image-editing program.</p>
 
+<<<<<<< HEAD
 <h3>Use common naming conventions for icon assets</h3>
+=======
+<h4>Use common naming conventions for icon assets</h4>
+>>>>>>> 7f9b1fa6719dde575f8ea9858313358733fbd6c9
 
 <p>Try to name files so that related assets will group together inside a
 directory when they are sorted alphabetically. In particular, it helps to use a
