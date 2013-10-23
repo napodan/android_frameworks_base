@@ -1183,7 +1183,7 @@
   <public type="attr" name="colorBackgroundCacheHint" id="0x010102ab" />
   <public type="attr" name="dropDownHorizontalOffset" id="0x010102ac" />
   <public type="attr" name="dropDownVerticalOffset" id="0x010102ad" />
-  
+
   <public type="style" name="Theme.Wallpaper" id="0x0103005e" />
   <public type="style" name="Theme.Wallpaper.NoTitleBar" id="0x0103005f" />
   <public type="style" name="Theme.Wallpaper.NoTitleBar.Fullscreen" id="0x01030060" />
@@ -1191,7 +1191,7 @@
   <public type="style" name="Theme.Light.WallpaperSettings" id="0x01030062" />
   <public type="style" name="TextAppearance.SearchResult.Title" id="0x01030063" />
   <public type="style" name="TextAppearance.SearchResult.Subtitle" id="0x01030064" />
-  
+
   <!-- Semi-transparent background that can be used when placing a dark
        themed UI on top of some arbitrary background (such as the
        wallpaper).  This darkens the background sufficiently that the UI
@@ -1199,7 +1199,7 @@
   <public type="drawable" name="screen_background_dark_transparent" id="0x010800a9" />
   <public type="drawable" name="screen_background_light_transparent" id="0x010800aa" />
   <public type="drawable" name="stat_notify_sdcard_prepare" id="0x010800ab" />
-  
+
 <!-- ===============================================================
      Resources added in version 6 of the platform (Eclair 2.0.1).
      =============================================================== -->
@@ -1211,7 +1211,7 @@
   <public type="attr" name="quickContactBadgeStyleSmallWindowSmall" id="0x010102b1" />
   <public type="attr" name="quickContactBadgeStyleSmallWindowMedium" id="0x010102b2" />
   <public type="attr" name="quickContactBadgeStyleSmallWindowLarge" id="0x010102b3" />
-  
+
 <!-- ===============================================================
      Resources added in version 7 of the platform (Eclair MR1).
      =============================================================== -->
@@ -1220,7 +1220,7 @@
   <public type="attr" name="author" id="0x010102b4" />
   <public type="attr" name="autoStart" id="0x010102b5" />
 
-    
+
 <!-- ===============================================================
      Resources added in version 8 of the platform (Eclair MR2).
      =============================================================== -->
@@ -1229,7 +1229,7 @@
   <public type="attr" name="expandableListViewWhiteStyle" id="0x010102b6" />
 
 <!-- ===============================================================
-     Resources proposed for Froyo.
+     Resources added in version 8 of the platform (Froyo / 2.2)
      =============================================================== -->
   <eat-comment />
   <public type="attr" name="installLocation" id="0x010102b7" />
@@ -1241,13 +1241,13 @@
   <public type="attr" name="tabStripEnabled" id="0x010102bd" />
 
   <public type="id" name="custom" id="0x0102002b" />
-    
-  <public type="anim" name="cycle_interpolator" id="0x010a000c" />
 
+  <public type="anim" name="cycle_interpolator" id="0x010a000c" />
+    
 <!-- ===============================================================
-     Resources introduced in Gingerbread.
+     Resources added in version 9 of the platform (Gingerbread / 2.3)
      =============================================================== -->
-     
+  <eat-comment />
   <public type="attr" name="logo" id="0x010102be" />
   <public type="attr" name="xlargeScreens" id="0x010102bf" />
   <public type="attr" name="immersive" id="0x010102c0" />
@@ -1275,5 +1275,23 @@
   <public type="style" name="TextAppearance.StatusBar.Icon" id="0x01030066" />
   <public type="style" name="TextAppearance.StatusBar.EventContent" id="0x01030067" />
   <public type="style" name="TextAppearance.StatusBar.EventContent.Title" id="0x01030068" />
-  
+
+
+<!-- ===============================================================
+     Resources proposed for Gingerbread.
+     =============================================================== -->
+  <eat-comment />
+  <public type="attr" name="adapter" />
+  <public type="attr" name="selection" />
+  <public type="attr" name="sortOrder" />
+  <public type="attr" name="uri" />
+  <public type="attr" name="from" />
+  <public type="attr" name="to" />
+  <public type="attr" name="as" />
+  <public type="attr" name="fromValue" />
+  <public type="attr" name="toValue" />
+  <public type="attr" name="column" />
+  <public type="attr" name="withExpression" />
+  <public type="attr" name="withClass" />
+
 </resources>
