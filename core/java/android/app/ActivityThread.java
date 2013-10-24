@@ -369,7 +369,7 @@ public final class ActivityThread {
         private static final String ONE_COUNT_COLUMN = "%17s %8d";
         private static final String TWO_COUNT_COLUMNS = "%17s %8d %17s %8d";
         private static final String TWO_COUNT_COLUMNS_DB = "%20s %8d %20s %8d";
-        private static final String DB_INFO_FORMAT = "  %8d %8d %14d  %s";
+        private static final String DB_INFO_FORMAT = "  %8d %8d %14s %14d  %s";
 
         // Formatting for checkin service - update version if row format changes
         private static final int ACTIVITY_THREAD_CHECKIN_VERSION = 1;
@@ -769,7 +769,7 @@ public final class ActivityThread {
                 for (int i = 0; i < stats.dbStats.size(); i++) {
                     DbStats dbStats = stats.dbStats.get(i);
                     printRow(pw, DB_INFO_FORMAT, dbStats.pageSize, dbStats.dbSize,
-                            dbStats.lookaside, dbStats.dbName);
+                            dbStats.lookaside, dbStats.cache, dbStats.dbName);
                     pw.print(',');
                 }
 
@@ -820,11 +820,12 @@ public final class ActivityThread {
             int N = stats.dbStats.size();
             if (N > 0) {
                 pw.println(" DATABASES");
-                printRow(pw, "  %8s %8s %14s  %s", "pgsz", "dbsz", "Lookaside(b)", "Dbname");
+                printRow(pw, "  %8s %8s %14s %14s  %s", "pgsz", "dbsz", "Lookaside(b)", "cache",
+                        "Dbname");
                 for (int i = 0; i < N; i++) {
                     DbStats dbStats = stats.dbStats.get(i);
                     printRow(pw, DB_INFO_FORMAT, dbStats.pageSize, dbStats.dbSize,
-                            dbStats.lookaside, dbStats.dbName);
+                            dbStats.lookaside, dbStats.cache, dbStats.dbName);
                 }
             }
 
