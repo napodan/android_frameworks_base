@@ -49,6 +49,7 @@ public class QuickContactBadge extends ImageView implements OnClickListener {
     private Drawable mBadgeBackground;
     private Drawable mNoBadgeBackground;
     private int mSelectedContactsAppTabIndex = -1;
+    private Drawable mDefaultAvatar;
 
     protected String[] mExcludeMimes = null;
 
@@ -117,6 +118,16 @@ public class QuickContactBadge extends ImageView implements OnClickListener {
      */
     public void setMode(int size) {
         mMode = size;
+    }
+    
+    /**
+     * Resets the contact photo to the default state.
+     */
+    public void setImageToDefault() {
+        if (mDefaultAvatar == null) {
+            mDefaultAvatar = getResources().getDrawable(R.drawable.ic_contact_picture);
+        }
+        setImageDrawable(mDefaultAvatar);
     }
 
     /**
