@@ -206,10 +206,7 @@ public class RecurrenceSet {
         }
         
         if (allDay) {
-        	// TODO: also change tzid to be UTC?  that would be consistent, but
-        	// that would not reflect the original timezone value back to the
-        	// server.
-        	start.timezone = Time.TIMEZONE_UTC;
+            start.timezone = Time.TIMEZONE_UTC;
         }
         long millis = start.toMillis(false /* use isDst */);
         values.put(Calendar.Events.DTSTART, millis);
