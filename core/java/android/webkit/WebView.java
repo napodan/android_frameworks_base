@@ -4504,6 +4504,14 @@ public class WebView extends AbsoluteLayout
         super.onDetachedFromWindow();
     }
 
+    @Override
+    protected void onVisibilityChanged(View changedView, int visibility) {
+        super.onVisibilityChanged(changedView, visibility);
+        if (visibility != View.VISIBLE) {
+            dismissZoomControl();
+        }
+    }
+
     /**
      * @deprecated WebView no longer needs to implement
      * ViewGroup.OnHierarchyChangeListener.  This method does nothing now.
