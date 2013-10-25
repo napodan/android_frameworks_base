@@ -45,7 +45,7 @@ public final class BearerData {
     private final static String LOG_TAG = "SMS";
 
     /**
-     * Bearer Data Subparameter Indentifiers
+     * Bearer Data Subparameter Identifiers
      * (See 3GPP2 C.S0015-B, v2.0, table 4.5-1)
      * NOTE: Commented subparameter types are not implemented.
      */
@@ -805,6 +805,7 @@ public final class BearerData {
      * (See 3GPP2 C.R1001-F, v1.0, section 4.5 for layout details)
      *
      * @param bData an instance of BearerData.
+     *
      * @return byte array of raw encoded SMS bearer data.
      */
     public static byte[] encode(BearerData bData) {

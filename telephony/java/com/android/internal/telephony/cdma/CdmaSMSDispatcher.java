@@ -76,6 +76,7 @@ final class CdmaSMSDispatcher extends SMSDispatcher {
      * @param ar AsyncResult passed into the message handler.  ar.result should
      *           be a String representing the status report PDU, as ASCII hex.
      */
+    @Override
     protected void handleStatusReport(AsyncResult ar) {
         Log.d(TAG, "handleStatusReport is a special GSM function, should never be called in CDMA!");
     }
@@ -98,6 +99,7 @@ final class CdmaSMSDispatcher extends SMSDispatcher {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected int dispatchMessage(SmsMessageBase smsb) {
 
         // If sms is null, means there was a parsing error.
@@ -348,6 +350,7 @@ final class CdmaSMSDispatcher extends SMSDispatcher {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected void sendData(String destAddr, String scAddr, int destPort,
             byte[] data, PendingIntent sentIntent, PendingIntent deliveryIntent) {
         SmsMessage.SubmitPdu pdu = SmsMessage.getSubmitPdu(
@@ -356,6 +359,7 @@ final class CdmaSMSDispatcher extends SMSDispatcher {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected void sendText(String destAddr, String scAddr, String text,
             PendingIntent sentIntent, PendingIntent deliveryIntent) {
         SmsMessage.SubmitPdu pdu = SmsMessage.getSubmitPdu(
@@ -364,6 +368,7 @@ final class CdmaSMSDispatcher extends SMSDispatcher {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected void sendMultipartText(String destAddr, String scAddr,
             ArrayList<String> parts, ArrayList<PendingIntent> sentIntents,
             ArrayList<PendingIntent> deliveryIntents) {
@@ -372,7 +377,7 @@ final class CdmaSMSDispatcher extends SMSDispatcher {
          * TODO(cleanup): There is no real code difference between
          * this and the GSM version, and hence it should be moved to
          * the base class or consolidated somehow, provided calling
-         * the proper submitpdu stuff can be arranged.
+         * the proper submit pdu stuff can be arranged.
          */
 
         int refNumber = getNextConcatenatedRef() & 0x00FF;
@@ -445,8 +450,9 @@ final class CdmaSMSDispatcher extends SMSDispatcher {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected void sendSms(SmsTracker tracker) {
-        HashMap map = tracker.mData;
+        HashMap<String, Object> map = tracker.mData;
 
         // byte smsc[] = (byte[]) map.get("smsc");  // unused for CDMA
         byte pdu[] = (byte[]) map.get("pdu");
@@ -457,11 +463,13 @@ final class CdmaSMSDispatcher extends SMSDispatcher {
     }
 
      /** {@inheritDoc} */
+    @Override
     protected void sendMultipartSms (SmsTracker tracker) {
         Log.d(TAG, "TODO: CdmaSMSDispatcher.sendMultipartSms not implemented");
     }
 
     /** {@inheritDoc} */
+    @Override
     protected void acknowledgeLastIncomingSms(boolean success, int result, Message response){
         // FIXME unit test leaves cm == null. this should change
 

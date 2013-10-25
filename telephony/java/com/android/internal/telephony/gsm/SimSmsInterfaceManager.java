@@ -107,6 +107,7 @@ public class SimSmsInterfaceManager extends IccSmsInterfaceManager {
     public void dispose() {
     }
 
+    @Override
     protected void finalize() {
         try {
             super.finalize();
