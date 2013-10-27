@@ -5424,6 +5424,7 @@ public class WebView extends AbsoluteLayout
                 break;
             }
             case MotionEvent.ACTION_UP: {
+                if (!isFocused()) requestFocus();
                 // pass the touch events from UI thread to WebCore thread
                 if (shouldForwardTouchEvent()) {
                     TouchEventData ted = new TouchEventData();
