@@ -697,7 +697,7 @@ public final class BearerData {
     /*
      * TODO(cleanup): CdmaSmsAddress encoding should make use of
      * CdmaSmsAddress.parse provided that DTMF encoding is unified,
-     * and the difference in 4bit vs 8bit is resolved.
+     * and the difference in 4-bit vs. 8-bit is resolved.
      */
 
     private static void encodeCdmaSmsAddress(CdmaSmsAddress addr) throws CodingException {
