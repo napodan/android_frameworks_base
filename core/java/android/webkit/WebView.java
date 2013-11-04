@@ -2397,9 +2397,6 @@ public class WebView extends AbsoluteLayout
         Point p = new Point();
         getGlobalVisibleRect(r, p);
         r.offset(-p.x, -p.y);
-        if (mFindIsUp) {
-            r.bottom -= mFindHeight;
-        }
     }
 
     // Sets r to be our visible rectangle in content coordinates
@@ -2853,10 +2850,6 @@ public class WebView extends AbsoluteLayout
      */
     public void setFindIsUp(boolean isUp) {
         mFindIsUp = isUp;
-        if (isUp) {
-            recordNewContentSize(mContentWidth, mContentHeight + mFindHeight,
-                    false);
-        }
         if (0 == mNativeClass) return; // client isn't initialized
         nativeSetFindIsUp(isUp);
     }
@@ -2869,11 +2862,15 @@ public class WebView extends AbsoluteLayout
         return nativeFindIndex();
     }
 
+    /**
+     * @hide
+     */
+    public boolean getFindIsUp() { return mFindIsUp; }
+
     // Used to know whether the find dialog is open.  Affects whether
     // or not we draw the highlights for matches.
     private boolean mFindIsUp;
 
-    private int mFindHeight;
     // Keep track of the last string sent, so we can search again after an
     // orientation change or the dismissal of the soft keyboard.
     private String mLastFind;
@@ -2948,22 +2945,10 @@ public class WebView extends AbsoluteLayout
         }
         clearMatches();
         setFindIsUp(false);
-        recordNewContentSize(mContentWidth, mContentHeight - mFindHeight,
-                false);
         // Now that the dialog has been removed, ensure that we scroll to a
         // location that is not beyond the end of the page.
         pinScrollTo(mScrollX, mScrollY, false, 0);
         invalidate();
-    }
-
-    /**
-     * @hide
-     */
-    public void setFindDialogHeight(int height) {
-        if (DebugFlags.WEB_VIEW) {
-            Log.v(LOGTAG, "setFindDialogHeight height=" + height);
-        }
-        mFindHeight = height;
     }
 
     /**
@@ -6577,6 +6562,9 @@ public class WebView extends AbsoluteLayout
 
     @Override
     public boolean requestFocus(int direction, Rect previouslyFocusedRect) {
+        // FIXME: If a subwindow is showing find, and the user touches the
+        // background window, it can steal focus.
+        if (mFindIsUp) return false;
         boolean result = false;
         if (inEditingMode()) {
             result = mWebTextView.requestFocus(direction,
@@ -6943,8 +6931,7 @@ public class WebView extends AbsoluteLayout
                     final boolean updateLayout = viewSize.x == mLastWidthSent
                             && viewSize.y == mLastHeightSent;
                     recordNewContentSize(draw.mWidthHeight.x,
-                            draw.mWidthHeight.y
-                            + (mFindIsUp ? mFindHeight : 0), updateLayout);
+                            draw.mWidthHeight.y, updateLayout);
                     if (DebugFlags.WEB_VIEW) {
                         Rect b = draw.mInvalRegion.getBounds();
                         Log.v(LOGTAG, "NEW_PICTURE_MSG_ID {" +
