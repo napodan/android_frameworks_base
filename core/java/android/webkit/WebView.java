@@ -6827,7 +6827,6 @@ public class WebView extends AbsoluteLayout
                     } else if (mPreventDefault != PREVENT_DEFAULT_YES) {
                         mTouchMode = TOUCH_DONE_MODE;
                         performLongClick();
-                        rebuildWebTextView();
                     }
                     break;
                 }
@@ -7161,7 +7160,6 @@ public class WebView extends AbsoluteLayout
                                 if (hitTest != null && hitTest.mType
                                         != HitTestResult.UNKNOWN_TYPE) {
                                     performLongClick();
-                                    rebuildWebTextView();
                                 }
                                 mDeferTouchMode = TOUCH_DONE_MODE;
                                 break;
