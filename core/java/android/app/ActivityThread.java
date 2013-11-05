@@ -2592,6 +2592,9 @@ public final class ActivityThread {
             if (finishing) {
                 r.activity.mFinished = true;
             }
+            if (getNonConfigInstance) {
+                r.activity.mChangingConfigurations = true;
+            }
             if (!r.paused) {
                 try {
                     r.activity.mCalled = false;
