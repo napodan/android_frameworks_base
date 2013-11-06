@@ -16,14 +16,16 @@
 
 package android.app;
 
-import com.android.internal.policy.PolicyManager;
+import java.lang.reflect.Constructor;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 import android.content.ComponentCallbacks;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
-import android.content.Intent;
 import android.content.IIntentSender;
+import android.content.Intent;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
@@ -50,6 +52,7 @@ import android.util.Config;
 import android.util.EventLog;
 import android.util.Log;
 import android.util.SparseArray;
+import android.view.ActionBarView;
 import android.view.ContextMenu;
 import android.view.ContextThemeWrapper;
 import android.view.InflateException;
@@ -72,9 +75,8 @@ import android.widget.AdapterView;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
-import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-import java.util.HashMap;
+import com.android.internal.app.SplitActionBar;
+import com.android.internal.policy.PolicyManager;
 
 /**
  * An activity is a single, focused thing that the user can do.  Almost all
@@ -652,6 +654,7 @@ public class Activity extends ContextThemeWrapper
     /*package*/ boolean mWindowAdded = false;
     /*package*/ boolean mVisibleFromServer = false;
     /*package*/ boolean mVisibleFromClient = true;
+    /*package*/ ActionBar mActionBar = null;
 
     private CharSequence mTitle;
     private int mTitleColor = 0;
@@ -1804,7 +1807,19 @@ public class Activity extends ContextThemeWrapper
     public View findViewById(int id) {
         return getWindow().findViewById(id);
     }
-
+    
+    /**
+     * Retrieve a reference to this activity's ActionBar.
+     * 
+     * <p><em>Note:</em> The ActionBar is initialized when a content view
+     * is set. This function will return null if called before {@link #setContentView}
+     * or {@link #addContentView}.
+     * @return The Activity's ActionBar, or null if it does not have one.
+     */
+    public ActionBar getActionBar() {
+        return mActionBar;
+    }
+    
     /**
      * Finds a fragment that was identified by the given id either when inflated
      * from XML or as the container ID when added in a transaction.  This only
@@ -1816,6 +1831,27 @@ public class Activity extends ContextThemeWrapper
     }
     
     /**
+     * Creates a new ActionBar, locates the inflated ActionBarView,
+     * initializes the ActionBar with the view, and sets mActionBar.
+     */
+    private void initActionBar() {
+        if (!getWindow().hasFeature(Window.FEATURE_ACTION_BAR)) {
+            return;
+        }
+        
+        ActionBarView view = (ActionBarView) findViewById(com.android.internal.R.id.action_bar);
+        if (view != null) {
+        	LinearLayout splitView = 
+        		(LinearLayout) findViewById(com.android.internal.R.id.context_action_bar);
+        	if (splitView != null) {
+        		mActionBar = new SplitActionBar(view, splitView);
+        	}
+        } else {
+            Log.e(TAG, "Could not create action bar; view not found in window decor.");
+        }
+    }
+    
+    /**
      * Set the activity content from a layout resource.  The resource will be
      * inflated, adding all top-level views to the activity.
      * 
@@ -1823,6 +1859,7 @@ public class Activity extends ContextThemeWrapper
      */
     public void setContentView(int layoutResID) {
         getWindow().setContentView(layoutResID);
+        initActionBar();
     }
 
     /**
@@ -1834,6 +1871,7 @@ public class Activity extends ContextThemeWrapper
      */
     public void setContentView(View view) {
         getWindow().setContentView(view);
+        initActionBar();
     }
 
     /**
@@ -1846,6 +1884,7 @@ public class Activity extends ContextThemeWrapper
      */
     public void setContentView(View view, ViewGroup.LayoutParams params) {
         getWindow().setContentView(view, params);
+        initActionBar();
     }
 
     /**
@@ -1857,6 +1896,7 @@ public class Activity extends ContextThemeWrapper
      */
     public void addContentView(View view, ViewGroup.LayoutParams params) {
         getWindow().addContentView(view, params);
+        initActionBar();
     }
 
     /**

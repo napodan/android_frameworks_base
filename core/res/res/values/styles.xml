@@ -875,4 +875,10 @@
         <item name="windowEnterAnimation">@android:anim/fade_in</item>
         <item name="windowExitAnimation">@android:anim/fade_out</item>
     </style>
+
+    <style name="ActionBar">
+        <item name="android:background">@android:drawable/action_bar_background</item>
+        <item name="android:displayOptions">useLogo</item>
+        <item name="android:divider">@android:drawable/action_bar_divider</item>
+    </style>
 </resources>
