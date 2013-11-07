@@ -19,7 +19,7 @@ package com.android.connectivitymanagertest;
 import android.os.Bundle;
 import android.test.InstrumentationTestRunner;
 import android.test.InstrumentationTestSuite;
-import android.util.Log;
+
 import com.android.connectivitymanagertest.functional.ConnectivityManagerMobileTest;
 import com.android.connectivitymanagertest.functional.WifiConnectionTest;
 
@@ -35,6 +35,9 @@ import junit.framework.TestSuite;
  */
 
 public class ConnectivityManagerTestRunner extends InstrumentationTestRunner {
+    public boolean mWifiOnlyFlag = false;
+    public String mTestSsid = null;
+
     @Override
     public TestSuite getAllTests() {
         TestSuite suite = new InstrumentationTestSuite(this);
@@ -53,9 +56,11 @@ public class ConnectivityManagerTestRunner extends InstrumentationTestRunner {
         super.onCreate(icicle);
         String testSSID = (String) icicle.get("ssid");
         if (testSSID != null) {
-            TEST_SSID = testSSID;
+            mTestSsid = testSSID;
+        }
+        String wifiOnlyFlag = (String) icicle.get("wifi-only");
+        if (wifiOnlyFlag != null) {
+            mWifiOnlyFlag = true;
         }
     }
-
-    public String TEST_SSID = null;
 }

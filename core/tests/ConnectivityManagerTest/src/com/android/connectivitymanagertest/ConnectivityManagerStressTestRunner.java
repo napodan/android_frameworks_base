@@ -19,6 +19,7 @@ package com.android.connectivitymanagertest;
 import android.os.Bundle;
 import android.test.InstrumentationTestRunner;
 import android.test.InstrumentationTestSuite;
+
 import com.android.connectivitymanagertest.stress.WifiApStress;
 import com.android.connectivitymanagertest.stress.WifiStressTest;
 
@@ -37,9 +38,11 @@ public class ConnectivityManagerStressTestRunner extends InstrumentationTestRunn
     public int mSoftapIterations = 100;
     public int mScanIterations = 100;
     public int mReconnectIterations = 100;
-    public int mSleepTime = 30 * 1000;  // default sleep time is 30 seconds
+    // sleep time before restart wifi, default is set to 2 minutes
+    public int mSleepTime = 2 * 60 * 1000;
     public String mReconnectSsid = "securenetdhcp";
     public String mReconnectPassword = "androidwifi";
+    public boolean mWifiOnlyFlag = false;
 
     @Override
     public TestSuite getAllTests() {
@@ -97,6 +100,11 @@ public class ConnectivityManagerStressTestRunner extends InstrumentationTestRunn
             if (sleepTime > 0) {
                 mSleepTime = 1000 * sleepTime;
             }
+        }
+
+        String wifiOnlyFlag = (String) icicle.get("wifi-only");
+        if (wifiOnlyFlag != null) {
+            mWifiOnlyFlag = true;
         }
     }
 }

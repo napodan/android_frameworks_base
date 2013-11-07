@@ -16,40 +16,40 @@
 
 package com.android.connectivitymanagertest;
 
-import com.android.connectivitymanagertest.R;
 import android.app.Activity;
 import android.content.Context;
-import android.content.res.Resources;
 import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.Bundle;
-import android.os.IPowerManager;
-import android.os.PowerManager;
-import android.os.ServiceManager;
-import android.os.SystemClock;
-import android.provider.Settings;
-import android.util.Log;
-import android.view.KeyEvent;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import android.widget.LinearLayout;
 import android.net.ConnectivityManager;
-import android.net.DhcpInfo;
 import android.net.NetworkInfo;
 import android.net.NetworkInfo.State;
-
-import android.net.wifi.SupplicantState;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration.KeyMgmt;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.IPowerManager;
+import android.os.Message;
+import android.os.PowerManager;
+import android.os.ServiceManager;
+import android.os.SystemClock;
+import android.os.UserHandle;
+import android.provider.Settings;
+import android.util.Log;
+import android.view.KeyEvent;
+import android.widget.LinearLayout;
+
+import com.android.internal.util.AsyncChannel;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
+
 
 /**
  * An activity registered with connectivity manager broadcast
@@ -60,9 +60,14 @@ public class ConnectivityManagerTestActivity extends Activity {
 
     public static final String LOG_TAG = "ConnectivityManagerTestActivity";
     public static final int WAIT_FOR_SCAN_RESULT = 10 * 1000; //10 seconds
-    public static final int WIFI_SCAN_TIMEOUT = 50 * 1000;
-    public static final int SHORT_TIMEOUT = 5 * 1000;
-    public static final long LONG_TIMEOUT = 50 * 1000;
+    public static final int WIFI_SCAN_TIMEOUT = 50 * 1000; // 50 seconds
+    public static final int SHORT_TIMEOUT = 5 * 1000; // 5 seconds
+    public static final long LONG_TIMEOUT = 50 * 1000;  // 50 seconds
+    public static final long WIFI_CONNECTION_TIMEOUT = 5 * 60 * 1000; // 5 minutes
+    // 2 minutes timer between wifi stop and start
+    public static final long  WIFI_STOP_START_INTERVAL = 2 * 60 * 1000; // 2 minutes
+    // Set ping test timer to be 3 minutes
+    public static final long PING_TIMER = 3 * 60 *1000; // 3 minutes
     public static final int SUCCESS = 0;  // for Wifi tethering state change
     public static final int FAILURE = 1;
     public static final int INIT = -1;
@@ -70,7 +75,6 @@ public class ConnectivityManagerTestActivity extends Activity {
     public ConnectivityReceiver mConnectivityReceiver = null;
     public WifiReceiver mWifiReceiver = null;
     private AccessPointParserHelper mParseHelper = null;
-    public boolean scanResultAvailable = false;
     /*
      * Track network connectivity information
      */
@@ -88,6 +92,7 @@ public class ConnectivityManagerTestActivity extends Activity {
     public String mBssid;
     public String mPowerSsid = "opennet"; //Default power SSID
     private Context mContext;
+    public boolean scanResultAvailable = false;
 
     /*
      * Control Wifi States
@@ -154,6 +159,7 @@ public class ConnectivityManagerTestActivity extends Activity {
             String action = intent.getAction();
             Log.v("WifiReceiver", "onReceive() is calleld with " + intent);
             if (action.equals(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)) {
+                log("scan results are available");
                 notifyScanResult();
             } else if (action.equals(WifiManager.NETWORK_STATE_CHANGED_ACTION)) {
                 mWifiNetworkInfo =
@@ -166,7 +172,6 @@ public class ConnectivityManagerTestActivity extends Activity {
             } else if (action.equals(WifiManager.WIFI_STATE_CHANGED_ACTION)) {
                 mWifiState = intent.getIntExtra(WifiManager.EXTRA_WIFI_STATE,
                                                 WifiManager.WIFI_STATE_UNKNOWN);
-                log("mWifiState: " + mWifiState);
                 notifyWifiState();
             } else if (action.equals(WifiManager.WIFI_AP_STATE_CHANGED_ACTION)) {
                 notifyWifiAPState();
@@ -181,6 +186,24 @@ public class ConnectivityManagerTestActivity extends Activity {
             }
             else {
                 return;
+            }
+        }
+    }
+
+    private class WifiServiceHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case AsyncChannel.CMD_CHANNEL_HALF_CONNECTED:
+                    if (msg.arg1 == AsyncChannel.STATUS_SUCCESSFUL) {
+                        //AsyncChannel in msg.obj
+                    } else {
+                        log("Failed to establish AsyncChannel connection");
+                    }
+                    break;
+                default:
+                    //Ignore
+                    break;
             }
         }
     }
@@ -221,12 +244,17 @@ public class ConnectivityManagerTestActivity extends Activity {
         mCM = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
         // Get an instance of WifiManager
         mWifiManager =(WifiManager)getSystemService(Context.WIFI_SERVICE);
-        initializeNetworkStates();
+        mContext = this;
 
-        if (mWifiManager.isWifiEnabled()) {
-            log("Clear Wifi before we start the test.");
-            removeConfiguredNetworksAndDisableWifi();
+        if (mWifiManager.isWifiApEnabled()) {
+            // if soft AP is enabled, disable it
+            mWifiManager.setWifiApEnabled(null, false);
+            log("Disable soft ap");
         }
+
+        initializeNetworkStates();
+        log("Clear Wifi before we start the test.");
+        removeConfiguredNetworksAndDisableWifi();
         mWifiRegexs = mCM.getTetherableWifiRegexs();
      }
 
@@ -234,25 +262,6 @@ public class ConnectivityManagerTestActivity extends Activity {
         InputStream in = getAssets().open(ACCESS_POINT_FILE);
         mParseHelper = new AccessPointParserHelper(in);
         return mParseHelper.getNetworkConfigurations();
-    }
-
-    public HashMap<String, DhcpInfo> getDhcpInfo() throws Exception{
-        if (mParseHelper == null) {
-            InputStream in = getAssets().open(ACCESS_POINT_FILE);
-            mParseHelper = new AccessPointParserHelper(in);
-        }
-        return mParseHelper.getSsidToDhcpInfoHashMap();
-    }
-
-
-    private void printNetConfig(String[] configuration) {
-        for (int i = 0; i < configuration.length; i++) {
-            if (i == 0) {
-                log("SSID: " + configuration[0]);
-            } else {
-                log("      " + configuration[i]);
-            }
-        }
     }
 
     // for each network type, initialize network states to UNKNOWN, and no verification flag is set
@@ -362,6 +371,8 @@ public class ConnectivityManagerTestActivity extends Activity {
         long startTime = System.currentTimeMillis();
         while (true) {
             if ((System.currentTimeMillis() - startTime) > timeout) {
+                log("waitForNetworkState time out, the state of network type " + networkType +
+                        " is: " + mCM.getNetworkInfo(networkType).getState());
                 if (mCM.getNetworkInfo(networkType).getState() != expectedState) {
                     return false;
                 } else {
@@ -493,19 +504,15 @@ public class ConnectivityManagerTestActivity extends Activity {
         log("Turn screen off");
         PowerManager pm =
             (PowerManager) getSystemService(Context.POWER_SERVICE);
-        pm.goToSleep(SystemClock.uptimeMillis() + 100);
+        pm.goToSleep(SystemClock.uptimeMillis());
     }
 
     // Turn screen on
     public void turnScreenOn() {
         log("Turn screen on");
-        IPowerManager mPowerManagerService = IPowerManager.Stub.asInterface(
-                ServiceManager.getService("power"));;
-        try {
-            mPowerManagerService.userActivityWithForce(SystemClock.uptimeMillis(), false, true);
-        } catch (Exception e) {
-            log(e.toString());
-        }
+        PowerManager pm =
+                (PowerManager) getSystemService(Context.POWER_SERVICE);
+        pm.wakeUp(SystemClock.uptimeMillis());
     }
 
     /**
@@ -513,37 +520,36 @@ public class ConnectivityManagerTestActivity extends Activity {
      * @return true if the ping test is successful, false otherwise.
      */
     public boolean pingTest(String[] pingServerList) {
-        boolean result = false;
         String[] hostList = {"www.google.com", "www.yahoo.com",
                 "www.bing.com", "www.facebook.com", "www.ask.com"};
         if (pingServerList != null) {
             hostList = pingServerList;
         }
-        try {
-            // assume the chance that all servers are down is very small
-            for (int i = 0; i < hostList.length; i++ ) {
-                String host = hostList[i];
-                log("Start ping test, ping " + host);
-                Process p = Runtime.getRuntime().exec("ping -c 10 -w 100 " + host);
-                int status = p.waitFor();
-                if (status == 0) {
-                    // if any of the ping test is successful, return true
-                    result = true;
-                    break;
-                } else {
-                    result = false;
-                    log("ping " + host + " failed.");
+
+        long startTime = System.currentTimeMillis();
+        while ((System.currentTimeMillis() - startTime) < PING_TIMER) {
+            try {
+                // assume the chance that all servers are down is very small
+                for (int i = 0; i < hostList.length; i++ ) {
+                    String host = hostList[i];
+                    log("Start ping test, ping " + host);
+                    Process p = Runtime.getRuntime().exec("ping -c 10 -w 100 " + host);
+                    int status = p.waitFor();
+                    if (status == 0) {
+                        // if any of the ping test is successful, return true
+                        return true;
+                    }
                 }
+            } catch (UnknownHostException e) {
+                log("Ping test Fail: Unknown Host");
+            } catch (IOException e) {
+                log("Ping test Fail:  IOException");
+            } catch (InterruptedException e) {
+                log("Ping test Fail: InterruptedException");
             }
-        } catch (UnknownHostException e) {
-            log("Ping test Fail: Unknown Host");
-        } catch (IOException e) {
-            log("Ping test Fail:  IOException");
-        } catch (InterruptedException e) {
-            log("Ping test Fail: InterruptedException");
         }
-        log("return");
-        return result;
+        // ping test timeout
+        return false;
     }
 
     /**
@@ -568,60 +574,26 @@ public class ConnectivityManagerTestActivity extends Activity {
         String ssid = config.SSID;
         config.SSID = convertToQuotedString(ssid);
 
-        //If Wifi is not enabled, enable it
+        // If Wifi is not enabled, enable it
         if (!mWifiManager.isWifiEnabled()) {
             log("Wifi is not enabled, enable it");
             mWifiManager.setWifiEnabled(true);
-        }
-
-        List<ScanResult> netList = mWifiManager.getScanResults();
-        if (netList == null) {
-            log("scan results are null");
-            // if no scan results are available, start active scan
-            mWifiManager.startScanActive();
-            mScanResultIsAvailable = false;
-            long startTime = System.currentTimeMillis();
-            while (!mScanResultIsAvailable) {
-                if ((System.currentTimeMillis() - startTime) > WIFI_SCAN_TIMEOUT) {
-                    return false;
-                }
-                // wait for the scan results to be available
-                synchronized (this) {
-                    // wait for the scan result to be available
-                    try {
-                        this.wait(WAIT_FOR_SCAN_RESULT);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    if ((mWifiManager.getScanResults() == null) ||
-                            (mWifiManager.getScanResults().size() <= 0)) {
-                        continue;
-                    }
-                    mScanResultIsAvailable = true;
-                }
+            // wait for the wifi state change before start scanning.
+            if (!waitForWifiState(WifiManager.WIFI_STATE_ENABLED, 2*SHORT_TIMEOUT)) {
+                log("wait for WIFI_STATE_ENABLED failed");
+                return false;
             }
         }
 
-        netList = mWifiManager.getScanResults();
-
-        for (int i = 0; i < netList.size(); i++) {
-            ScanResult sr= netList.get(i);
-            if (sr.SSID.equals(ssid)) {
-                log("found " + ssid + " in the scan result list");
-                int networkId = mWifiManager.addNetwork(config);
-                // Connect to network by disabling others.
-                mWifiManager.enableNetwork(networkId, true);
-                mWifiManager.saveConfiguration();
-                mWifiManager.reconnect();
-                break;
-           }
-        }
-
-        List<WifiConfiguration> netConfList = mWifiManager.getConfiguredNetworks();
-        if (netConfList.size() <= 0) {
-            log(ssid + " is not available");
-            return false;
-        }
+        // Save network configuration and connect to network without scanning
+        mWifiManager.connect(config,
+            new WifiManager.ActionListener() {
+                public void onSuccess() {
+                }
+                public void onFailure(int reason) {
+                    log("connect failure " + reason);
+                }
+            });
         return true;
     }
 
@@ -629,28 +601,25 @@ public class ConnectivityManagerTestActivity extends Activity {
      * Disconnect from the current AP and remove configured networks.
      */
     public boolean disconnectAP() {
-        if (mWifiManager.isWifiEnabled()) {
-            //remove the current network Id
-            WifiInfo curWifi = mWifiManager.getConnectionInfo();
-            if (curWifi == null) {
-                return false;
-            }
-            int curNetworkId = curWifi.getNetworkId();
-            mWifiManager.removeNetwork(curNetworkId);
-            mWifiManager.saveConfiguration();
-
-            // remove other saved networks
-            List<WifiConfiguration> netConfList = mWifiManager.getConfiguredNetworks();
-            if (netConfList != null) {
-                log("remove configured network ids");
-                for (int i = 0; i < netConfList.size(); i++) {
-                    WifiConfiguration conf = new WifiConfiguration();
-                    conf = netConfList.get(i);
-                    mWifiManager.removeNetwork(conf.networkId);
-                }
-            }
+        // remove saved networks
+        if (!mWifiManager.isWifiEnabled()) {
+            log("Enabled wifi before remove configured networks");
+            mWifiManager.setWifiEnabled(true);
+            sleep(SHORT_TIMEOUT);
         }
-        mWifiManager.saveConfiguration();
+        List<WifiConfiguration> wifiConfigList = mWifiManager.getConfiguredNetworks();
+        log("size of wifiConfigList: " + wifiConfigList.size());
+        for (WifiConfiguration wifiConfig: wifiConfigList) {
+            log("remove wifi configuration: " + wifiConfig.networkId);
+            int netId = wifiConfig.networkId;
+            mWifiManager.forget(netId, new WifiManager.ActionListener() {
+                    public void onSuccess() {
+                    }
+                    public void onFailure(int reason) {
+                        log("Failed to forget " + reason);
+                    }
+                });
+        }
         return true;
     }
     /**
@@ -665,18 +634,21 @@ public class ConnectivityManagerTestActivity extends Activity {
      * Remove configured networks and disable wifi
      */
     public boolean removeConfiguredNetworksAndDisableWifi() {
-            if (!disconnectAP()) {
-                return false;
-            }
-            // Disable Wifi
-            if (!mWifiManager.setWifiEnabled(false)) {
-                return false;
-            }
-            // Wait for the actions to be completed
-            try {
-                Thread.sleep(5*1000);
-            } catch (InterruptedException e) {}
+        if (!disconnectAP()) {
+           return false;
+        }
+        sleep(SHORT_TIMEOUT);
+        if (!mWifiManager.setWifiEnabled(false)) {
+            return false;
+        }
+        sleep(SHORT_TIMEOUT);
         return true;
+    }
+
+    private void sleep(long sleeptime) {
+        try {
+            Thread.sleep(sleeptime);
+        } catch (InterruptedException e) {}
     }
 
     /**
@@ -684,12 +656,12 @@ public class ConnectivityManagerTestActivity extends Activity {
      */
     public void setAirplaneMode(Context context, boolean enableAM) {
         //set the airplane mode
-        Settings.System.putInt(context.getContentResolver(), Settings.System.AIRPLANE_MODE_ON,
+        Settings.Global.putInt(context.getContentResolver(), Settings.Global.AIRPLANE_MODE_ON,
                 enableAM ? 1 : 0);
         // Post the intent
         Intent intent = new Intent(Intent.ACTION_AIRPLANE_MODE_CHANGED);
         intent.putExtra("state", enableAM);
-        context.sendBroadcast(intent);
+        context.sendBroadcastAsUser(intent, UserHandle.ALL);
     }
 
     protected static String convertToQuotedString(String string) {

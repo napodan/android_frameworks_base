@@ -25,14 +25,22 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiConfiguration.AuthAlgorithm;
+import android.net.wifi.WifiConfiguration.IpAssignment;
 import android.net.wifi.WifiConfiguration.KeyMgmt;
-import android.net.DhcpInfo;
+import android.net.wifi.WifiConfiguration.ProxySettings;
+import android.net.wifi.WifiEnterpriseConfig;
+import android.net.LinkAddress;
+import android.net.LinkProperties;
+import android.net.RouteInfo;
+import android.util.Log;
 
 import java.io.InputStream;
+import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
 
 /**
  * Help class to process configurations of access points saved in an XML file.
@@ -40,8 +48,8 @@ import java.util.List;
  * <accesspoint></accesspoint>. The supported configuration includes: ssid,
  * security, eap, phase2, identity, password, anonymousidentity, cacert, usercert,
  * in which each is included in the corresponding tags. Static IP setting is also supported.
- * Tags that can be used include: ip, gateway, netmask, dns1, dns2. All access points have to be
- * enclosed in tags of <resources></resources>.
+ * Tags that can be used include: ip, gateway, networkprefixlength, dns1, dns2. All access points
+ * have to be enclosed in tags of <resources></resources>.
  *
  * The following is a sample configuration file for an access point using EAP-PEAP with MSCHAP2.
  * <resources>
@@ -56,10 +64,10 @@ import java.util.List;
  * </resources>
  *
  * Note:ssid and security have to be the first two tags
- *      for static ip setting, tag "ip" should be listed before other fields: dns, gateway, netmask.
+ *      for static ip setting, tag "ip" should be listed before other fields: dns, gateway,
+ *      networkprefixlength.
  */
 public class AccessPointParserHelper {
-    private static final String KEYSTORE_SPACE = "keystore://";
     private static final String TAG = "AccessPointParserHelper";
     static final int NONE = 0;
     static final int WEP = 1;
@@ -67,7 +75,6 @@ public class AccessPointParserHelper {
     static final int EAP = 3;
 
     List<WifiConfiguration> networks = new ArrayList<WifiConfiguration>();
-    HashMap<String, DhcpInfo> ssidToDhcpInfoHM = new HashMap<String, DhcpInfo>();
 
     private int getSecurityType (String security) {
         if (security.equalsIgnoreCase("NONE")) {
@@ -93,32 +100,14 @@ public class AccessPointParserHelper {
         }
     }
 
-    private static int stringToIpAddr(String addrString) throws UnknownHostException {
-        try {
-            String[] parts = addrString.split("\\.");
-            if (parts.length != 4) {
-                throw new UnknownHostException(addrString);
-            }
-
-            int a = Integer.parseInt(parts[0])      ;
-            int b = Integer.parseInt(parts[1]) <<  8;
-            int c = Integer.parseInt(parts[2]) << 16;
-            int d = Integer.parseInt(parts[3]) << 24;
-
-            return a | b | c | d;
-        } catch (NumberFormatException ex) {
-            throw new UnknownHostException(addrString);
-        }
-    }
-
     DefaultHandler mHandler = new DefaultHandler() {
 
         boolean ssid = false;
         boolean security = false;
         boolean password = false;
         boolean ip = false;
-        boolean netmask = false;
         boolean gateway = false;
+        boolean networkprefix = false;
         boolean dns1 = false;
         boolean dns2 = false;
         boolean eap = false;
@@ -129,7 +118,8 @@ public class AccessPointParserHelper {
         boolean usercert = false;
         WifiConfiguration config = null;
         int securityType = NONE;
-        DhcpInfo mDhcpInfo = null;
+        LinkProperties mLinkProperties = null;
+        InetAddress mInetAddr = null;
 
         @Override
         public void startElement(String uri, String localName, String tagName,
@@ -165,14 +155,14 @@ public class AccessPointParserHelper {
                 usercert = true;
             }
             if (tagName.equalsIgnoreCase("ip")) {
+                mLinkProperties = new LinkProperties();
                 ip = true;
-                mDhcpInfo = new DhcpInfo();
             }
             if (tagName.equalsIgnoreCase("gateway")) {
                 gateway = true;
             }
-            if (tagName.equalsIgnoreCase("netmask")) {
-                netmask = true;
+            if (tagName.equalsIgnoreCase("networkprefixlength")) {
+                networkprefix = true;
             }
             if (tagName.equalsIgnoreCase("dns1")) {
                 dns1 = true;
@@ -185,11 +175,15 @@ public class AccessPointParserHelper {
         @Override
         public void endElement(String uri, String localName, String tagName) throws SAXException {
             if (tagName.equalsIgnoreCase("accesspoint")) {
-                networks.add(config);
-                if (mDhcpInfo != null) {
-                    ssidToDhcpInfoHM.put(config.SSID, mDhcpInfo);
-                    mDhcpInfo = null;
+                if (mLinkProperties != null) {
+                    config.ipAssignment = IpAssignment.STATIC;
+                    config.linkProperties = mLinkProperties;
+                } else {
+                    config.ipAssignment = IpAssignment.DHCP;
                 }
+                config.proxySettings = ProxySettings.NONE;
+                networks.add(config);
+                mLinkProperties = null;
             }
         }
 
@@ -218,12 +212,11 @@ public class AccessPointParserHelper {
                         config.allowedKeyManagement.set(KeyMgmt.WPA_EAP);
                         config.allowedKeyManagement.set(KeyMgmt.IEEE8021X);
                         // Initialize other fields.
-                        config.phase2.setValue("");
-                        config.ca_cert.setValue("");
-                        config.client_cert.setValue("");
-                        config.private_key.setValue("");
-                        config.identity.setValue("");
-                        config.anonymous_identity.setValue("");
+                        config.enterpriseConfig.setPhase2Method(WifiEnterpriseConfig.Phase2.NONE);
+                        config.enterpriseConfig.setCaCertificateAlias("");
+                        config.enterpriseConfig.setClientCertificateAlias("");
+                        config.enterpriseConfig.setIdentity("");
+                        config.enterpriseConfig.setAnonymousIdentity("");
                         break;
                     default:
                         throw new SAXException();
@@ -250,7 +243,7 @@ public class AccessPointParserHelper {
                         config.preSharedKey = '"' + passwordStr + '"';
                     }
                 } else if (securityType == EAP) {
-                    config.password.setValue(passwordStr);
+                    config.enterpriseConfig.setPassword(passwordStr);
                 } else {
                     throw new SAXException();
                 }
@@ -261,38 +254,55 @@ public class AccessPointParserHelper {
                 if (!validateEapValue(eapValue)) {
                     throw new SAXException();
                 }
-                config.eap.setValue(eapValue);
+		if (eapValue.equals("TLS")) {
+		    config.enterpriseConfig.setEapMethod(WifiEnterpriseConfig.Eap.TLS);
+		} else if (eapValue.equals("TTLS")) {
+		    config.enterpriseConfig.setEapMethod(WifiEnterpriseConfig.Eap.TTLS);
+		} else if (eapValue.equals("PEAP")) {
+		    config.enterpriseConfig.setEapMethod(WifiEnterpriseConfig.Eap.PEAP);
+		}
                 eap = false;
             }
             if (phase2) {
                 String phase2Value = new String(ch, start, length);
-                config.phase2.setValue("auth=" + phase2Value);
+		if (phase2Value.equals("PAP")) {
+                    config.enterpriseConfig.setPhase2Method(WifiEnterpriseConfig.Phase2.PAP);
+		} else if (phase2Value.equals("MSCHAP")) {
+                    config.enterpriseConfig.setPhase2Method(WifiEnterpriseConfig.Phase2.MSCHAP);
+		} else if (phase2Value.equals("MSCHAPV2")) {
+                    config.enterpriseConfig.setPhase2Method(WifiEnterpriseConfig.Phase2.MSCHAPV2);
+		} else if (phase2Value.equals("GTC")) {
+                    config.enterpriseConfig.setPhase2Method(WifiEnterpriseConfig.Phase2.GTC);
+		}
                 phase2 = false;
             }
             if (identity) {
                 String identityValue = new String(ch, start, length);
-                config.identity.setValue(identityValue);
+                config.enterpriseConfig.setIdentity(identityValue);
                 identity = false;
             }
             if (anonymousidentity) {
                 String anonyId = new String(ch, start, length);
-                config.anonymous_identity.setValue(anonyId);
+                config.enterpriseConfig.setAnonymousIdentity(anonyId);
                 anonymousidentity = false;
             }
             if (cacert) {
                 String cacertValue = new String(ch, start, length);
-                // need to install the credentail to "keystore://"
-                config.ca_cert.setValue(KEYSTORE_SPACE);
+                config.enterpriseConfig.setCaCertificateAlias(cacertValue);
                 cacert = false;
             }
             if (usercert) {
                 String usercertValue = new String(ch, start, length);
-                config.client_cert.setValue(KEYSTORE_SPACE);
+                config.enterpriseConfig.setClientCertificateAlias(usercertValue);
                 usercert = false;
             }
             if (ip) {
                 try {
-                    mDhcpInfo.ipAddress = stringToIpAddr(new String(ch, start, length));
+                    String ipAddr = new String(ch, start, length);
+                    if (!InetAddress.isNumeric(ipAddr)) {
+                        throw new SAXException();
+                    }
+                    mInetAddr = InetAddress.getByName(ipAddr);
                 } catch (UnknownHostException e) {
                     throw new SAXException();
                 }
@@ -300,23 +310,35 @@ public class AccessPointParserHelper {
             }
             if (gateway) {
                 try {
-                    mDhcpInfo.gateway = stringToIpAddr(new String(ch, start, length));
+                    String gwAddr = new String(ch, start, length);
+                    if (!InetAddress.isNumeric(gwAddr)) {
+                        throw new SAXException();
+                    }
+                    mLinkProperties.addRoute(new RouteInfo(InetAddress.getByName(gwAddr)));
                 } catch (UnknownHostException e) {
                     throw new SAXException();
                 }
                 gateway = false;
             }
-            if (netmask) {
+            if (networkprefix) {
                 try {
-                    mDhcpInfo.netmask = stringToIpAddr(new String(ch, start, length));
-                } catch (UnknownHostException e) {
+                    int nwPrefixLength = Integer.parseInt(new String(ch, start, length));
+                    if ((nwPrefixLength < 0) || (nwPrefixLength > 32)) {
+                        throw new SAXException();
+                    }
+                    mLinkProperties.addLinkAddress(new LinkAddress(mInetAddr, nwPrefixLength));
+                } catch (NumberFormatException e) {
                     throw new SAXException();
                 }
-                netmask = false;
+                networkprefix = false;
             }
             if (dns1) {
                 try {
-                    mDhcpInfo.dns1 = stringToIpAddr(new String(ch, start, length));
+                    String dnsAddr = new String(ch, start, length);
+                    if (!InetAddress.isNumeric(dnsAddr)) {
+                        throw new SAXException();
+                    }
+                    mLinkProperties.addDns(InetAddress.getByName(dnsAddr));
                 } catch (UnknownHostException e) {
                     throw new SAXException();
                 }
@@ -324,7 +346,11 @@ public class AccessPointParserHelper {
             }
             if (dns2) {
                 try {
-                    mDhcpInfo.dns2 = stringToIpAddr(new String(ch, start, length));
+                    String dnsAddr = new String(ch, start, length);
+                    if (!InetAddress.isNumeric(dnsAddr)) {
+                        throw new SAXException();
+                    }
+                    mLinkProperties.addDns(InetAddress.getByName(dnsAddr));
                 } catch (UnknownHostException e) {
                     throw new SAXException();
                 }
@@ -346,9 +372,5 @@ public class AccessPointParserHelper {
 
     public List<WifiConfiguration> getNetworkConfigurations() throws Exception {
         return networks;
-    }
-
-    public HashMap<String, DhcpInfo> getSsidToDhcpInfoHashMap() {
-        return ssidToDhcpInfoHM;
     }
 }

@@ -16,13 +16,9 @@
 
 package android.widget;
 
-import com.google.android.collect.Lists;
-import com.google.android.collect.Maps;
-
 import android.test.AndroidTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.text.GetChars;
-import android.widget.TextView;
 
 /**
  * TextViewTest tests {@link TextView}.
