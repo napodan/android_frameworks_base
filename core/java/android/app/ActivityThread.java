@@ -202,8 +202,7 @@ public final class ActivityThread {
         Window window;
         Activity parent;
         String embeddedID;
-        Object lastNonConfigurationInstance;
-        HashMap<String,Object> lastNonConfigurationChildInstances;
+        Activity.NonConfigurationInstances lastNonConfigurationInstances;
         boolean paused;
         boolean stopped;
         boolean hideForNow;
@@ -1463,7 +1462,7 @@ public final class ActivityThread {
 
     public final Activity startActivityNow(Activity parent, String id,
         Intent intent, ActivityInfo activityInfo, IBinder token, Bundle state,
-        Object lastNonConfigurationInstance) {
+        Activity.NonConfigurationInstances lastNonConfigurationInstances) {
         ActivityClientRecord r = new ActivityClientRecord();
             r.token = token;
             r.ident = 0;
@@ -1472,7 +1471,7 @@ public final class ActivityThread {
             r.parent = parent;
             r.embeddedID = id;
             r.activityInfo = activityInfo;
-            r.lastNonConfigurationInstance = lastNonConfigurationInstance;
+            r.lastNonConfigurationInstances = lastNonConfigurationInstances;
         if (localLOGV) {
             ComponentName compname = intent.getComponent();
             String name;
@@ -1594,14 +1593,12 @@ public final class ActivityThread {
                         + r.activityInfo.name + " with config " + config);
                 activity.attach(appContext, this, getInstrumentation(), r.token,
                         r.ident, app, r.intent, r.activityInfo, title, r.parent,
-                        r.embeddedID, r.lastNonConfigurationInstance,
-                        r.lastNonConfigurationChildInstances, config);
+                        r.embeddedID, r.lastNonConfigurationInstances, config);
 
                 if (customIntent != null) {
                     activity.mIntent = customIntent;
                 }
-                r.lastNonConfigurationInstance = null;
-                r.lastNonConfigurationChildInstances = null;
+                r.lastNonConfigurationInstances = null;
                 activity.mStartedActivity = false;
                 int theme = r.activityInfo.getThemeResource();
                 if (theme != 0) {
@@ -2635,8 +2632,8 @@ public final class ActivityThread {
             }
             if (getNonConfigInstance) {
                 try {
-                    r.lastNonConfigurationInstance
-                            = r.activity.onRetainNonConfigurationInstance();
+                    r.lastNonConfigurationInstances
+                            = r.activity.retainNonConfigurationInstances();
                 } catch (Exception e) {
                     if (!mInstrumentation.onException(r.activity, e)) {
                         throw new RuntimeException(
@@ -2645,18 +2642,6 @@ public final class ActivityThread {
                                 + ": " + e.toString(), e);
                     }
                 }
-                try {
-                    r.lastNonConfigurationChildInstances
-                            = r.activity.onRetainNonConfigurationChildInstances();
-                } catch (Exception e) {
-                    if (!mInstrumentation.onException(r.activity, e)) {
-                        throw new RuntimeException(
-                                "Unable to retain child activities "
-                                + safeToComponentShortString(r.intent)
-                                + ": " + e.toString(), e);
-                    }
-                }
-
             }
             try {
                 r.activity.mCalled = false;
