@@ -900,6 +900,23 @@ public class WebView extends AbsoluteLayout
         updateMultiTouchSupport(context);
     }
 
+    /**
+     * OXYGEN BEGIN
+     * webkit: Allow control of text reflow and hiding of zoom controls
+     * Auteur: Adam Green <greena88@gmail.com>  2011-09-29 22:00:09
+     * 6d835ae35940bb8e3e3966802d548a3d78b7646c
+     */
+    void showZoomControls(boolean value) {
+        mZoomManager.showZoomControls(value);
+    }
+
+    void setTextReflow(boolean value) {
+        mZoomManager.setTextReflow(value);
+    }
+    /**
+     * OXYGEN END
+     **/
+
     void updateMultiTouchSupport(Context context) {
         mZoomManager.updateMultiTouchSupport(context);
     }
