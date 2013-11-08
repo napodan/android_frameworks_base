@@ -48,9 +48,11 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.ServiceManager;
 import android.os.SystemClock;
+import android.speech.tts.TextToSpeech;
 import android.text.IClipboard;
 import android.text.Selection;
 import android.text.Spannable;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.EventLog;
 import android.util.Log;
@@ -66,6 +68,7 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.view.accessibility.AccessibilityManager;
 import android.view.animation.AlphaAnimation;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
@@ -583,6 +586,10 @@ public class WebView extends AbsoluteLayout
     // use the framework's ScaleGestureDetector to handle multi-touch
     private ScaleGestureDetector mScaleDetector;
 
+    // An instance for injecting accessibility in WebViews with disabled
+    // JavaScript or ones for which no accessibility script exists
+    private AccessibilityInjector mAccessibilityInjector;
+
     // the anchor point in the document space where VIEW_SIZE_CHANGED should
     // apply to
     private int mAnchorX;
@@ -641,6 +648,7 @@ public class WebView extends AbsoluteLayout
     static final int CENTER_FIT_RECT                    = 127;
     static final int REQUEST_KEYBOARD_WITH_SELECTION_MSG_ID = 128;
     static final int SET_SCROLLBAR_MODES                = 129;
+    static final int SELECTION_STRING_CHANGED           = 130;
 
     private static final int FIRST_PACKAGE_MSG_ID = SCROLL_TO_MSG_ID;
     private static final int LAST_PACKAGE_MSG_ID = SET_SCROLLBAR_MODES;
@@ -766,6 +774,18 @@ public class WebView extends AbsoluteLayout
     private int mHorizontalScrollBarMode = SCROLLBAR_AUTO;
     private int mVerticalScrollBarMode = SCROLLBAR_AUTO;
 
+    // the alias via which accessibility JavaScript interface is exposed
+    private static final String ALIAS_ACCESSIBILITY_JS_INTERFACE = "accessibility";
+
+    // JavaScript to inject the script chooser which will
+    // pick the right script for the current URL
+    private static final String ACCESSIBILITY_SCRIPT_CHOOSER_JAVASCRIPT =
+        "javascript:(function() {" +
+        "    var chooser = document.createElement('script');" +
+        "    chooser.type = 'text/javascript';" +
+        "    chooser.src = 'https://ssl.gstatic.com/accessibility/javascript/android/AndroidScriptChooser.user.js';" +
+        "    document.getElementsByTagName('head')[0].appendChild(chooser);" +
+        "  })();";
     /**
      * Max distance to overscroll by in pixels.
      * This how far content can be pulled beyond its normal bounds by the user.
@@ -968,7 +988,7 @@ public class WebView extends AbsoluteLayout
      * @param context A Context object used to access application assets.
      * @param attrs An AttributeSet passed to our parent.
      * @param defStyle The default style resource ID.
-     * @param javascriptInterfaces is a Map of intareface names, as keys, and
+     * @param javascriptInterfaces is a Map of interface names, as keys, and
      * object implementing those interfaces, as values.
      * @hide pending API council approval.
      */
@@ -976,6 +996,13 @@ public class WebView extends AbsoluteLayout
             Map<String, Object> javascriptInterfaces) {
         super(context, attrs, defStyle);
         init();
+
+        if (AccessibilityManager.getInstance(context).isEnabled()) {
+            if (javascriptInterfaces == null) {
+                javascriptInterfaces = new HashMap<String, Object>();
+            }
+            exposeAccessibilityJavaScriptApi(javascriptInterfaces);
+        }
 
         mCallbackProxy = new CallbackProxy(context, this);
         mViewManager = new ViewManager(this);
@@ -1068,6 +1095,26 @@ public class WebView extends AbsoluteLayout
             mEdgeGlowLeft = null;
             mEdgeGlowRight = null;
         }
+    }
+
+    /**
+     * Exposes accessibility APIs to JavaScript by appending them to the JavaScript
+     * interfaces map provided by the WebView client. In case of conflicting
+     * alias with the one of the accessibility API the user specified one wins.
+     *
+     * @param javascriptInterfaces A map with interfaces to be exposed to JavaScript.
+     */
+    private void exposeAccessibilityJavaScriptApi(Map<String, Object> javascriptInterfaces) {
+        if (javascriptInterfaces.containsKey(ALIAS_ACCESSIBILITY_JS_INTERFACE)) {
+            Log.w(LOGTAG, "JavaScript interface mapped to \"" + ALIAS_ACCESSIBILITY_JS_INTERFACE
+                    + "\" overrides the accessibility API JavaScript interface. No accessibility"
+                    + "API will be exposed to JavaScript!");
+            return;
+        }
+
+        // expose the TTS for now ...
+        javascriptInterfaces.put(ALIAS_ACCESSIBILITY_JS_INTERFACE,
+                new TextToSpeech(getContext(), null));
     }
 
     /* package */void updateDefaultZoomDensity(int zoomDensity) {
@@ -3100,6 +3147,29 @@ public class WebView extends AbsoluteLayout
             }
             mPageThatNeedsToSlideTitleBarOffScreen = null;
         }
+
+        injectAccessibilityForUrl(url);
+    }
+
+    /**
+     * This method injects accessibility in the loaded document if accessibility
+     * is enabled. If JavaScript is enabled we try to inject a URL specific script.
+     * If no URL specific script is found or JavaScript is disabled we fallback to
+     * the default {@link AccessibilityInjector} implementation.
+     *
+     * @param url The URL loaded by this {@link WebView}.
+     */
+    private void injectAccessibilityForUrl(String url) {
+        if (AccessibilityManager.getInstance(mContext).isEnabled()) {
+            if (getSettings().getJavaScriptEnabled()) {
+                loadUrl(ACCESSIBILITY_SCRIPT_CHOOSER_JAVASCRIPT);
+            } else if (mAccessibilityInjector == null) {
+                mAccessibilityInjector = new AccessibilityInjector(this);
+            }
+        } else {
+            // it is possible that accessibility was turned off between reloads
+            mAccessibilityInjector = null;
+        }
     }
 
     /**
@@ -4146,8 +4216,10 @@ public class WebView extends AbsoluteLayout
         // Bubble up the key event if
         // 1. it is a system key; or
         // 2. the host application wants to handle it;
+        // 3. the accessibility injector is present and wants to handle it;
         if (event.isSystem()
-                || mCallbackProxy.uiOverrideKeyEvent(event)) {
+                || mCallbackProxy.uiOverrideKeyEvent(event)
+                || (mAccessibilityInjector != null && mAccessibilityInjector.onKeyEvent(event))) {
             return false;
         }
 
@@ -4288,7 +4360,10 @@ public class WebView extends AbsoluteLayout
         // Bubble up the key event if
         // 1. it is a system key; or
         // 2. the host application wants to handle it;
-        if (event.isSystem() || mCallbackProxy.uiOverrideKeyEvent(event)) {
+        // 3. the accessibility injector is present and wants to handle it;
+        if (event.isSystem()
+                || mCallbackProxy.uiOverrideKeyEvent(event)
+                || (mAccessibilityInjector != null && mAccessibilityInjector.onKeyEvent(event))) {
             return false;
         }
 
@@ -7290,6 +7365,13 @@ public class WebView extends AbsoluteLayout
                 case SET_SCROLLBAR_MODES:
                     mHorizontalScrollBarMode = msg.arg1;
                     mVerticalScrollBarMode = msg.arg2;
+                    break;
+
+                case SELECTION_STRING_CHANGED:
+                    if (mAccessibilityInjector != null) {
+                        String selectionString = (String) msg.obj;
+                        mAccessibilityInjector.onSelectionStringChange(selectionString);
+                    }
                     break;
 
                 default:
