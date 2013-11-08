@@ -134,7 +134,7 @@ status_t M3UParser::parse(const void *_data, size_t size) {
             line.setTo(&data[offset], offsetLF - offset);
         }
 
-        // LOGI("#%s#", line.c_str());
+        // ALOGI("#%s#", line.c_str());
 
         if (line.empty()) {
             offset = offsetLF + 1;
@@ -269,7 +269,7 @@ status_t M3UParser::parseStreamInf(
         AString val(attr, equalPos + 1, attr.size() - equalPos - 1);
         val.trim();
 
-        LOGV("key=%s value=%s", key.c_str(), val.c_str());
+        ALOGV("key=%s value=%s", key.c_str(), val.c_str());
 
         if (!strcasecmp("bandwidth", key.c_str())) {
             const char *s = val.c_str();

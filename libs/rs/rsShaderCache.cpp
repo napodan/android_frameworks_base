@@ -49,16 +49,16 @@ bool ShaderCache::lookup(Context *rsc, ProgramVertex *vtx, ProgramFragment *frag
     if (!frag->getShaderID()) {
         frag->loadShader(rsc);
     }
-    //LOGV("ShaderCache lookup  vtx %i, frag %i", vtx->getShaderID(), frag->getShaderID());
+    //ALOGV("ShaderCache lookup  vtx %i, frag %i", vtx->getShaderID(), frag->getShaderID());
 
     for (uint32_t ct=0; ct < mEntryCount; ct++) {
         if ((mEntries[ct].vtx == vtx->getShaderID()) &&
             (mEntries[ct].frag == frag->getShaderID())) {
 
-            //LOGV("SC using program %i", mEntries[ct].program);
+            //ALOGV("SC using program %i", mEntries[ct].program);
             glUseProgram(mEntries[ct].program);
             mCurrent = &mEntries[ct];
-            //LOGV("ShaderCache hit, using %i", ct);
+            //ALOGV("ShaderCache hit, using %i", ct);
             rsc->checkError("ShaderCache::lookup (hit)");
             return true;
         }
@@ -70,7 +70,7 @@ bool ShaderCache::lookup(Context *rsc, ProgramVertex *vtx, ProgramFragment *frag
         mEntryAllocationCount *= 2;
         entry_t *e = (entry_t *)calloc(mEntryAllocationCount, sizeof(entry_t));
         if (!e) {
-            LOGE("Out of memory for ShaderCache::lookup");
+            ALOGE("Out of memory for ShaderCache::lookup");
             return false;
         }
         memcpy(e, mEntries, sizeof(entry_t) * mEntryCount);
@@ -78,8 +78,8 @@ bool ShaderCache::lookup(Context *rsc, ProgramVertex *vtx, ProgramFragment *frag
         mEntries = e;
     }
 
-    //LOGV("ShaderCache miss, using %i", mEntryCount);
-    //LOGE("e0 %x", glGetError());
+    //ALOGV("ShaderCache miss, using %i", mEntryCount);
+    //ALOGE("e0 %x", glGetError());
 
     entry_t *e = &mEntries[mEntryCount];
     mCurrent = e;
@@ -90,7 +90,7 @@ bool ShaderCache::lookup(Context *rsc, ProgramVertex *vtx, ProgramFragment *frag
     if (mEntries[mEntryCount].program) {
         GLuint pgm = e->program;
         glAttachShader(pgm, vtx->getShaderID());
-        //LOGE("e1 %x", glGetError());
+        //ALOGE("e1 %x", glGetError());
         glAttachShader(pgm, frag->getShaderID());
 
         if (!vtx->isUserProgram()) {
@@ -106,9 +106,9 @@ bool ShaderCache::lookup(Context *rsc, ProgramVertex *vtx, ProgramFragment *frag
             e->mVtxAttribSlots[RS_KIND_TEXTURE] = 4;
         }
 
-        //LOGE("e2 %x", glGetError());
+        //ALOGE("e2 %x", glGetError());
         glLinkProgram(pgm);
-        //LOGE("e3 %x", glGetError());
+        //ALOGE("e3 %x", glGetError());
         GLint linkStatus = GL_FALSE;
         glGetProgramiv(pgm, GL_LINK_STATUS, &linkStatus);
         if (linkStatus != GL_TRUE) {
@@ -118,7 +118,7 @@ bool ShaderCache::lookup(Context *rsc, ProgramVertex *vtx, ProgramFragment *frag
                 char* buf = (char*) malloc(bufLength);
                 if (buf) {
                     glGetProgramInfoLog(pgm, bufLength, NULL, buf);
-                    LOGE("Could not link program:\n%s\n", buf);
+                    ALOGE("Could not link program:\n%s\n", buf);
                     free(buf);
                 }
             }
@@ -130,26 +130,26 @@ bool ShaderCache::lookup(Context *rsc, ProgramVertex *vtx, ProgramFragment *frag
             for (uint32_t ct=0; ct < vtx->getAttribCount(); ct++) {
                 e->mVtxAttribSlots[ct] = glGetAttribLocation(pgm, vtx->getAttribName(ct));
                 if (rsc->props.mLogShaders) {
-                    LOGV("vtx A %i, %s = %d\n", ct, vtx->getAttribName(ct).string(), e->mVtxAttribSlots[ct]);
+                    ALOGV("vtx A %i, %s = %d\n", ct, vtx->getAttribName(ct).string(), e->mVtxAttribSlots[ct]);
                 }
             }
         }
         for (uint32_t ct=0; ct < vtx->getUniformCount(); ct++) {
             e->mVtxUniformSlots[ct] = glGetUniformLocation(pgm, vtx->getUniformName(ct));
             if (rsc->props.mLogShaders) {
-                LOGV("vtx U, %s = %d\n", vtx->getUniformName(ct).string(), e->mVtxUniformSlots[ct]);
+                ALOGV("vtx U, %s = %d\n", vtx->getUniformName(ct).string(), e->mVtxUniformSlots[ct]);
             }
         }
         for (uint32_t ct=0; ct < frag->getUniformCount(); ct++) {
             e->mFragUniformSlots[ct] = glGetUniformLocation(pgm, frag->getUniformName(ct));
             if (rsc->props.mLogShaders) {
-                LOGV("frag U, %s = %d\n", frag->getUniformName(ct).string(), e->mFragUniformSlots[ct]);
+                ALOGV("frag U, %s = %d\n", frag->getUniformName(ct).string(), e->mFragUniformSlots[ct]);
             }
         }
     }
 
     e->mIsValid = true;
-    //LOGV("SC made program %i", e->program);
+    //ALOGV("SC made program %i", e->program);
     glUseProgram(e->program);
     mEntryCount++;
     rsc->checkError("ShaderCache::lookup (miss)");

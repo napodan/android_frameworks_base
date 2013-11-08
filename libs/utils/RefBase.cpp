@@ -92,7 +92,7 @@ public:
         , mTrackEnabled(!!DEBUG_REFS_ENABLED_BY_DEFAULT)
         , mRetain(false)
     {
-        //LOGI("NEW weakref_impl %p for RefBase %p", this, base);
+        //ALOGI("NEW weakref_impl %p for RefBase %p", this, base);
     }
     
     ~weakref_impl()
@@ -156,9 +156,9 @@ public:
             if (rc >= 0) {
                 write(rc, text.string(), text.length());
                 close(rc);
-                LOGD("STACK TRACE for %p saved in %s", this, name);
+                ALOGD("STACK TRACE for %p saved in %s", this, name);
             }
-            else LOGE("FAILED TO PRINT STACK TRACE for %p in %s: %s", this,
+            else ALOGE("FAILED TO PRINT STACK TRACE for %p in %s: %s", this,
                       name, strerror(errno));
         }
     }
@@ -292,9 +292,9 @@ void RefBase::incStrong(const void* id) const
     
     refs->addStrongRef(id);
     const int32_t c = android_atomic_inc(&refs->mStrong);
-    LOG_ASSERT(c > 0, "incStrong() called on %p after last strong ref", refs);
+    ALOG_ASSERT(c > 0, "incStrong() called on %p after last strong ref", refs);
 #if PRINT_REFS
-    LOGD("incStrong of %p from %p: cnt=%d\n", this, id, c);
+    ALOGD("incStrong of %p from %p: cnt=%d\n", this, id, c);
 #endif
     if (c != INITIAL_STRONG_VALUE)  {
         return;
@@ -310,9 +310,9 @@ void RefBase::decStrong(const void* id) const
     refs->removeStrongRef(id);
     const int32_t c = android_atomic_dec(&refs->mStrong);
 #if PRINT_REFS
-    LOGD("decStrong of %p from %p: cnt=%d\n", this, id, c);
+    ALOGD("decStrong of %p from %p: cnt=%d\n", this, id, c);
 #endif
-    LOG_ASSERT(c >= 1, "decStrong() called on %p too many times", refs);
+    ALOG_ASSERT(c >= 1, "decStrong() called on %p too many times", refs);
     if (c == 1) {
         const_cast<RefBase*>(this)->onLastStrongRef(id);
         if ((refs->mFlags&OBJECT_LIFETIME_WEAK) != OBJECT_LIFETIME_WEAK) {
@@ -335,10 +335,10 @@ void RefBase::forceIncStrong(const void* id) const
     
     refs->addStrongRef(id);
     const int32_t c = android_atomic_inc(&refs->mStrong);
-    LOG_ASSERT(c >= 0, "forceIncStrong called on %p after ref count underflow",
+    ALOG_ASSERT(c >= 0, "forceIncStrong called on %p after ref count underflow",
                refs);
 #if PRINT_REFS
-    LOGD("forceIncStrong of %p from %p: cnt=%d\n", this, id, c);
+    ALOGD("forceIncStrong of %p from %p: cnt=%d\n", this, id, c);
 #endif
 
     switch (c) {
@@ -369,7 +369,7 @@ void RefBase::weakref_type::incWeak(const void* id)
     weakref_impl* const impl = static_cast<weakref_impl*>(this);
     impl->addWeakRef(id);
     const int32_t c = android_atomic_inc(&impl->mWeak);
-    LOG_ASSERT(c >= 0, "incWeak called on %p after last weak ref", this);
+    ALOG_ASSERT(c >= 0, "incWeak called on %p after last weak ref", this);
 }
 
 void RefBase::weakref_type::decWeak(const void* id)
@@ -377,7 +377,7 @@ void RefBase::weakref_type::decWeak(const void* id)
     weakref_impl* const impl = static_cast<weakref_impl*>(this);
     impl->removeWeakRef(id);
     const int32_t c = android_atomic_dec(&impl->mWeak);
-    LOG_ASSERT(c >= 1, "decWeak called on %p too many times", this);
+    ALOG_ASSERT(c >= 1, "decWeak called on %p too many times", this);
     if (c != 1) return;
     
     if ((impl->mFlags&OBJECT_LIFETIME_WEAK) != OBJECT_LIFETIME_WEAK) {
@@ -390,7 +390,7 @@ void RefBase::weakref_type::decWeak(const void* id)
                 }
             }
         } else {
-            // LOGV("Freeing refs %p of old RefBase %p\n", this, impl->mBase);
+            // ALOGV("Freeing refs %p of old RefBase %p\n", this, impl->mBase);
             delete impl;
         }
     } else {
@@ -414,7 +414,7 @@ bool RefBase::weakref_type::attemptIncStrong(const void* id)
     weakref_impl* const impl = static_cast<weakref_impl*>(this);
     
     int32_t curCount = impl->mStrong;
-    LOG_ASSERT(curCount >= 0, "attemptIncStrong called on %p after underflow",
+    ALOG_ASSERT(curCount >= 0, "attemptIncStrong called on %p after underflow",
                this);
     while (curCount > 0 && curCount != INITIAL_STRONG_VALUE) {
         if (android_atomic_cmpxchg(curCount, curCount+1, &impl->mStrong) == 0) {
@@ -460,7 +460,7 @@ bool RefBase::weakref_type::attemptIncStrong(const void* id)
     impl->addStrongRef(id);
 
 #if PRINT_REFS
-    LOGD("attemptIncStrong of %p from %p: cnt=%d\n", this, id, curCount);
+    ALOGD("attemptIncStrong of %p from %p: cnt=%d\n", this, id, curCount);
 #endif
 
     if (curCount == INITIAL_STRONG_VALUE) {
@@ -476,7 +476,7 @@ bool RefBase::weakref_type::attemptIncWeak(const void* id)
     weakref_impl* const impl = static_cast<weakref_impl*>(this);
     
     int32_t curCount = impl->mWeak;
-    LOG_ASSERT(curCount >= 0, "attemptIncWeak called on %p after underflow",
+    ALOG_ASSERT(curCount >= 0, "attemptIncWeak called on %p after underflow",
                this);
     while (curCount > 0) {
         if (android_atomic_cmpxchg(curCount, curCount+1, &impl->mWeak) == 0) {
@@ -521,7 +521,7 @@ RefBase::weakref_type* RefBase::getWeakRefs() const
 RefBase::RefBase()
     : mRefs(new weakref_impl(this))
 {
-//    LOGV("Creating refs %p with RefBase %p\n", mRefs, this);
+//    ALOGV("Creating refs %p with RefBase %p\n", mRefs, this);
 }
 
 RefBase::~RefBase()

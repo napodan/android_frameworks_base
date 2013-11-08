@@ -89,7 +89,7 @@ static bool isValidKeyAction(int32_t action) {
 
 static bool validateKeyEvent(int32_t action) {
     if (! isValidKeyAction(action)) {
-        LOGE("Key event has invalid action code 0x%x", action);
+        ALOGE("Key event has invalid action code 0x%x", action);
         return false;
     }
     return true;
@@ -116,11 +116,11 @@ static bool isValidMotionAction(int32_t action, size_t pointerCount) {
 static bool validateMotionEvent(int32_t action, size_t pointerCount,
         const int32_t* pointerIds) {
     if (! isValidMotionAction(action, pointerCount)) {
-        LOGE("Motion event has invalid action code 0x%x", action);
+        ALOGE("Motion event has invalid action code 0x%x", action);
         return false;
     }
     if (pointerCount < 1 || pointerCount > MAX_POINTERS) {
-        LOGE("Motion event has invalid pointer count %d; value must be between 1 and %d.",
+        ALOGE("Motion event has invalid pointer count %d; value must be between 1 and %d.",
                 pointerCount, MAX_POINTERS);
         return false;
     }
@@ -128,12 +128,12 @@ static bool validateMotionEvent(int32_t action, size_t pointerCount,
     for (size_t i = 0; i < pointerCount; i++) {
         int32_t id = pointerIds[i];
         if (id < 0 || id > MAX_POINTER_ID) {
-            LOGE("Motion event has invalid pointer id %d; value must be between 0 and %d",
+            ALOGE("Motion event has invalid pointer id %d; value must be between 0 and %d",
                     id, MAX_POINTER_ID);
             return false;
         }
         if (pointerIdBits.hasBit(id)) {
-            LOGE("Motion event has duplicate pointer id %d", id);
+            ALOGE("Motion event has duplicate pointer id %d", id);
             return false;
         }
         pointerIdBits.markBit(id);
@@ -189,7 +189,7 @@ InputDispatcher::InputDispatcher(const sp<InputDispatcherPolicyInterface>& polic
 
 #if DEBUG_THROTTLING
     mThrottleState.originalSampleCount = 0;
-    LOGD("Throttling - Max events per second = %d", maxEventsPerSecond);
+    ALOGD("Throttling - Max events per second = %d", maxEventsPerSecond);
 #endif
 }
 
@@ -249,7 +249,7 @@ void InputDispatcher::dispatchOnceInnerLocked(nsecs_t keyRepeatTimeout,
     // If dispatching is frozen, do not process timeouts or try to deliver any new events.
     if (mDispatchFrozen) {
 #if DEBUG_FOCUS
-        LOGD("Dispatch frozen.  Waiting some more.");
+        ALOGD("Dispatch frozen.  Waiting some more.");
 #endif
         return;
     }
@@ -313,7 +313,7 @@ void InputDispatcher::dispatchOnceInnerLocked(nsecs_t keyRepeatTimeout,
                     if (currentTime < nextTime) {
                         // Throttle it!
 #if DEBUG_THROTTLING
-                        LOGD("Throttling - Delaying motion event for "
+                        ALOGD("Throttling - Delaying motion event for "
                                 "device 0x%x, source 0x%08x by up to %0.3fms.",
                                 deviceId, source, (nextTime - currentTime) * 0.000001);
 #endif
@@ -331,7 +331,7 @@ void InputDispatcher::dispatchOnceInnerLocked(nsecs_t keyRepeatTimeout,
 #if DEBUG_THROTTLING
                 if (mThrottleState.originalSampleCount != 0) {
                     uint32_t count = motionEntry->countSamples();
-                    LOGD("Throttling - Motion event sample count grew by %d from %d to %d.",
+                    ALOGD("Throttling - Motion event sample count grew by %d from %d to %d.",
                             count - mThrottleState.originalSampleCount,
                             mThrottleState.originalSampleCount, count);
                     mThrottleState.originalSampleCount = 0;
@@ -425,7 +425,7 @@ bool InputDispatcher::enqueueInboundEventLocked(EventEntry* entry) {
             } else if (keyEntry->action == AKEY_EVENT_ACTION_UP) {
                 if (mAppSwitchSawKeyDown) {
 #if DEBUG_APP_SWITCH
-                    LOGD("App switch is pending!");
+                    ALOGD("App switch is pending!");
 #endif
                     mAppSwitchDueTime = keyEntry->eventTime + APP_SWITCH_TIMEOUT;
                     mAppSwitchSawKeyDown = false;
@@ -445,16 +445,16 @@ void InputDispatcher::dropInboundEventLocked(EventEntry* entry, DropReason dropR
     switch (dropReason) {
     case DROP_REASON_POLICY:
 #if DEBUG_INBOUND_EVENT_DETAILS
-        LOGD("Dropped event because policy consumed it.");
+        ALOGD("Dropped event because policy consumed it.");
 #endif
         reason = "inbound event was dropped because the policy consumed it";
         break;
     case DROP_REASON_DISABLED:
-        LOGI("Dropped event because input dispatch is disabled.");
+        ALOGI("Dropped event because input dispatch is disabled.");
         reason = "inbound event was dropped because input dispatch is disabled";
         break;
     case DROP_REASON_APP_SWITCH:
-        LOGI("Dropped event because of pending overdue app switch.");
+        ALOGI("Dropped event because of pending overdue app switch.");
         reason = "inbound event was dropped because of pending overdue app switch";
         break;
     default:
@@ -501,9 +501,9 @@ void InputDispatcher::resetPendingAppSwitchLocked(bool handled) {
 
 #if DEBUG_APP_SWITCH
     if (handled) {
-        LOGD("App switch has arrived.");
+        ALOGD("App switch has arrived.");
     } else {
-        LOGD("App switch was abandoned.");
+        ALOGD("App switch was abandoned.");
     }
 #endif
 }
@@ -549,7 +549,7 @@ void InputDispatcher::releaseInboundEventLocked(EventEntry* entry) {
     InjectionState* injectionState = entry->injectionState;
     if (injectionState && injectionState->injectionResult == INPUT_EVENT_INJECTION_PENDING) {
 #if DEBUG_DISPATCH_CYCLE
-        LOGD("Injected inbound event was dropped.");
+        ALOGD("Injected inbound event was dropped.");
 #endif
         setInjectionResultLocked(entry, INPUT_EVENT_INJECTION_FAILED);
     }
@@ -599,7 +599,7 @@ InputDispatcher::KeyEntry* InputDispatcher::synthesizeKeyRepeatLocked(
 bool InputDispatcher::dispatchConfigurationChangedLocked(
         nsecs_t currentTime, ConfigurationChangedEntry* entry) {
 #if DEBUG_OUTBOUND_EVENT_DETAILS
-    LOGD("dispatchConfigurationChanged - eventTime=%lld", entry->eventTime);
+    ALOGD("dispatchConfigurationChanged - eventTime=%lld", entry->eventTime);
 #endif
 
     // Reset key repeating in case a keyboard device was added or removed or something.
@@ -705,7 +705,7 @@ bool InputDispatcher::dispatchKeyLocked(
 
 void InputDispatcher::logOutboundKeyDetailsLocked(const char* prefix, const KeyEntry* entry) {
 #if DEBUG_OUTBOUND_EVENT_DETAILS
-    LOGD("%seventTime=%lld, deviceId=0x%x, source=0x%x, policyFlags=0x%x, "
+    ALOGD("%seventTime=%lld, deviceId=0x%x, source=0x%x, policyFlags=0x%x, "
             "action=0x%x, flags=0x%x, keyCode=0x%x, scanCode=0x%x, metaState=0x%x, "
             "repeatCount=%d, downTime=%lld",
             prefix,
@@ -768,7 +768,7 @@ bool InputDispatcher::dispatchMotionLocked(
 
 void InputDispatcher::logOutboundMotionDetailsLocked(const char* prefix, const MotionEntry* entry) {
 #if DEBUG_OUTBOUND_EVENT_DETAILS
-    LOGD("%seventTime=%lld, deviceId=0x%x, source=0x%x, policyFlags=0x%x, "
+    ALOGD("%seventTime=%lld, deviceId=0x%x, source=0x%x, policyFlags=0x%x, "
             "action=0x%x, flags=0x%x, "
             "metaState=0x%x, edgeFlags=0x%x, xPrecision=%f, yPrecision=%f, downTime=%lld",
             prefix,
@@ -784,7 +784,7 @@ void InputDispatcher::logOutboundMotionDetailsLocked(const char* prefix, const M
         sampleCount += 1;
     }
     for (uint32_t i = 0; i < entry->pointerCount; i++) {
-        LOGD("  Pointer %d: id=%d, x=%f, y=%f, pressure=%f, size=%f, "
+        ALOGD("  Pointer %d: id=%d, x=%f, y=%f, pressure=%f, size=%f, "
                 "touchMajor=%f, touchMinor=%f, toolMajor=%f, toolMinor=%f, "
                 "orientation=%f",
                 i, entry->pointerIds[i],
@@ -798,7 +798,7 @@ void InputDispatcher::logOutboundMotionDetailsLocked(const char* prefix, const M
     // Keep in mind that due to batching, it is possible for the number of samples actually
     // dispatched to change before the application finally consumed them.
     if (entry->action == AMOTION_EVENT_ACTION_MOVE) {
-        LOGD("  ... Total movement samples currently batched %d ...", sampleCount);
+        ALOGD("  ... Total movement samples currently batched %d ...", sampleCount);
     }
 #endif
 }
@@ -806,7 +806,7 @@ void InputDispatcher::logOutboundMotionDetailsLocked(const char* prefix, const M
 void InputDispatcher::dispatchEventToCurrentInputTargetsLocked(nsecs_t currentTime,
         EventEntry* eventEntry, bool resumeWithAppendedMotionSample) {
 #if DEBUG_DISPATCH_CYCLE
-    LOGD("dispatchEventToCurrentInputTargets - "
+    ALOGD("dispatchEventToCurrentInputTargets - "
             "resumeWithAppendedMotionSample=%s",
             toString(resumeWithAppendedMotionSample));
 #endif
@@ -825,7 +825,7 @@ void InputDispatcher::dispatchEventToCurrentInputTargetsLocked(nsecs_t currentTi
                     resumeWithAppendedMotionSample);
         } else {
 #if DEBUG_FOCUS
-            LOGD("Dropping event delivery to target with channel '%s' because it "
+            ALOGD("Dropping event delivery to target with channel '%s' because it "
                     "is no longer registered with the input dispatcher.",
                     inputTarget.inputChannel->getName().string());
 #endif
@@ -849,7 +849,7 @@ int32_t InputDispatcher::handleTargetsNotReadyLocked(nsecs_t currentTime,
     if (application == NULL && window == NULL) {
         if (mInputTargetWaitCause != INPUT_TARGET_WAIT_CAUSE_SYSTEM_NOT_READY) {
 #if DEBUG_FOCUS
-            LOGD("Waiting for system to become ready for input.");
+            ALOGD("Waiting for system to become ready for input.");
 #endif
             mInputTargetWaitCause = INPUT_TARGET_WAIT_CAUSE_SYSTEM_NOT_READY;
             mInputTargetWaitStartTime = currentTime;
@@ -859,7 +859,7 @@ int32_t InputDispatcher::handleTargetsNotReadyLocked(nsecs_t currentTime,
     } else {
         if (mInputTargetWaitCause != INPUT_TARGET_WAIT_CAUSE_APPLICATION_NOT_READY) {
 #if DEBUG_FOCUS
-            LOGD("Waiting for application to become ready for input: %s",
+            ALOGD("Waiting for application to become ready for input: %s",
                     getApplicationWindowLabelLocked(application, window).string());
 #endif
             nsecs_t timeout = window ? window->dispatchingTimeout :
@@ -927,7 +927,7 @@ nsecs_t InputDispatcher::getTimeSpentWaitingForApplicationLocked(
 
 void InputDispatcher::resetANRTimeoutsLocked() {
 #if DEBUG_FOCUS
-        LOGD("Resetting ANR timeouts.");
+        ALOGD("Resetting ANR timeouts.");
 #endif
 
     // Reset input target wait timeout.
@@ -945,7 +945,7 @@ int32_t InputDispatcher::findFocusedWindowTargetsLocked(nsecs_t currentTime,
     if (! mFocusedWindow) {
         if (mFocusedApplication) {
 #if DEBUG_FOCUS
-            LOGD("Waiting because there is no focused window but there is a "
+            ALOGD("Waiting because there is no focused window but there is a "
                     "focused application that may eventually add a window: %s.",
                     getApplicationWindowLabelLocked(mFocusedApplication, NULL).string());
 #endif
@@ -954,7 +954,7 @@ int32_t InputDispatcher::findFocusedWindowTargetsLocked(nsecs_t currentTime,
             goto Unresponsive;
         }
 
-        LOGI("Dropping event because there is no focused window or focused application.");
+        ALOGI("Dropping event because there is no focused window or focused application.");
         injectionResult = INPUT_EVENT_INJECTION_FAILED;
         goto Failed;
     }
@@ -968,7 +968,7 @@ int32_t InputDispatcher::findFocusedWindowTargetsLocked(nsecs_t currentTime,
     // If the currently focused window is paused then keep waiting.
     if (mFocusedWindow->paused) {
 #if DEBUG_FOCUS
-        LOGD("Waiting because focused window is paused.");
+        ALOGD("Waiting because focused window is paused.");
 #endif
         injectionResult = handleTargetsNotReadyLocked(currentTime, entry,
                 mFocusedApplication, mFocusedWindow, nextWakeupTime);
@@ -978,7 +978,7 @@ int32_t InputDispatcher::findFocusedWindowTargetsLocked(nsecs_t currentTime,
     // If the currently focused window is still working on previous events then keep waiting.
     if (! isWindowFinishedWithPreviousInputLocked(mFocusedWindow)) {
 #if DEBUG_FOCUS
-        LOGD("Waiting because focused window still processing previous input.");
+        ALOGD("Waiting because focused window still processing previous input.");
 #endif
         injectionResult = handleTargetsNotReadyLocked(currentTime, entry,
                 mFocusedApplication, mFocusedWindow, nextWakeupTime);
@@ -996,7 +996,7 @@ Unresponsive:
     updateDispatchStatisticsLocked(currentTime, entry,
             injectionResult, timeSpentWaitingForApplication);
 #if DEBUG_FOCUS
-    LOGD("findFocusedWindow finished: injectionResult=%d, "
+    ALOGD("findFocusedWindow finished: injectionResult=%d, "
             "timeSpendWaitingForApplication=%0.1fms",
             injectionResult, timeSpentWaitingForApplication / 1000000.0);
 #endif
@@ -1106,7 +1106,7 @@ int32_t InputDispatcher::findTouchedWindowTargetsLocked(nsecs_t currentTime,
         // fact be in ANR state.
         if (topErrorWindow && newTouchedWindow != topErrorWindow) {
 #if DEBUG_FOCUS
-            LOGD("Waiting because system error window is pending.");
+            ALOGD("Waiting because system error window is pending.");
 #endif
             injectionResult = handleTargetsNotReadyLocked(currentTime, entry,
                     NULL, NULL, nextWakeupTime);
@@ -1130,7 +1130,7 @@ int32_t InputDispatcher::findTouchedWindowTargetsLocked(nsecs_t currentTime,
         if (! newTouchedWindow) {
             if (mFocusedApplication) {
 #if DEBUG_FOCUS
-                LOGD("Waiting because there is no touched window but there is a "
+                ALOGD("Waiting because there is no touched window but there is a "
                         "focused application that may eventually add a new window: %s.",
                         getApplicationWindowLabelLocked(mFocusedApplication, NULL).string());
 #endif
@@ -1139,7 +1139,7 @@ int32_t InputDispatcher::findTouchedWindowTargetsLocked(nsecs_t currentTime,
                 goto Unresponsive;
             }
 
-            LOGI("Dropping event because there is no touched window or focused application.");
+            ALOGI("Dropping event because there is no touched window or focused application.");
             injectionResult = INPUT_EVENT_INJECTION_FAILED;
             goto Failed;
         }
@@ -1165,7 +1165,7 @@ int32_t InputDispatcher::findTouchedWindowTargetsLocked(nsecs_t currentTime,
 
         // If the pointer is not currently down, then ignore the event.
         if (! mTempTouchState.down) {
-            LOGI("Dropping event because the pointer is not down.");
+            ALOGI("Dropping event because the pointer is not down.");
             injectionResult = INPUT_EVENT_INJECTION_FAILED;
             goto Failed;
         }
@@ -1188,7 +1188,7 @@ int32_t InputDispatcher::findTouchedWindowTargetsLocked(nsecs_t currentTime,
         }
         if (! haveForegroundWindow) {
 #if DEBUG_INPUT_DISPATCHER_POLICY
-            LOGD("Dropping event because there is no touched foreground window to receive it.");
+            ALOGD("Dropping event because there is no touched foreground window to receive it.");
 #endif
             injectionResult = INPUT_EVENT_INJECTION_FAILED;
             goto Failed;
@@ -1205,7 +1205,7 @@ int32_t InputDispatcher::findTouchedWindowTargetsLocked(nsecs_t currentTime,
             // If the touched window is paused then keep waiting.
             if (touchedWindow.window->paused) {
 #if DEBUG_INPUT_DISPATCHER_POLICY
-                LOGD("Waiting because touched window is paused.");
+                ALOGD("Waiting because touched window is paused.");
 #endif
                 injectionResult = handleTargetsNotReadyLocked(currentTime, entry,
                         NULL, touchedWindow.window, nextWakeupTime);
@@ -1215,7 +1215,7 @@ int32_t InputDispatcher::findTouchedWindowTargetsLocked(nsecs_t currentTime,
             // If the touched window is still working on previous events then keep waiting.
             if (! isWindowFinishedWithPreviousInputLocked(touchedWindow.window)) {
 #if DEBUG_FOCUS
-                LOGD("Waiting because touched window still processing previous input.");
+                ALOGD("Waiting because touched window still processing previous input.");
 #endif
                 injectionResult = handleTargetsNotReadyLocked(currentTime, entry,
                         NULL, touchedWindow.window, nextWakeupTime);
@@ -1272,7 +1272,7 @@ Failed:
             // First pointer went down.
             if (mTouchState.down) {
 #if DEBUG_FOCUS
-                LOGD("Pointer down received while already down.");
+                ALOGD("Pointer down received while already down.");
 #endif
             }
         } else if (maskedAction == AMOTION_EVENT_ACTION_POINTER_UP) {
@@ -1299,7 +1299,7 @@ Failed:
         mTouchState.copyFrom(mTempTouchState);
     } else {
 #if DEBUG_FOCUS
-        LOGD("Not updating touch focus because injection was denied.");
+        ALOGD("Not updating touch focus because injection was denied.");
 #endif
     }
 
@@ -1311,7 +1311,7 @@ Unresponsive:
     updateDispatchStatisticsLocked(currentTime, entry,
             injectionResult, timeSpentWaitingForApplication);
 #if DEBUG_FOCUS
-    LOGD("findTouchedWindow finished: injectionResult=%d, injectionPermission=%d, "
+    ALOGD("findTouchedWindow finished: injectionResult=%d, injectionPermission=%d, "
             "timeSpentWaitingForApplication=%0.1fms",
             injectionResult, injectionPermission, timeSpentWaitingForApplication / 1000000.0);
 #endif
@@ -1348,13 +1348,13 @@ bool InputDispatcher::checkInjectionPermission(const InputWindow* window,
             && (window == NULL || window->ownerUid != injectionState->injectorUid)
             && !hasInjectionPermission(injectionState->injectorPid, injectionState->injectorUid)) {
         if (window) {
-            LOGW("Permission denied: injecting event from pid %d uid %d to window "
+            ALOGW("Permission denied: injecting event from pid %d uid %d to window "
                     "with input channel %s owned by uid %d",
                     injectionState->injectorPid, injectionState->injectorUid,
                     window->inputChannel->getName().string(),
                     window->ownerUid);
         } else {
-            LOGW("Permission denied: injecting event from pid %d uid %d",
+            ALOGW("Permission denied: injecting event from pid %d uid %d",
                     injectionState->injectorPid, injectionState->injectorUid);
         }
         return false;
@@ -1452,7 +1452,7 @@ void InputDispatcher::prepareDispatchCycleLocked(nsecs_t currentTime,
         const sp<Connection>& connection, EventEntry* eventEntry, const InputTarget* inputTarget,
         bool resumeWithAppendedMotionSample) {
 #if DEBUG_DISPATCH_CYCLE
-    LOGD("channel '%s' ~ prepareDispatchCycle - flags=%d, "
+    ALOGD("channel '%s' ~ prepareDispatchCycle - flags=%d, "
             "xOffset=%f, yOffset=%f, "
             "windowType=%d, pointerIds=0x%x, "
             "resumeWithAppendedMotionSample=%s",
@@ -1470,7 +1470,7 @@ void InputDispatcher::prepareDispatchCycleLocked(nsecs_t currentTime,
     // We don't want to enqueue additional outbound events if the connection is broken.
     if (connection->status != Connection::STATUS_NORMAL) {
 #if DEBUG_DISPATCH_CYCLE
-        LOGD("channel '%s' ~ Dropping event because the channel status is %s",
+        ALOGD("channel '%s' ~ Dropping event because the channel status is %s",
                 connection->getInputChannelName(), connection->getStatusLabel());
 #endif
         return;
@@ -1485,7 +1485,7 @@ void InputDispatcher::prepareDispatchCycleLocked(nsecs_t currentTime,
             MotionEntry* splitMotionEntry = splitMotionEvent(
                     originalMotionEntry, inputTarget->pointerIds);
 #if DEBUG_FOCUS
-            LOGD("channel '%s' ~ Split motion event.",
+            ALOGD("channel '%s' ~ Split motion event.",
                     connection->getInputChannelName());
             logOutboundMotionDetailsLocked("  ", splitMotionEntry);
 #endif
@@ -1508,7 +1508,7 @@ void InputDispatcher::prepareDispatchCycleLocked(nsecs_t currentTime,
             // be dispatched later.
             if (! motionEventDispatchEntry->inProgress) {
 #if DEBUG_BATCHING
-                LOGD("channel '%s' ~ Not streaming because the motion event has "
+                ALOGD("channel '%s' ~ Not streaming because the motion event has "
                         "not yet been dispatched.  "
                         "(Waiting for earlier events to be consumed.)",
                         connection->getInputChannelName());
@@ -1523,7 +1523,7 @@ void InputDispatcher::prepareDispatchCycleLocked(nsecs_t currentTime,
             // appended motion sample.
             if (motionEventDispatchEntry->tailMotionSample) {
 #if DEBUG_BATCHING
-                LOGD("channel '%s' ~ Not streaming because no new samples can "
+                ALOGD("channel '%s' ~ Not streaming because no new samples can "
                         "be appended to the motion event in this dispatch cycle.  "
                         "(Waiting for next dispatch cycle to start.)",
                         connection->getInputChannelName());
@@ -1540,7 +1540,7 @@ void InputDispatcher::prepareDispatchCycleLocked(nsecs_t currentTime,
                     appendedMotionSample->eventTime, appendedMotionSample->pointerCoords);
             if (status == OK) {
 #if DEBUG_BATCHING
-                LOGD("channel '%s' ~ Successfully streamed new motion sample.",
+                ALOGD("channel '%s' ~ Successfully streamed new motion sample.",
                         connection->getInputChannelName());
 #endif
                 return;
@@ -1548,17 +1548,17 @@ void InputDispatcher::prepareDispatchCycleLocked(nsecs_t currentTime,
 
 #if DEBUG_BATCHING
             if (status == NO_MEMORY) {
-                LOGD("channel '%s' ~ Could not append motion sample to currently "
+                ALOGD("channel '%s' ~ Could not append motion sample to currently "
                         "dispatched move event because the shared memory buffer is full.  "
                         "(Waiting for next dispatch cycle to start.)",
                         connection->getInputChannelName());
             } else if (status == status_t(FAILED_TRANSACTION)) {
-                LOGD("channel '%s' ~ Could not append motion sample to currently "
+                ALOGD("channel '%s' ~ Could not append motion sample to currently "
                         "dispatched move event because the event has already been consumed.  "
                         "(Waiting for next dispatch cycle to start.)",
                         connection->getInputChannelName());
             } else {
-                LOGD("channel '%s' ~ Could not append motion sample to currently "
+                ALOGD("channel '%s' ~ Could not append motion sample to currently "
                         "dispatched move event due to an error, status=%d.  "
                         "(Waiting for next dispatch cycle to start.)",
                         connection->getInputChannelName(), status);
@@ -1585,7 +1585,7 @@ void InputDispatcher::prepareDispatchCycleLocked(nsecs_t currentTime,
     // to the list starting with the newly appended motion sample.
     if (resumeWithAppendedMotionSample) {
 #if DEBUG_BATCHING
-        LOGD("channel '%s' ~ Preparing a new dispatch cycle for additional motion samples "
+        ALOGD("channel '%s' ~ Preparing a new dispatch cycle for additional motion samples "
                 "that cannot be streamed because the motion event has already been consumed.",
                 connection->getInputChannelName());
 #endif
@@ -1606,7 +1606,7 @@ void InputDispatcher::prepareDispatchCycleLocked(nsecs_t currentTime,
 void InputDispatcher::startDispatchCycleLocked(nsecs_t currentTime,
         const sp<Connection>& connection) {
 #if DEBUG_DISPATCH_CYCLE
-    LOGD("channel '%s' ~ startDispatchCycle",
+    ALOGD("channel '%s' ~ startDispatchCycle",
             connection->getInputChannelName());
 #endif
 
@@ -1632,12 +1632,12 @@ void InputDispatcher::startDispatchCycleLocked(nsecs_t currentTime,
     // XXX: This code is a proof of concept only.  Not ready for prime time.
     if (consistency == InputState::TOLERABLE) {
 #if DEBUG_DISPATCH_CYCLE
-        LOGD("channel '%s' ~ Sending an event that is inconsistent with the connection's "
+        ALOGD("channel '%s' ~ Sending an event that is inconsistent with the connection's "
                 "current input state but that is likely to be tolerated by the application.",
                 connection->getInputChannelName());
 #endif
     } else if (consistency == InputState::BROKEN) {
-        LOGI("channel '%s' ~ Dropping an event that is inconsistent with the connection's "
+        ALOGI("channel '%s' ~ Dropping an event that is inconsistent with the connection's "
                 "current input state and that is likely to cause the application to crash.",
                 connection->getInputChannelName());
         startNextDispatchCycleLocked(currentTime, connection);
@@ -1662,7 +1662,7 @@ void InputDispatcher::startDispatchCycleLocked(nsecs_t currentTime,
                 keyEntry->eventTime);
 
         if (status) {
-            LOGE("channel '%s' ~ Could not publish key event, "
+            ALOGE("channel '%s' ~ Could not publish key event, "
                     "status=%d", connection->getInputChannelName(), status);
             abortBrokenDispatchCycleLocked(currentTime, connection);
             return;
@@ -1712,7 +1712,7 @@ void InputDispatcher::startDispatchCycleLocked(nsecs_t currentTime,
                 firstMotionSample->pointerCoords);
 
         if (status) {
-            LOGE("channel '%s' ~ Could not publish motion event, "
+            ALOGE("channel '%s' ~ Could not publish motion event, "
                     "status=%d", connection->getInputChannelName(), status);
             abortBrokenDispatchCycleLocked(currentTime, connection);
             return;
@@ -1725,14 +1725,14 @@ void InputDispatcher::startDispatchCycleLocked(nsecs_t currentTime,
                     nextMotionSample->eventTime, nextMotionSample->pointerCoords);
             if (status == NO_MEMORY) {
 #if DEBUG_DISPATCH_CYCLE
-                    LOGD("channel '%s' ~ Shared memory buffer full.  Some motion samples will "
+                    ALOGD("channel '%s' ~ Shared memory buffer full.  Some motion samples will "
                             "be sent in the next dispatch cycle.",
                             connection->getInputChannelName());
 #endif
                 break;
             }
             if (status != OK) {
-                LOGE("channel '%s' ~ Could not append motion sample "
+                ALOGE("channel '%s' ~ Could not append motion sample "
                         "for a reason other than out of memory, status=%d",
                         connection->getInputChannelName(), status);
                 abortBrokenDispatchCycleLocked(currentTime, connection);
@@ -1754,7 +1754,7 @@ void InputDispatcher::startDispatchCycleLocked(nsecs_t currentTime,
     // Send the dispatch signal.
     status = connection->inputPublisher.sendDispatchSignal();
     if (status) {
-        LOGE("channel '%s' ~ Could not send dispatch signal, status=%d",
+        ALOGE("channel '%s' ~ Could not send dispatch signal, status=%d",
                 connection->getInputChannelName(), status);
         abortBrokenDispatchCycleLocked(currentTime, connection);
         return;
@@ -1771,7 +1771,7 @@ void InputDispatcher::startDispatchCycleLocked(nsecs_t currentTime,
 void InputDispatcher::finishDispatchCycleLocked(nsecs_t currentTime,
         const sp<Connection>& connection) {
 #if DEBUG_DISPATCH_CYCLE
-    LOGD("channel '%s' ~ finishDispatchCycle - %01.1fms since event, "
+    ALOGD("channel '%s' ~ finishDispatchCycle - %01.1fms since event, "
             "%01.1fms since dispatch",
             connection->getInputChannelName(),
             connection->getEventLatencyMillis(currentTime),
@@ -1791,7 +1791,7 @@ void InputDispatcher::finishDispatchCycleLocked(nsecs_t currentTime,
     // while waiting for the next dispatch cycle to begin.
     status_t status = connection->inputPublisher.reset();
     if (status) {
-        LOGE("channel '%s' ~ Could not reset publisher, status=%d",
+        ALOGE("channel '%s' ~ Could not reset publisher, status=%d",
                 connection->getInputChannelName(), status);
         abortBrokenDispatchCycleLocked(currentTime, connection);
         return;
@@ -1838,7 +1838,7 @@ void InputDispatcher::startNextDispatchCycleLocked(nsecs_t currentTime,
 void InputDispatcher::abortBrokenDispatchCycleLocked(nsecs_t currentTime,
         const sp<Connection>& connection) {
 #if DEBUG_DISPATCH_CYCLE
-    LOGD("channel '%s' ~ abortBrokenDispatchCycle - broken=%s",
+    ALOGD("channel '%s' ~ abortBrokenDispatchCycle - broken=%s",
             connection->getInputChannelName(), toString(broken));
 #endif
 
@@ -1875,7 +1875,7 @@ int InputDispatcher::handleReceiveCallback(int receiveFd, int events, void* data
 
         ssize_t connectionIndex = d->mConnectionsByReceiveFd.indexOfKey(receiveFd);
         if (connectionIndex < 0) {
-            LOGE("Received spurious receive callback for unknown input channel.  "
+            ALOGE("Received spurious receive callback for unknown input channel.  "
                     "fd=%d, events=0x%x", receiveFd, events);
             return 0; // remove the callback
         }
@@ -1884,7 +1884,7 @@ int InputDispatcher::handleReceiveCallback(int receiveFd, int events, void* data
 
         sp<Connection> connection = d->mConnectionsByReceiveFd.valueAt(connectionIndex);
         if (events & (ALOOPER_EVENT_ERROR | ALOOPER_EVENT_HANGUP)) {
-            LOGE("channel '%s' ~ Consumer closed input channel or an error occurred.  "
+            ALOGE("channel '%s' ~ Consumer closed input channel or an error occurred.  "
                     "events=0x%x", connection->getInputChannelName(), events);
             d->abortBrokenDispatchCycleLocked(currentTime, connection);
             d->runCommandsLockedInterruptible();
@@ -1892,14 +1892,14 @@ int InputDispatcher::handleReceiveCallback(int receiveFd, int events, void* data
         }
 
         if (! (events & ALOOPER_EVENT_INPUT)) {
-            LOGW("channel '%s' ~ Received spurious callback for unhandled poll event.  "
+            ALOGW("channel '%s' ~ Received spurious callback for unhandled poll event.  "
                     "events=0x%x", connection->getInputChannelName(), events);
             return 1;
         }
 
         status_t status = connection->inputPublisher.receiveFinishedSignal();
         if (status) {
-            LOGE("channel '%s' ~ Failed to receive finished signal.  status=%d",
+            ALOGE("channel '%s' ~ Failed to receive finished signal.  status=%d",
                     connection->getInputChannelName(), status);
             d->abortBrokenDispatchCycleLocked(currentTime, connection);
             d->runCommandsLockedInterruptible();
@@ -1942,7 +1942,7 @@ void InputDispatcher::synthesizeCancelationEventsForConnectionLocked(
     if (! mTempCancelationEvents.isEmpty()
             && connection->status != Connection::STATUS_BROKEN) {
 #if DEBUG_OUTBOUND_EVENT_DETAILS
-        LOGD("channel '%s' ~ Synthesized %d cancelation events to bring channel back in sync "
+        ALOGD("channel '%s' ~ Synthesized %d cancelation events to bring channel back in sync "
                 "with reality: %s, options=%d.",
                 connection->getInputChannelName(), mTempCancelationEvents.size(), reason, options);
 #endif
@@ -2065,7 +2065,7 @@ InputDispatcher::splitMotionEvent(const MotionEntry* originalMotionEntry, BitSet
 
 void InputDispatcher::notifyConfigurationChanged(nsecs_t eventTime) {
 #if DEBUG_INBOUND_EVENT_DETAILS
-    LOGD("notifyConfigurationChanged - eventTime=%lld", eventTime);
+    ALOGD("notifyConfigurationChanged - eventTime=%lld", eventTime);
 #endif
 
     bool needWake;
@@ -2085,7 +2085,7 @@ void InputDispatcher::notifyKey(nsecs_t eventTime, int32_t deviceId, int32_t sou
         uint32_t policyFlags, int32_t action, int32_t flags,
         int32_t keyCode, int32_t scanCode, int32_t metaState, nsecs_t downTime) {
 #if DEBUG_INBOUND_EVENT_DETAILS
-    LOGD("notifyKey - eventTime=%lld, deviceId=0x%x, source=0x%x, policyFlags=0x%x, action=0x%x, "
+    ALOGD("notifyKey - eventTime=%lld, deviceId=0x%x, source=0x%x, policyFlags=0x%x, action=0x%x, "
             "flags=0x%x, keyCode=0x%x, scanCode=0x%x, metaState=0x%x, downTime=%lld",
             eventTime, deviceId, source, policyFlags, action, flags,
             keyCode, scanCode, metaState, downTime);
@@ -2120,13 +2120,13 @@ void InputDispatcher::notifyMotion(nsecs_t eventTime, int32_t deviceId, int32_t 
         uint32_t pointerCount, const int32_t* pointerIds, const PointerCoords* pointerCoords,
         float xPrecision, float yPrecision, nsecs_t downTime) {
 #if DEBUG_INBOUND_EVENT_DETAILS
-    LOGD("notifyMotion - eventTime=%lld, deviceId=0x%x, source=0x%x, policyFlags=0x%x, "
+    ALOGD("notifyMotion - eventTime=%lld, deviceId=0x%x, source=0x%x, policyFlags=0x%x, "
             "action=0x%x, flags=0x%x, metaState=0x%x, edgeFlags=0x%x, "
             "xPrecision=%f, yPrecision=%f, downTime=%lld",
             eventTime, deviceId, source, policyFlags, action, flags, metaState, edgeFlags,
             xPrecision, yPrecision, downTime);
     for (uint32_t i = 0; i < pointerCount; i++) {
-        LOGD("  Pointer %d: id=%d, x=%f, y=%f, pressure=%f, size=%f, "
+        ALOGD("  Pointer %d: id=%d, x=%f, y=%f, pressure=%f, size=%f, "
                 "touchMajor=%f, touchMinor=%f, toolMajor=%f, toolMinor=%f, "
                 "orientation=%f",
                 i, pointerIds[i], pointerCoords[i].x, pointerCoords[i].y,
@@ -2179,7 +2179,7 @@ void InputDispatcher::notifyMotion(nsecs_t eventTime, int32_t deviceId, int32_t 
                 // Do the batching magic.
                 mAllocator.appendMotionSample(motionEntry, eventTime, pointerCoords);
 #if DEBUG_BATCHING
-                LOGD("Appended motion sample onto batch for most recent "
+                ALOGD("Appended motion sample onto batch for most recent "
                         "motion event for this device in the inbound queue.");
 #endif
                 return; // done!
@@ -2237,7 +2237,7 @@ void InputDispatcher::notifyMotion(nsecs_t eventTime, int32_t deviceId, int32_t 
                     // that we can stream onto.  Append the motion sample and resume dispatch.
                     mAllocator.appendMotionSample(motionEntry, eventTime, pointerCoords);
 #if DEBUG_BATCHING
-                    LOGD("Appended motion sample onto batch for most recently dispatched "
+                    ALOGD("Appended motion sample onto batch for most recently dispatched "
                             "motion event for this device in the outbound queues.  "
                             "Attempting to stream the motion sample.");
 #endif
@@ -2270,7 +2270,7 @@ NoBatchingOrStreaming:;
 void InputDispatcher::notifySwitch(nsecs_t when, int32_t switchCode, int32_t switchValue,
         uint32_t policyFlags) {
 #if DEBUG_INBOUND_EVENT_DETAILS
-    LOGD("notifySwitch - switchCode=%d, switchValue=%d, policyFlags=0x%x",
+    ALOGD("notifySwitch - switchCode=%d, switchValue=%d, policyFlags=0x%x",
             switchCode, switchValue, policyFlags);
 #endif
 
@@ -2281,7 +2281,7 @@ void InputDispatcher::notifySwitch(nsecs_t when, int32_t switchCode, int32_t swi
 int32_t InputDispatcher::injectInputEvent(const InputEvent* event,
         int32_t injectorPid, int32_t injectorUid, int32_t syncMode, int32_t timeoutMillis) {
 #if DEBUG_INBOUND_EVENT_DETAILS
-    LOGD("injectInputEvent - eventType=%d, injectorPid=%d, injectorUid=%d, "
+    ALOGD("injectInputEvent - eventType=%d, injectorPid=%d, injectorUid=%d, "
             "syncMode=%d, timeoutMillis=%d",
             event->getType(), injectorPid, injectorUid, syncMode, timeoutMillis);
 #endif
@@ -2349,7 +2349,7 @@ int32_t InputDispatcher::injectInputEvent(const InputEvent* event,
     }
 
     default:
-        LOGW("Cannot inject event of type %d", event->getType());
+        ALOGW("Cannot inject event of type %d", event->getType());
         return INPUT_EVENT_INJECTION_FAILED;
     }
 
@@ -2384,7 +2384,7 @@ int32_t InputDispatcher::injectInputEvent(const InputEvent* event,
                 nsecs_t remainingTimeout = endTime - now();
                 if (remainingTimeout <= 0) {
 #if DEBUG_INJECTION
-                    LOGD("injectInputEvent - Timed out waiting for injection result "
+                    ALOGD("injectInputEvent - Timed out waiting for injection result "
                             "to become available.");
 #endif
                     injectionResult = INPUT_EVENT_INJECTION_TIMED_OUT;
@@ -2398,13 +2398,13 @@ int32_t InputDispatcher::injectInputEvent(const InputEvent* event,
                     && syncMode == INPUT_EVENT_INJECTION_SYNC_WAIT_FOR_FINISHED) {
                 while (injectionState->pendingForegroundDispatches != 0) {
 #if DEBUG_INJECTION
-                    LOGD("injectInputEvent - Waiting for %d pending foreground dispatches.",
+                    ALOGD("injectInputEvent - Waiting for %d pending foreground dispatches.",
                             injectionState->pendingForegroundDispatches);
 #endif
                     nsecs_t remainingTimeout = endTime - now();
                     if (remainingTimeout <= 0) {
 #if DEBUG_INJECTION
-                    LOGD("injectInputEvent - Timed out waiting for pending foreground "
+                    ALOGD("injectInputEvent - Timed out waiting for pending foreground "
                             "dispatches to finish.");
 #endif
                         injectionResult = INPUT_EVENT_INJECTION_TIMED_OUT;
@@ -2420,7 +2420,7 @@ int32_t InputDispatcher::injectInputEvent(const InputEvent* event,
     } // release lock
 
 #if DEBUG_INJECTION
-    LOGD("injectInputEvent - Finished with result %d.  "
+    ALOGD("injectInputEvent - Finished with result %d.  "
             "injectorPid=%d, injectorUid=%d",
             injectionResult, injectorPid, injectorUid);
 #endif
@@ -2437,7 +2437,7 @@ void InputDispatcher::setInjectionResultLocked(EventEntry* entry, int32_t inject
     InjectionState* injectionState = entry->injectionState;
     if (injectionState) {
 #if DEBUG_INJECTION
-        LOGD("Setting input event injection result to %d.  "
+        ALOGD("Setting input event injection result to %d.  "
                 "injectorPid=%d, injectorUid=%d",
                  injectionResult, injectionState->injectorPid, injectionState->injectorUid);
 #endif
@@ -2446,16 +2446,16 @@ void InputDispatcher::setInjectionResultLocked(EventEntry* entry, int32_t inject
             // Log the outcome since the injector did not wait for the injection result.
             switch (injectionResult) {
             case INPUT_EVENT_INJECTION_SUCCEEDED:
-                LOGV("Asynchronous input event injection succeeded.");
+                ALOGV("Asynchronous input event injection succeeded.");
                 break;
             case INPUT_EVENT_INJECTION_FAILED:
-                LOGW("Asynchronous input event injection failed.");
+                ALOGW("Asynchronous input event injection failed.");
                 break;
             case INPUT_EVENT_INJECTION_PERMISSION_DENIED:
-                LOGW("Asynchronous input event injection permission denied.");
+                ALOGW("Asynchronous input event injection permission denied.");
                 break;
             case INPUT_EVENT_INJECTION_TIMED_OUT:
-                LOGW("Asynchronous input event injection timed out.");
+                ALOGW("Asynchronous input event injection timed out.");
                 break;
             }
         }
@@ -2495,7 +2495,7 @@ const InputWindow* InputDispatcher::getWindowLocked(const sp<InputChannel>& inpu
 
 void InputDispatcher::setInputWindows(const Vector<InputWindow>& inputWindows) {
 #if DEBUG_FOCUS
-    LOGD("setInputWindows");
+    ALOGD("setInputWindows");
 #endif
     { // acquire lock
         AutoMutex _l(mLock);
@@ -2525,7 +2525,7 @@ void InputDispatcher::setInputWindows(const Vector<InputWindow>& inputWindows) {
         if (oldFocusedWindowChannel != NULL) {
             if (!mFocusedWindow || oldFocusedWindowChannel != mFocusedWindow->inputChannel) {
 #if DEBUG_FOCUS
-                LOGD("Focus left window: %s",
+                ALOGD("Focus left window: %s",
                         oldFocusedWindowChannel->getName().string());
 #endif
                 synthesizeCancelationEventsForInputChannelLocked(oldFocusedWindowChannel,
@@ -2535,7 +2535,7 @@ void InputDispatcher::setInputWindows(const Vector<InputWindow>& inputWindows) {
         }
         if (mFocusedWindow && oldFocusedWindowChannel == NULL) {
 #if DEBUG_FOCUS
-            LOGD("Focus entered window: %s",
+            ALOGD("Focus entered window: %s",
                     mFocusedWindow->inputChannel->getName().string());
 #endif
         }
@@ -2548,7 +2548,7 @@ void InputDispatcher::setInputWindows(const Vector<InputWindow>& inputWindows) {
                 i += 1;
             } else {
 #if DEBUG_FOCUS
-                LOGD("Touched window was removed: %s", touchedWindow.channel->getName().string());
+                ALOGD("Touched window was removed: %s", touchedWindow.channel->getName().string());
 #endif
                 synthesizeCancelationEventsForInputChannelLocked(touchedWindow.channel,
                         InputState::CANCEL_POINTER_EVENTS, "touched window was removed");
@@ -2567,7 +2567,7 @@ void InputDispatcher::setInputWindows(const Vector<InputWindow>& inputWindows) {
 
 void InputDispatcher::setFocusedApplication(const InputApplication* inputApplication) {
 #if DEBUG_FOCUS
-    LOGD("setFocusedApplication");
+    ALOGD("setFocusedApplication");
 #endif
     { // acquire lock
         AutoMutex _l(mLock);
@@ -2597,7 +2597,7 @@ void InputDispatcher::releaseFocusedApplicationLocked() {
 
 void InputDispatcher::setInputDispatchMode(bool enabled, bool frozen) {
 #if DEBUG_FOCUS
-    LOGD("setInputDispatchMode: enabled=%d, frozen=%d", enabled, frozen);
+    ALOGD("setInputDispatchMode: enabled=%d, frozen=%d", enabled, frozen);
 #endif
 
     bool changed;
@@ -2633,7 +2633,7 @@ void InputDispatcher::setInputDispatchMode(bool enabled, bool frozen) {
 
 void InputDispatcher::resetAndDropEverythingLocked(const char* reason) {
 #if DEBUG_FOCUS
-    LOGD("Resetting and dropping all events (%s).", reason);
+    ALOGD("Resetting and dropping all events (%s).", reason);
 #endif
 
     synthesizeCancelationEventsForAllConnectionsLocked(InputState::CANCEL_ALL_EVENTS, reason);
@@ -2657,7 +2657,7 @@ void InputDispatcher::logDispatchStateLocked() {
         if (*end == '\n') {
             *(end++) = '\0';
         }
-        LOGD("%s", start);
+        ALOGD("%s", start);
         start = end;
     }
 }
@@ -2757,7 +2757,7 @@ void InputDispatcher::dumpDispatchStateLocked(String8& dump) {
 
 status_t InputDispatcher::registerInputChannel(const sp<InputChannel>& inputChannel, bool monitor) {
 #if DEBUG_REGISTRATION
-    LOGD("channel '%s' ~ registerInputChannel - monitor=%s", inputChannel->getName().string(),
+    ALOGD("channel '%s' ~ registerInputChannel - monitor=%s", inputChannel->getName().string(),
             toString(monitor));
 #endif
 
@@ -2765,7 +2765,7 @@ status_t InputDispatcher::registerInputChannel(const sp<InputChannel>& inputChan
         AutoMutex _l(mLock);
 
         if (getConnectionIndexLocked(inputChannel) >= 0) {
-            LOGW("Attempted to register already registered input channel '%s'",
+            ALOGW("Attempted to register already registered input channel '%s'",
                     inputChannel->getName().string());
             return BAD_VALUE;
         }
@@ -2773,7 +2773,7 @@ status_t InputDispatcher::registerInputChannel(const sp<InputChannel>& inputChan
         sp<Connection> connection = new Connection(inputChannel);
         status_t status = connection->initialize();
         if (status) {
-            LOGE("Failed to initialize input publisher for input channel '%s', status=%d",
+            ALOGE("Failed to initialize input publisher for input channel '%s', status=%d",
                     inputChannel->getName().string(), status);
             return status;
         }
@@ -2794,7 +2794,7 @@ status_t InputDispatcher::registerInputChannel(const sp<InputChannel>& inputChan
 
 status_t InputDispatcher::unregisterInputChannel(const sp<InputChannel>& inputChannel) {
 #if DEBUG_REGISTRATION
-    LOGD("channel '%s' ~ unregisterInputChannel", inputChannel->getName().string());
+    ALOGD("channel '%s' ~ unregisterInputChannel", inputChannel->getName().string());
 #endif
 
     { // acquire lock
@@ -2802,7 +2802,7 @@ status_t InputDispatcher::unregisterInputChannel(const sp<InputChannel>& inputCh
 
         ssize_t connectionIndex = getConnectionIndexLocked(inputChannel);
         if (connectionIndex < 0) {
-            LOGW("Attempted to unregister already unregistered input channel '%s'",
+            ALOGW("Attempted to unregister already unregistered input channel '%s'",
                     inputChannel->getName().string());
             return BAD_VALUE;
         }
@@ -2873,7 +2873,7 @@ void InputDispatcher::onDispatchCycleFinishedLocked(
 
 void InputDispatcher::onDispatchCycleBrokenLocked(
         nsecs_t currentTime, const sp<Connection>& connection) {
-    LOGE("channel '%s' ~ Channel is unrecoverably broken and will be disposed!",
+    ALOGE("channel '%s' ~ Channel is unrecoverably broken and will be disposed!",
             connection->getInputChannelName());
 
     CommandEntry* commandEntry = postCommandLocked(
@@ -2884,7 +2884,7 @@ void InputDispatcher::onDispatchCycleBrokenLocked(
 void InputDispatcher::onANRLocked(
         nsecs_t currentTime, const InputApplication* application, const InputWindow* window,
         nsecs_t eventTime, nsecs_t waitStartTime) {
-    LOGI("Application is not responding: %s.  "
+    ALOGI("Application is not responding: %s.  "
             "%01.1fms since event, %01.1fms since wait started",
             getApplicationWindowLabelLocked(application, window).string(),
             (currentTime - eventTime) / 1000000.0,

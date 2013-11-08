@@ -108,7 +108,7 @@ BackupDataWriter::WriteEntityHeader(const String8& key, size_t dataSize)
         k = key;
     }
     if (false) {
-        LOGD("Writing entity: prefix='%s' key='%s' dataSize=%d", m_keyPrefix.string(), key.string(),
+        ALOGD("Writing entity: prefix='%s' key='%s' dataSize=%d", m_keyPrefix.string(), key.string(),
                 dataSize);
     }
 
@@ -196,7 +196,7 @@ BackupDataReader::Status()
                 m_done = true; \
             } else { \
                 m_status = errno; \
-                LOGD("CHECK_SIZE(a=%ld e=%ld) failed at line %d m_status='%s'", \
+                ALOGD("CHECK_SIZE(a=%ld e=%ld) failed at line %d m_status='%s'", \
                     long(actual), long(expected), __LINE__, strerror(m_status)); \
             } \
             return m_status; \
@@ -206,7 +206,7 @@ BackupDataReader::Status()
     do { \
         status_t err = skip_padding(); \
         if (err != NO_ERROR) { \
-            LOGD("SKIP_PADDING FAILED at line %d", __LINE__); \
+            ALOGD("SKIP_PADDING FAILED at line %d", __LINE__); \
             m_status = err; \
             return err; \
         } \
@@ -249,7 +249,7 @@ BackupDataReader::ReadNextHeader(bool* done, int* type)
         {
             m_header.entity.keyLen = fromlel(m_header.entity.keyLen);
             if (m_header.entity.keyLen <= 0) {
-                LOGD("Entity header at %d has keyLen<=0: 0x%08x\n", (int)m_pos,
+                ALOGD("Entity header at %d has keyLen<=0: 0x%08x\n", (int)m_pos,
                         (int)m_header.entity.keyLen);
                 m_status = EINVAL;
             }
@@ -273,7 +273,7 @@ BackupDataReader::ReadNextHeader(bool* done, int* type)
             break;
         }
         default:
-            LOGD("Chunk header at %d has invalid type: 0x%08x", (int)m_pos, (int)m_header.type);
+            ALOGD("Chunk header at %d has invalid type: 0x%08x", (int)m_pos, (int)m_header.type);
             m_status = EINVAL;
     }
     
@@ -326,7 +326,7 @@ BackupDataReader::ReadEntityData(void* data, size_t size)
         return -1;
     }
     int remaining = m_dataEndPos - m_pos;
-    //LOGD("ReadEntityData size=%d m_pos=0x%x m_dataEndPos=0x%x remaining=%d\n",
+    //ALOGD("ReadEntityData size=%d m_pos=0x%x m_dataEndPos=0x%x remaining=%d\n",
     //        size, m_pos, m_dataEndPos, remaining);
     if (remaining <= 0) {
         return 0;
@@ -334,7 +334,7 @@ BackupDataReader::ReadEntityData(void* data, size_t size)
     if (((int)size) > remaining) {
         size = remaining;
     }
-    //LOGD("   reading %d bytes", size);
+    //ALOGD("   reading %d bytes", size);
     int amt = read(m_fd, data, size);
     if (amt < 0) {
         m_status = errno;

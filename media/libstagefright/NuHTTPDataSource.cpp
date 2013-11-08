@@ -123,14 +123,14 @@ status_t NuHTTPDataSource::connect(
         const char *host, unsigned port, const char *path,
         const String8 &headers,
         off_t offset) {
-    LOGI("connect to %s:%u%s @%ld", host, port, path, offset);
+    ALOGI("connect to %s:%u%s @%ld", host, port, path, offset);
 
     bool needsToReconnect = true;
 
     if (mState == CONNECTED && host == mHost && port == mPort
             && offset == mOffset) {
         if (mContentLengthValid && mOffset == mContentLength) {
-            LOGI("Didn't have to reconnect, old one's still good.");
+            ALOGI("Didn't have to reconnect, old one's still good.");
             needsToReconnect = false;
         }
     }
@@ -212,14 +212,14 @@ status_t NuHTTPDataSource::connect(
                 // chunked.
 
                 if (!strcasecmp(value.c_str(), "chunked")) {
-                    LOGI("Chunked transfer encoding applied.");
+                    ALOGI("Chunked transfer encoding applied.");
                     mHasChunkedTransferEncoding = true;
                     mChunkDataBytesLeft = 0;
                 } else {
                     mState = DISCONNECTED;
                     mHTTP.disconnect();
 
-                    LOGE("We don't support '%s' transfer encoding.", value.c_str());
+                    ALOGE("We don't support '%s' transfer encoding.", value.c_str());
 
                     return ERROR_UNSUPPORTED;
                 }
@@ -236,12 +236,12 @@ status_t NuHTTPDataSource::connect(
                 mContentLength = (off_t)x;
                 mContentLengthValid = true;
             } else {
-                LOGW("Server did not give us the content length!");
+                ALOGW("Server did not give us the content length!");
             }
         } else {
             if (httpStatus != 206 /* Partial Content */) {
                 // We requested a range but the server didn't support that.
-                LOGE("We requested a range but the server didn't "
+                ALOGE("We requested a range but the server didn't "
                      "support that.");
                 return ERROR_UNSUPPORTED;
             }
@@ -288,18 +288,18 @@ ssize_t NuHTTPDataSource::internalRead(void *data, size_t size) {
             return err;
         }
 
-        LOGV("line = '%s'", line);
+        ALOGV("line = '%s'", line);
 
         char *end;
         unsigned long n = strtoul(line, &end, 16);
 
         if (end == line || (*end != ';' && *end != '\0')) {
-            LOGE("malformed HTTP chunk '%s'", line);
+            ALOGE("malformed HTTP chunk '%s'", line);
             return ERROR_MALFORMED;
         }
 
         mChunkDataBytesLeft = n;
-        LOGV("chunk data size = %lu", n);
+        ALOGV("chunk data size = %lu", n);
 
         if (mChunkDataBytesLeft == 0) {
             mChunkDataBytesLeft = -1;
@@ -330,7 +330,7 @@ ssize_t NuHTTPDataSource::internalRead(void *data, size_t size) {
         }
 
         if (line[0] != '\0') {
-            LOGE("missing HTTP chunk terminator.");
+            ALOGE("missing HTTP chunk terminator.");
             return ERROR_MALFORMED;
         }
     }
@@ -339,7 +339,7 @@ ssize_t NuHTTPDataSource::internalRead(void *data, size_t size) {
 }
 
 ssize_t NuHTTPDataSource::readAt(off_t offset, void *data, size_t size) {
-    LOGV("readAt offset %ld, size %d", offset, size);
+    ALOGV("readAt offset %ld, size %d", offset, size);
 
     Mutex::Autolock autoLock(mLock);
 
@@ -447,11 +447,11 @@ void NuHTTPDataSource::applyTimeoutResponse() {
         char *end;
         long tmp = strtol(s, &end, 10);
         if (end == s || *end != '\0') {
-            LOGW("Illegal X-SocketTimeout value given.");
+            ALOGW("Illegal X-SocketTimeout value given.");
             return;
         }
 
-        LOGI("overriding default timeout, new timeout is %ld seconds", tmp);
+        ALOGI("overriding default timeout, new timeout is %ld seconds", tmp);
         mHTTP.setReceiveTimeout(tmp);
     }
 }

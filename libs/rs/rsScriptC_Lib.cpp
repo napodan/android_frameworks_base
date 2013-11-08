@@ -494,22 +494,22 @@ static uint32_t SC_allocGetDimFaces(RsAllocation va)
 
 static void SC_debugF(const char *s, float f)
 {
-    LOGE("%s %f", s, f);
+    ALOGE("%s %f", s, f);
 }
 
 static void SC_debugHexF(const char *s, float f)
 {
-    LOGE("%s 0x%x", s, *((int *) (&f)));
+    ALOGE("%s 0x%x", s, *((int *) (&f)));
 }
 
 static void SC_debugI32(const char *s, int32_t i)
 {
-    LOGE("%s %i", s, i);
+    ALOGE("%s %i", s, i);
 }
 
 static void SC_debugHexI32(const char *s, int32_t i)
 {
-    LOGE("%s 0x%x", s, i);
+    ALOGE("%s 0x%x", s, i);
 }
 
 static uchar4 SC_convertColorTo8888_f3(float r, float g, float b) {
@@ -545,17 +545,17 @@ static void SC_scriptCall(int scriptID)
 
 static void SC_debugP(int i, void *p)
 {
-    LOGE("debug P  %i  %p, %i", i, p, (int)p);
+    ALOGE("debug P  %i  %p, %i", i, p, (int)p);
 }
 
 static void SC_debugPi(int i, int p)
 {
-    LOGE("debug Pi %i  0x%08x, %i", i, p, (int)p);
+    ALOGE("debug Pi %i  0x%08x, %i", i, p, (int)p);
 }
 
 static void SC_debugPf(int i, float p)
 {
-    LOGE("debug Pf  %i  %f,   0x%08x", i, p, reinterpret_cast<uint32_t *>(&p)[0]);
+    ALOGE("debug Pf  %i  %f,   0x%08x", i, p, reinterpret_cast<uint32_t *>(&p)[0]);
 }
 
 int SC_divsi3(int a, int b)

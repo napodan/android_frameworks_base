@@ -81,7 +81,7 @@ public:
 
     virtual void binderDied(const wp<IBinder>& who)
     {
-        LOGI("Grim Reaper killing runtime...");
+        ALOGI("Grim Reaper killing runtime...");
         kill(getpid(), SIGKILL);
     }
 };
@@ -132,7 +132,7 @@ static int run(sp<ProcessState>& proc)
     sp<IServiceManager> sm = defaultServiceManager();
     sp<IBinder> am;
     while ((am = sm->getService(String16("activity"))) == NULL) {
-        LOGI("Waiting for activity manager...");
+        ALOGI("Waiting for activity manager...");
     }
     Parcel data, reply;
     // XXX Need to also supply a package name for this to work again.
@@ -143,7 +143,7 @@ static int run(sp<ProcessState>& proc)
     writeStringToParcel(data, gInitialApplication);
     writeStringToParcel(data, gInitialVerb);
     writeStringToParcel(data, gInitialData);
-LOGI("run() sending FIRST_CALL_TRANSACTION to activity manager");
+ALOGI("run() sending FIRST_CALL_TRANSACTION to activity manager");
     am->transact(IBinder::FIRST_CALL_TRANSACTION, data, &reply);
 
     if (proc->supportsProcesses()) {
@@ -209,16 +209,16 @@ static bool contextChecker(
  */
 static void boot_init()
 {
-    LOGI("Entered boot_init()!\n");
+    ALOGI("Entered boot_init()!\n");
     
     sp<ProcessState> proc(ProcessState::self());
-    LOGD("ProcessState: %p\n", proc.get());
+    ALOGD("ProcessState: %p\n", proc.get());
     proc->becomeContextManager(contextChecker, NULL);
     
     if (proc->supportsProcesses()) {
-        LOGI("Binder driver opened.  Multiprocess enabled.\n");
+        ALOGI("Binder driver opened.  Multiprocess enabled.\n");
     } else {
-        LOGI("Binder driver not found.  Processes not supported.\n");
+        ALOGI("Binder driver not found.  Processes not supported.\n");
     }
     
     sp<BServiceManager> sm = new BServiceManager;
@@ -232,7 +232,7 @@ static void redirectStdFds(void)
 {
     int fd = open("/dev/null", O_RDWR, 0);
     if (fd < 0) {
-        LOGW("Unable to open /dev/null: %s\n", strerror(errno));
+        ALOGW("Unable to open /dev/null: %s\n", strerror(errno));
     } else {
         dup2(fd, 0);
         dup2(fd, 1);
@@ -261,22 +261,22 @@ static void validateTime()
     
     fd = open("/dev/alarm", O_RDWR);
     if(fd < 0) {
-        LOGW("Unable to open alarm driver: %s\n", strerror(errno));
+        ALOGW("Unable to open alarm driver: %s\n", strerror(errno));
         return;
     }
     res = ioctl(fd, ANDROID_ALARM_GET_TIME(ANDROID_ALARM_RTC_WAKEUP), &ts);
     if(res < 0) {
-        LOGW("Unable to read rtc, %s\n", strerror(errno));
+        ALOGW("Unable to read rtc, %s\n", strerror(errno));
     }
     else if(ts.tv_sec >= min_time) {
         goto done;
     }
-    LOGW("Invalid time detected, %ld set to %ld\n", ts.tv_sec, min_time);
+    ALOGW("Invalid time detected, %ld set to %ld\n", ts.tv_sec, min_time);
     ts.tv_sec = min_time;
     ts.tv_nsec = 0;
     res = ioctl(fd, ANDROID_ALARM_SET_RTC, &ts);
     if(res < 0) {
-        LOGW("Unable to set rtc to %ld: %s\n", ts.tv_sec, strerror(errno));
+        ALOGW("Unable to set rtc to %ld: %s\n", ts.tv_sec, strerror(errno));
     }
 done:
     close(fd);
@@ -315,13 +315,13 @@ static status_t start_process(const char* name)
     pid_t child = fork();
     if (child < 0) {
         status_t err = errno;
-        LOGE("*** fork of child %s failed: %s", leaf.string(), strerror(err));
+        ALOGE("*** fork of child %s failed: %s", leaf.string(), strerror(err));
         return -errno;
     } else if (child == 0) {
-        LOGI("Executing: %s", path.string());
+        ALOGI("Executing: %s", path.string());
         execv(path.string(), const_cast<char**>(args.array()));
         int err = errno;
-        LOGE("Exec failed: %s\n", strerror(err));
+        ALOGE("Exec failed: %s\n", strerror(err));
         _exit(err);
     } else {
         SignalHandler::setChildHandler(child, DEFAULT_PROCESS_TAG,
@@ -354,9 +354,9 @@ int main(int argc, char* const argv[])
     //setvbuf(stdout, NULL, _IONBF, 0);
     //setvbuf(stderr, NULL, _IONBF, 0);
     
-    LOGI("commandline args:\n");
+    ALOGI("commandline args:\n");
     for (int i = 0; i < argc; i++)
-        LOGI("  %2d: '%s'\n", i, argv[i]);
+        ALOGI("  %2d: '%s'\n", i, argv[i]);
 #endif
 
     while (1) {
@@ -387,13 +387,13 @@ int main(int argc, char* const argv[])
             break;
         case '?':
         default:
-            LOGE("runtime: unrecognized flag -%c\n", ic);
+            ALOGE("runtime: unrecognized flag -%c\n", ic);
             usage(argv[0]);
             break;
         }
     }
     if (optind < argc) {
-        LOGE("runtime: extra stuff: %s\n", argv[optind]);
+        ALOGE("runtime: extra stuff: %s\n", argv[optind]);
         usage(argv[0]);
     }
 
@@ -431,7 +431,7 @@ int main(int argc, char* const argv[])
     char* assetDir = (char*) malloc(strlen(systemDir) + strlen(kAppSubdir) +1);
     sprintf(assetDir, "%s%s", systemDir, kAppSubdir);
 
-    LOGI("Startup: sys='%s' asset='%s' data='%s'\n",
+    ALOGI("Startup: sys='%s' asset='%s' data='%s'\n",
         systemDir, assetDir, dataDir);
     free(systemDir);
     free(dataDir);
@@ -448,7 +448,7 @@ int main(int argc, char* const argv[])
     // because some of our code or one of our libraries could change the
     // directory out from under us.  Preserve the behavior for now.
     if (chdir(assetDir) != 0) {
-        LOGW("WARNING: could not change dir to '%s': %s\n",
+        ALOGW("WARNING: could not change dir to '%s': %s\n",
              assetDir, strerror(errno));
     }
     free(assetDir);

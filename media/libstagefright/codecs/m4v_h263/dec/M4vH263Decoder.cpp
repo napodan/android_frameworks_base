@@ -40,7 +40,7 @@ M4vH263Decoder::M4vH263Decoder(const sp<MediaSource> &source)
       mNumSamplesOutput(0),
       mTargetTimeUs(-1) {
 
-    LOGV("M4vH263Decoder");
+    ALOGV("M4vH263Decoder");
     memset(mHandle, 0, sizeof(tagvideoDecControls));
     mFormat = new MetaData;
     mFormat->setCString(kKeyMIMEType, MEDIA_MIMETYPE_VIDEO_RAW);
@@ -127,7 +127,7 @@ status_t M4vH263Decoder::start(MetaData *) {
     if (vol_data[0]) free(vol_data[0]);
 
     if (success != PV_TRUE) {
-        LOGW("PVInitVideoDecoder failed. Unsupported content?");
+        ALOGW("PVInitVideoDecoder failed. Unsupported content?");
         return ERROR_UNSUPPORTED;
     }
 
@@ -212,7 +212,7 @@ status_t M4vH263Decoder::read(
                 &useExtTimestamp,
                 (uint8_t *)mFrames[mNumSamplesOutput & 0x01]->data())
             != PV_TRUE) {
-        LOGE("failed to decode video frame.");
+        ALOGE("failed to decode video frame.");
 
         inputBuffer->release();
         inputBuffer = NULL;
@@ -259,9 +259,9 @@ status_t M4vH263Decoder::read(
             // timestamp and we won't return the current one.
             skipFrame = true;
 
-            LOGV("skipping frame at %lld us", timeUs);
+            ALOGV("skipping frame at %lld us", timeUs);
         } else {
-            LOGV("found target frame at %lld us", timeUs);
+            ALOGV("found target frame at %lld us", timeUs);
 
             mTargetTimeUs = -1;
         }
@@ -292,7 +292,7 @@ void M4vH263Decoder::releaseFrames() {
 }
 
 void M4vH263Decoder::signalBufferReturned(MediaBuffer *buffer) {
-    LOGV("signalBufferReturned");
+    ALOGV("signalBufferReturned");
 }
 
 

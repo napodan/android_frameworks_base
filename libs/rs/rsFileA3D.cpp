@@ -42,26 +42,26 @@ bool FileA3D::load(Context *rsc, FILE *f)
     char magicString[12];
     size_t len;
 
-    LOGE("file open 1");
+    ALOGE("file open 1");
     len = fread(magicString, 1, 12, f);
     if ((len != 12) ||
         memcmp(magicString, "Android3D_ff", 12)) {
         return false;
     }
 
-    LOGE("file open 2");
+    ALOGE("file open 2");
     len = fread(&mMajorVersion, 1, sizeof(mMajorVersion), f);
     if (len != sizeof(mMajorVersion)) {
         return false;
     }
 
-    LOGE("file open 3");
+    ALOGE("file open 3");
     len = fread(&mMinorVersion, 1, sizeof(mMinorVersion), f);
     if (len != sizeof(mMinorVersion)) {
         return false;
     }
 
-    LOGE("file open 4");
+    ALOGE("file open 4");
     uint32_t flags;
     len = fread(&flags, 1, sizeof(flags), f);
     if (len != sizeof(flags)) {
@@ -69,7 +69,7 @@ bool FileA3D::load(Context *rsc, FILE *f)
     }
     mUse64BitOffsets = (flags & 1) != 0;
 
-    LOGE("file open 64bit = %i", mUse64BitOffsets);
+    ALOGE("file open 64bit = %i", mUse64BitOffsets);
 
     if (mUse64BitOffsets) {
         len = fread(&mDataSize, 1, sizeof(mDataSize), f);
@@ -85,7 +85,7 @@ bool FileA3D::load(Context *rsc, FILE *f)
         mDataSize = tmp;
     }
 
-    LOGE("file open size = %lli", mDataSize);
+    ALOGE("file open size = %lli", mDataSize);
 
     // We should know enough to read the file in at this point.
     fseek(f, SEEK_SET, 0);
@@ -99,7 +99,7 @@ bool FileA3D::load(Context *rsc, FILE *f)
         return false;
     }
 
-    LOGE("file start processing");
+    ALOGE("file start processing");
     return process(rsc);
 }
 
@@ -108,7 +108,7 @@ bool FileA3D::processIndex(Context *rsc, A3DIndexEntry *ie)
     bool ret = false;
     IO io(mData + ie->mOffset, mUse64BitOffsets);
 
-    LOGE("process index, type %i", ie->mType);
+    ALOGE("process index, type %i", ie->mType);
 
     switch(ie->mType) {
     case CHUNK_ELEMENT:
@@ -127,7 +127,7 @@ bool FileA3D::processIndex(Context *rsc, A3DIndexEntry *ie)
         processChunk_Primitive(rsc, &io, ie);
         break;
     default:
-        LOGE("FileA3D Unknown chunk type");
+        ALOGE("FileA3D Unknown chunk type");
         break;
     }
     return (ie->mRsObj != NULL);
@@ -135,75 +135,75 @@ bool FileA3D::processIndex(Context *rsc, A3DIndexEntry *ie)
 
 bool FileA3D::process(Context *rsc)
 {
-    LOGE("process");
+    ALOGE("process");
     IO io(mData + 12, mUse64BitOffsets);
     bool ret = true;
 
     // Build the index first
-    LOGE("process 1");
+    ALOGE("process 1");
     io.loadU32(); // major version, already loaded
     io.loadU32(); // minor version, already loaded
-    LOGE("process 2");
+    ALOGE("process 2");
 
     io.loadU32();  // flags
     io.loadOffset(); // filesize, already loaded.
-    LOGE("process 4");
+    ALOGE("process 4");
     uint64_t mIndexOffset = io.loadOffset();
     uint64_t mStringOffset = io.loadOffset();
 
-    LOGE("process mIndexOffset= 0x%016llx", mIndexOffset);
-    LOGE("process mStringOffset= 0x%016llx", mStringOffset);
+    ALOGE("process mIndexOffset= 0x%016llx", mIndexOffset);
+    ALOGE("process mStringOffset= 0x%016llx", mStringOffset);
 
     IO index(mData + mIndexOffset, mUse64BitOffsets);
     IO stringTable(mData + mStringOffset, mUse64BitOffsets);
 
     uint32_t stringEntryCount = stringTable.loadU32();
-    LOGE("stringEntryCount %i", stringEntryCount);
+    ALOGE("stringEntryCount %i", stringEntryCount);
     mStrings.setCapacity(stringEntryCount);
     mStringIndexValues.setCapacity(stringEntryCount);
     if (stringEntryCount) {
         uint32_t stringType = stringTable.loadU32();
-        LOGE("stringType %i", stringType);
+        ALOGE("stringType %i", stringType);
         rsAssert(stringType==0);
         for (uint32_t ct = 0; ct < stringEntryCount; ct++) {
             uint64_t offset = stringTable.loadOffset();
-            LOGE("string offset 0x%016llx", offset);
+            ALOGE("string offset 0x%016llx", offset);
             IO tmp(mData + offset, mUse64BitOffsets);
             String8 s;
             tmp.loadString(&s);
-            LOGE("string %s", s.string());
+            ALOGE("string %s", s.string());
             mStrings.push(s);
         }
     }
 
-    LOGE("strings done");
+    ALOGE("strings done");
     uint32_t indexEntryCount = index.loadU32();
-    LOGE("index count %i", indexEntryCount);
+    ALOGE("index count %i", indexEntryCount);
     mIndex.setCapacity(indexEntryCount);
     for (uint32_t ct = 0; ct < indexEntryCount; ct++) {
         A3DIndexEntry e;
         uint32_t stringIndex = index.loadU32();
-        LOGE("index %i", ct);
-        LOGE("  string index %i", stringIndex);
+        ALOGE("index %i", ct);
+        ALOGE("  string index %i", stringIndex);
         e.mType = (A3DChunkType)index.loadU32();
-        LOGE("  type %i", e.mType);
+        ALOGE("  type %i", e.mType);
         e.mOffset = index.loadOffset();
-        LOGE("  offset 0x%016llx", e.mOffset);
+        ALOGE("  offset 0x%016llx", e.mOffset);
 
         if (stringIndex && (stringIndex < mStrings.size())) {
             e.mID = mStrings[stringIndex];
             mStringIndexValues.editItemAt(stringIndex) = ct;
-            LOGE("  id %s", e.mID.string());
+            ALOGE("  id %s", e.mID.string());
         }
 
         mIndex.push(e);
     }
-    LOGE("index done");
+    ALOGE("index done");
 
     // At this point the index should be fully populated.
     // We can now walk though it and load all the objects.
     for (uint32_t ct = 0; ct < indexEntryCount; ct++) {
-        LOGE("processing index entry %i", ct);
+        ALOGE("processing index entry %i", ct);
         processIndex(rsc, &mIndex.editItemAt(ct));
     }
 
@@ -232,9 +232,9 @@ uint64_t FileA3D::IO::loadOffset()
 
 void FileA3D::IO::loadString(String8 *s)
 {
-    LOGE("loadString");
+    ALOGE("loadString");
     uint32_t len = loadU32();
-    LOGE("loadString len %i", len);
+    ALOGE("loadString len %i", len);
     s->setTo((const char *)&mData[mPos], len);
     mPos += len;
 }
@@ -265,7 +265,7 @@ void FileA3D::processChunk_Primitive(Context *rsc, IO *io, A3DIndexEntry *ie)
     uint32_t bits = io->loadU8();
     p->mType = (RsPrimitive)io->loadU8();
 
-    LOGE("processChunk_Primitive count %i, bits %i", p->mIndexCount, bits);
+    ALOGE("processChunk_Primitive count %i, bits %i", p->mIndexCount, bits);
 
     p->mVerticies = (Mesh::Verticies_t *)mIndex[vertIdx].mRsObj;
 
@@ -282,7 +282,7 @@ void FileA3D::processChunk_Primitive(Context *rsc, IO *io, A3DIndexEntry *ie)
             p->mIndicies[ct] = io->loadU32();
             break;
         }
-        LOGE("  idx %i", p->mIndicies[ct]);
+        ALOGE("  idx %i", p->mIndicies[ct]);
     }
 
     if (p->mRestartCounts) {
@@ -299,7 +299,7 @@ void FileA3D::processChunk_Primitive(Context *rsc, IO *io, A3DIndexEntry *ie)
                 p->mRestarts[ct] = io->loadU32();
                 break;
             }
-            LOGE("  idx %i", p->mRestarts[ct]);
+            ALOGE("  idx %i", p->mRestarts[ct]);
         }
     } else {
         p->mRestarts = NULL;
@@ -313,11 +313,11 @@ void FileA3D::processChunk_Verticies(Context *rsc, IO *io, A3DIndexEntry *ie)
     Mesh::Verticies_t *cv = new Mesh::Verticies_t;
     cv->mAllocationCount = io->loadU32();
     cv->mAllocations = new Allocation *[cv->mAllocationCount];
-    LOGE("processChunk_Verticies count %i", cv->mAllocationCount);
+    ALOGE("processChunk_Verticies count %i", cv->mAllocationCount);
     for (uint32_t ct = 0; ct < cv->mAllocationCount; ct++) {
         uint32_t i = io->loadU32();
         cv->mAllocations[ct] = (Allocation *)mIndex[i].mRsObj;
-        LOGE("  idx %i", i);
+        ALOGE("  idx %i", i);
     }
     ie->mRsObj = cv;
 }
@@ -328,16 +328,16 @@ void FileA3D::processChunk_Element(Context *rsc, IO *io, A3DIndexEntry *ie)
     rsi_ElementBegin(rsc);
 
     uint32_t count = io->loadU32();
-    LOGE("processChunk_Element count %i", count);
+    ALOGE("processChunk_Element count %i", count);
     while (count--) {
         RsDataKind dk = (RsDataKind)io->loadU8();
         RsDataType dt = (RsDataType)io->loadU8();
         uint32_t bits = io->loadU8();
         bool isNorm = io->loadU8() != 0;
-        LOGE("  %i %i %i %i", dk, dt, bits, isNorm);
+        ALOGE("  %i %i %i %i", dk, dt, bits, isNorm);
         rsi_ElementAdd(rsc, dk, dt, isNorm, bits, 0);
     }
-    LOGE("processChunk_Element create");
+    ALOGE("processChunk_Element create");
     ie->mRsObj = rsi_ElementCreate(rsc);
     */
 }
@@ -347,7 +347,7 @@ void FileA3D::processChunk_ElementSource(Context *rsc, IO *io, A3DIndexEntry *ie
     uint32_t index = io->loadU32();
     uint32_t count = io->loadU32();
 
-    LOGE("processChunk_ElementSource count %i, index %i", count, index);
+    ALOGE("processChunk_ElementSource count %i, index %i", count, index);
 
     RsElement e = (RsElement)mIndex[index].mRsObj;
 
@@ -357,7 +357,7 @@ void FileA3D::processChunk_ElementSource(Context *rsc, IO *io, A3DIndexEntry *ie
     float * data = (float *)alloc->getPtr();
     while(count--) {
         *data = io->loadF();
-        LOGE("  %f", *data);
+        ALOGE("  %f", *data);
         data++;
     }
     ie->mRsObj = alloc;

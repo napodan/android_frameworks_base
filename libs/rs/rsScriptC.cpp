@@ -66,7 +66,7 @@ void ScriptC::setupScript()
         if (dest) {
             *dest = ptr;
         } else {
-            LOGE("ScriptC::setupScript, NULL var binding address.");
+            ALOGE("ScriptC::setupScript, NULL var binding address.");
         }
     }
 }
@@ -83,7 +83,7 @@ const Allocation *ScriptC::ptrToAllocation(const void *ptr) const
             return mSlots[ct].get();
         }
     }
-    LOGE("ScriptC::ptrToAllocation, failed to find %p", ptr);
+    ALOGE("ScriptC::ptrToAllocation, failed to find %p", ptr);
     return NULL;
 }
 
@@ -165,13 +165,13 @@ static BCCvoid* symbolLookup(BCCvoid* pContext, const BCCchar* name)
     if (sym) {
         return sym->mPtr;
     }
-    LOGE("ScriptC sym lookup failed for %s", name);
+    ALOGE("ScriptC sym lookup failed for %s", name);
     return NULL;
 }
 
 void ScriptCState::runCompiler(Context *rsc, ScriptC *s)
 {
-    LOGE("ScriptCState::runCompiler ");
+    ALOGE("ScriptCState::runCompiler ");
 
     s->mBccScript = bccCreateScript();
     bccScriptBitcode(s->mBccScript, s->mEnviroment.mScriptText, s->mEnviroment.mScriptTextLength);
@@ -179,7 +179,7 @@ void ScriptCState::runCompiler(Context *rsc, ScriptC *s)
     bccCompileScript(s->mBccScript);
     bccGetScriptLabel(s->mBccScript, "root", (BCCvoid**) &s->mProgram.mRoot);
     bccGetScriptLabel(s->mBccScript, "init", (BCCvoid**) &s->mProgram.mInit);
-    LOGE("root %p,  init %p", s->mProgram.mRoot, s->mProgram.mInit);
+    ALOGE("root %p,  init %p", s->mProgram.mRoot, s->mProgram.mInit);
 
     if (s->mProgram.mInit) {
         s->mProgram.mInit();
@@ -229,7 +229,7 @@ void ScriptCState::runCompiler(Context *rsc, ScriptC *s)
                     s->mEnviroment.mVertex.clear();
                     continue;
                 }
-                LOGE("Unreconized value %s passed to stateVertex", str[ct+1]);
+                ALOGE("Unreconized value %s passed to stateVertex", str[ct+1]);
             }
 
             if (!strcmp(str[ct], "stateRaster")) {
@@ -240,7 +240,7 @@ void ScriptCState::runCompiler(Context *rsc, ScriptC *s)
                     s->mEnviroment.mRaster.clear();
                     continue;
                 }
-                LOGE("Unreconized value %s passed to stateRaster", str[ct+1]);
+                ALOGE("Unreconized value %s passed to stateRaster", str[ct+1]);
             }
 
             if (!strcmp(str[ct], "stateFragment")) {
@@ -251,7 +251,7 @@ void ScriptCState::runCompiler(Context *rsc, ScriptC *s)
                     s->mEnviroment.mFragment.clear();
                     continue;
                 }
-                LOGE("Unreconized value %s passed to stateFragment", str[ct+1]);
+                ALOGE("Unreconized value %s passed to stateFragment", str[ct+1]);
             }
 
             if (!strcmp(str[ct], "stateStore")) {
@@ -262,7 +262,7 @@ void ScriptCState::runCompiler(Context *rsc, ScriptC *s)
                     s->mEnviroment.mFragmentStore.clear();
                     continue;
                 }
-                LOGE("Unreconized value %s passed to stateStore", str[ct+1]);
+                ALOGE("Unreconized value %s passed to stateStore", str[ct+1]);
             }
 
         }

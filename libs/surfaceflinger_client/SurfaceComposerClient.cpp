@@ -96,7 +96,7 @@ class Composer : public Singleton<Composer>
     {
         Mutex::Autolock _l(mLock);
         if (mOpenTransactions.size()) {
-            LOGE("openGlobalTransaction() called more than once. skipping.");
+            ALOGE("openGlobalTransaction() called more than once. skipping.");
             return;
         }
         const size_t N = mActiveConnections.size();
@@ -106,7 +106,7 @@ class Composer : public Singleton<Composer>
                 if (client->openTransaction() == NO_ERROR) {
                     mOpenTransactions.add(client);
                 } else {
-                    LOGE("openTransaction on client %p failed", client.get());
+                    ALOGE("openTransaction on client %p failed", client.get());
                     // let it go, it'll fail later when the user
                     // tries to do something with the transaction
                 }
@@ -320,7 +320,7 @@ status_t SurfaceComposerClient::destroySurface(SurfaceID sid)
     // (transactions really are a client-side concept)
     // however, this indicates probably a misuse of the API or a bug
     // in the client code.
-    LOGW_IF(mTransactionOpen,
+    ALOGW_IF(mTransactionOpen,
          "Destroying surface while a transaction is open. "
          "Client %p: destroying surface %d, mTransactionOpen=%d",
          this, sid, mTransactionOpen);
@@ -374,7 +374,7 @@ status_t SurfaceComposerClient::closeTransaction()
 
     Mutex::Autolock _l(mLock);
     if (mTransactionOpen <= 0) {
-        LOGE(   "closeTransaction (client %p, mTransactionOpen=%d) "
+        ALOGE(   "closeTransaction (client %p, mTransactionOpen=%d) "
                 "called more times than openTransaction()",
                 this, mTransactionOpen);
         return INVALID_OPERATION;
@@ -398,7 +398,7 @@ layer_state_t* SurfaceComposerClient::get_state_l(SurfaceID index)
 {
     // API usage error, do nothing.
     if (mTransactionOpen<=0) {
-        LOGE("Not in transaction (client=%p, SurfaceID=%d, mTransactionOpen=%d",
+        ALOGE("Not in transaction (client=%p, SurfaceID=%d, mTransactionOpen=%d",
                 this, int(index), mTransactionOpen);
         return 0;
     }

@@ -29,7 +29,7 @@ Allocation::Allocation(Context *rsc, const Type *type) : ObjectBase(rsc)
 
     mPtr = malloc(mType->getSizeBytes());
     if (!mPtr) {
-        LOGE("Allocation::Allocation, alloc failure");
+        ALOGE("Allocation::Allocation, alloc failure");
     }
 }
 
@@ -84,7 +84,7 @@ Allocation::~Allocation()
 
     if (mBufferID) {
         // Causes a SW crash....
-        //LOGV(" mBufferID %i", mBufferID);
+        //ALOGV(" mBufferID %i", mBufferID);
         //glDeleteBuffers(1, &mBufferID);
         //mBufferID = 0;
     }
@@ -148,7 +148,7 @@ void Allocation::uploadToTexture(const Context *rsc)
             // This should not happen, however, its likely the cause of the
             // white sqare bug.
             // Force a crash to 1: restart the app, 2: make sure we get a bugreport.
-            LOGE("Upload to texture failed to gen mTextureID");
+            ALOGE("Upload to texture failed to gen mTextureID");
             rsc->dumpDebug();
             mUploadDefered = true;
             return;
@@ -194,7 +194,7 @@ void Allocation::uploadToBufferObject(const Context *rsc)
         glGenBuffers(1, &mBufferID);
     }
     if (!mBufferID) {
-        LOGE("Upload to buffer object failed");
+        ALOGE("Upload to buffer object failed");
         mUploadDefered = true;
         return;
     }
@@ -223,7 +223,7 @@ void Allocation::data(const void *data, uint32_t sizeBytes)
 {
     uint32_t size = mType->getSizeBytes();
     if (size != sizeBytes) {
-        LOGE("Allocation::data called with mismatched size expected %i, got %i", size, sizeBytes);
+        ALOGE("Allocation::data called with mismatched size expected %i, got %i", size, sizeBytes);
         return;
     }
     memcpy(mPtr, data, size);
@@ -244,7 +244,7 @@ void Allocation::subData(uint32_t xoff, uint32_t count, const void *data, uint32
     uint32_t size = count * eSize;
 
     if (size != sizeBytes) {
-        LOGE("Allocation::subData called with mismatched size expected %i, got %i", size, sizeBytes);
+        ALOGE("Allocation::subData called with mismatched size expected %i, got %i", size, sizeBytes);
         mType->dumpLOGV("type info");
         return;
     }
@@ -310,10 +310,10 @@ void Allocation::dumpLOGV(const char *prefix) const
         mType->dumpLOGV(s.string());
     }
 
-    LOGV("%s allocation ptr=%p mCpuWrite=%i, mCpuRead=%i, mGpuWrite=%i, mGpuRead=%i",
+    ALOGV("%s allocation ptr=%p mCpuWrite=%i, mCpuRead=%i, mGpuWrite=%i, mGpuRead=%i",
           prefix, mPtr, mCpuWrite, mCpuRead, mGpuWrite, mGpuRead);
 
-    LOGV("%s allocation mIsTexture=%i mTextureID=%i, mIsVertexBuffer=%i, mBufferID=%i",
+    ALOGV("%s allocation mIsTexture=%i mTextureID=%i, mIsVertexBuffer=%i, mBufferID=%i",
           prefix, mIsTexture, mTextureID, mIsVertexBuffer, mBufferID);
 
 }
@@ -510,7 +510,7 @@ static ElementConverter_t pickConverter(const Element *dst, const Element *src)
         return elementConverter_8888_to_565;
     }
 
-    LOGE("pickConverter, unsuported combo, src %p,  dst %p", src, dst);
+    ALOGE("pickConverter, unsuported combo, src %p,  dst %p", src, dst);
     return 0;
 }
 
@@ -531,7 +531,7 @@ RsAllocation rsi_AllocationCreateFromBitmap(Context *rsc, uint32_t w, uint32_t h
     // Check for pow2 on pre es 2.0 versions.
     rsAssert(rsc->checkVersion2_0() || (!(w & (w-1)) && !(h & (h-1))));
 
-    //LOGE("rsi_AllocationCreateFromBitmap %i %i %i %i %i", w, h, dstFmt, srcFmt, genMips);
+    //ALOGE("rsi_AllocationCreateFromBitmap %i %i %i %i %i", w, h, dstFmt, srcFmt, genMips);
     rsi_TypeBegin(rsc, _dst);
     rsi_TypeAdd(rsc, RS_DIMENSION_X, w);
     rsi_TypeAdd(rsc, RS_DIMENSION_Y, h);
@@ -543,7 +543,7 @@ RsAllocation rsi_AllocationCreateFromBitmap(Context *rsc, uint32_t w, uint32_t h
     RsAllocation vTexAlloc = rsi_AllocationCreateTyped(rsc, type);
     Allocation *texAlloc = static_cast<Allocation *>(vTexAlloc);
     if (texAlloc == NULL) {
-        LOGE("Memory allocation failure");
+        ALOGE("Memory allocation failure");
         return NULL;
     }
 

@@ -102,7 +102,7 @@ SurfaceFlinger::SurfaceFlinger()
 
 void SurfaceFlinger::init()
 {
-    LOGI("SurfaceFlinger is starting");
+    ALOGI("SurfaceFlinger is starting");
 
     // debugging stuff...
     char value[PROPERTY_VALUE_MAX];
@@ -111,8 +111,8 @@ void SurfaceFlinger::init()
     property_get("debug.sf.showbackground", value, "0");
     mDebugBackground = atoi(value);
 
-    LOGI_IF(mDebugRegion,       "showupdates enabled");
-    LOGI_IF(mDebugBackground,   "showbackground enabled");
+    ALOGI_IF(mDebugRegion,       "showupdates enabled");
+    ALOGI_IF(mDebugBackground,   "showbackground enabled");
 }
 
 SurfaceFlinger::~SurfaceFlinger()
@@ -155,7 +155,7 @@ sp<ISurfaceComposerClient> SurfaceFlinger::createClientConnection()
 
 const GraphicPlane& SurfaceFlinger::graphicPlane(int dpy) const
 {
-    LOGE_IF(uint32_t(dpy) >= DISPLAY_COUNT, "Invalid DisplayID %d", dpy);
+    ALOGE_IF(uint32_t(dpy) >= DISPLAY_COUNT, "Invalid DisplayID %d", dpy);
     const GraphicPlane& plane(mGraphicPlanes[dpy]);
     return plane;
 }
@@ -170,7 +170,7 @@ void SurfaceFlinger::bootFinished()
 {
     const nsecs_t now = systemTime();
     const nsecs_t duration = now - mBootTime;
-    LOGI("Boot is finished (%ld ms)", long(ns2ms(duration)) );  
+    ALOGI("Boot is finished (%ld ms)", long(ns2ms(duration)) );  
     mBootFinished = true;
     property_set("ctl.stop", "bootanim");
 }
@@ -189,7 +189,7 @@ static inline uint16_t pack565(int r, int g, int b) {
 
 status_t SurfaceFlinger::readyToRun()
 {
-    LOGI(   "SurfaceFlinger's main thread ready to run. "
+    ALOGI(   "SurfaceFlinger's main thread ready to run. "
             "Initializing graphics H/W...");
 
     // we only support one display currently
@@ -205,10 +205,10 @@ status_t SurfaceFlinger::readyToRun()
     // create the shared control-block
     mServerHeap = new MemoryHeapBase(4096,
             MemoryHeapBase::READ_ONLY, "SurfaceFlinger read-only heap");
-    LOGE_IF(mServerHeap==0, "can't create shared memory dealer");
+    ALOGE_IF(mServerHeap==0, "can't create shared memory dealer");
     
     mServerCblk = static_cast<surface_flinger_cblk_t*>(mServerHeap->getBase());
-    LOGE_IF(mServerCblk==0, "can't get to shared control block's address");
+    ALOGE_IF(mServerCblk==0, "can't get to shared control block's address");
     
     new(mServerCblk) surface_flinger_cblk_t;
 
@@ -305,7 +305,7 @@ void SurfaceFlinger::waitForEvent()
             nsecs_t frozenTime = (now - mFreezeDisplayTime);
             if (frozenTime >= freezeDisplayTimeout) {
                 // we timed out and are still frozen
-                LOGW("timeout expired mFreezeDisplay=%d, mFreezeCount=%d",
+                ALOGW("timeout expired mFreezeDisplay=%d, mFreezeCount=%d",
                         mFreezeDisplay, mFreezeCount);
                 mFreezeDisplayTime = 0;
                 mFreezeCount = 0;
@@ -590,7 +590,7 @@ void SurfaceFlinger::handleDestroyLayers()
     // call destructors without a lock held
     const size_t count = destroyedLayers.size();
     for (size_t i=0 ; i<count ; i++) {
-        //LOGD("destroying %s", destroyedLayers[i]->getName().string());
+        //ALOGD("destroying %s", destroyedLayers[i]->getName().string());
         delete destroyedLayers[i];
     }
 }
@@ -1138,7 +1138,7 @@ void SurfaceFlinger::closeGlobalTransaction()
             if (CC_UNLIKELY(err != NO_ERROR)) {
                 // just in case something goes wrong in SF, return to the
                 // called after a few seconds.
-                LOGW_IF(err == TIMED_OUT, "closeGlobalTransaction timed out!");
+                ALOGW_IF(err == TIMED_OUT, "closeGlobalTransaction timed out!");
                 mResizeTransationPending = false;
                 break;
             }
@@ -1203,12 +1203,12 @@ sp<ISurface> SurfaceFlinger::createSurface(const sp<Client>& client, int pid,
     sp<LayerBaseClient::Surface> surfaceHandle;
 
     if (int32_t(w|h) < 0) {
-        LOGE("createSurface() failed, w or h is negative (w=%d, h=%d)",
+        ALOGE("createSurface() failed, w or h is negative (w=%d, h=%d)",
                 int(w), int(h));
         return surfaceHandle;
     }
     
-    //LOGD("createSurface for pid %d (%d x %d)", pid, w, h);
+    //ALOGD("createSurface for pid %d (%d x %d)", pid, w, h);
     sp<Layer> normalLayer;
     switch (flags & eFXSurfaceMask) {
         case eFXSurfaceNormal:
@@ -1279,7 +1279,7 @@ sp<Layer> SurfaceFlinger::createNormalSurface(
     sp<Layer> layer = new Layer(this, display, client);
     status_t err = layer->setBuffers(w, h, format, flags);
     if (LIKELY(err != NO_ERROR)) {
-        LOGE("createNormalSurfaceLocked() failed (%s)", strerror(-err));
+        ALOGE("createNormalSurfaceLocked() failed (%s)", strerror(-err));
         layer.clear();
     }
     return layer;
@@ -1343,7 +1343,7 @@ status_t SurfaceFlinger::destroySurface(const wp<LayerBaseClient>& layer)
     if (l != NULL) {
         Mutex::Autolock _l(mStateLock);
         err = removeLayer_l(l);
-        LOGE_IF(err<0 && err != NAME_NOT_FOUND,
+        ALOGE_IF(err<0 && err != NAME_NOT_FOUND,
                 "error removing layer=%p (%s)", l.get(), strerror(-err));
     }
     return err;
@@ -1520,7 +1520,7 @@ status_t SurfaceFlinger::onTransact(
             const int pid = ipc->getCallingPid();
             const int uid = ipc->getCallingUid();
             if ((uid != AID_GRAPHICS) && !mAccessSurfaceFlinger.check(pid, uid)) {
-                LOGE("Permission Denial: "
+                ALOGE("Permission Denial: "
                         "can't access SurfaceFlinger pid=%d, uid=%d", pid, uid);
                 return PERMISSION_DENIED;
             }
@@ -1533,7 +1533,7 @@ status_t SurfaceFlinger::onTransact(
             const int pid = ipc->getCallingPid();
             const int uid = ipc->getCallingUid();
             if ((uid != AID_GRAPHICS) && !mReadFramebuffer.check(pid, uid)) {
-                LOGE("Permission Denial: "
+                ALOGE("Permission Denial: "
                         "can't read framebuffer pid=%d, uid=%d", pid, uid);
                 return PERMISSION_DENIED;
             }
@@ -1548,7 +1548,7 @@ status_t SurfaceFlinger::onTransact(
             IPCThreadState* ipc = IPCThreadState::self();
             const int pid = ipc->getCallingPid();
             const int uid = ipc->getCallingUid();
-            LOGE("Permission Denial: "
+            ALOGE("Permission Denial: "
                     "can't access SurfaceFlinger pid=%d, uid=%d", pid, uid);
             return PERMISSION_DENIED;
         }
@@ -2285,7 +2285,7 @@ sp<LayerBaseClient> Client::getLayerUser(int32_t i) const
     wp<LayerBaseClient> layer(mLayers.valueFor(i));
     if (layer != 0) {
         lbc = layer.promote();
-        LOGE_IF(lbc==0, "getLayerUser(name=%d) is dead", int(i));
+        ALOGE_IF(lbc==0, "getLayerUser(name=%d) is dead", int(i));
     }
     return lbc;
 }
@@ -2359,7 +2359,7 @@ void UserClient::detachLayer(const Layer* layer)
     if (name >= 0) {
         int32_t mask = 1LU<<name;
         if ((android_atomic_and(~mask, &mBitmap) & mask) == 0) {
-            LOGW("token %d wasn't marked as used %08x", name, int(mBitmap));
+            ALOGW("token %d wasn't marked as used %08x", name, int(mBitmap));
         }
     }
 }
@@ -2397,7 +2397,7 @@ ssize_t UserClient::getTokenForSurface(const sp<ISurface>& sur) const
             name = NO_MEMORY;
     } while(name >= 0);
 
-    //LOGD("getTokenForSurface(%p) => %d (client=%p, bitmap=%08lx)",
+    //ALOGD("getTokenForSurface(%p) => %d (client=%p, bitmap=%08lx)",
     //        sur->asBinder().get(), name, this, mBitmap);
     return name;
 }

@@ -75,10 +75,10 @@ private:
 static
 void
 print_poly(const char* label, Poly* pPoly) {
-    LOGI("%s: %d verts", label, pPoly->n);
+    ALOGI("%s: %d verts", label, pPoly->n);
     for(int i = 0; i < pPoly->n; i++) {
         Poly_vert* pV = & pPoly->vert[i];
-        LOGI("[%d] %g, %g, %g %g", i, pV->sx, pV->sy, pV->sz, pV->sw);
+        ALOGI("[%d] %g, %g, %g %g", i, pV->sx, pV->sy, pV->sz, pV->sw);
     }
 }
 #endif
@@ -1072,7 +1072,7 @@ int register_android_opengl_classes(JNIEnv* env)
         result = AndroidRuntime::registerNativeMethods(env,
                 cri->classPath, cri->methods, cri->methodCount);
         if (result < 0) {
-            LOGE("Failed to register %s: %d", cri->classPath, result);
+            ALOGE("Failed to register %s: %d", cri->classPath, result);
             break;
         }
     }

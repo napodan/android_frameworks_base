@@ -130,7 +130,7 @@ public:
                 // ref->count cannot be 1 prior atomic_dec because we have
                 // a reference, and if we have one, it means there was
                 // already one before us.
-                LOGE_IF(c==1, "refcount is now 0 in release()");
+                ALOGE_IF(c==1, "refcount is now 0 in release()");
             }
         }
         void terminate() {
@@ -329,7 +329,7 @@ T setErrorEtc(const char* caller, int line, EGLint error, T returnValue) {
     }
     tls_t* tls = getTLS();
     if (tls->error != error) {
-        LOGE("%s:%d error %x (%s)", caller, line, error, egl_strerror(error));
+        ALOGE("%s:%d error %x (%s)", caller, line, error, egl_strerror(error));
         tls->error = error;
     }
     return returnValue;
@@ -439,7 +439,7 @@ static int gl_no_context() {
     tls_t* tls = getTLS();
     if (tls->logCallWithNoContext == EGL_TRUE) {
         tls->logCallWithNoContext = EGL_FALSE;
-        LOGE("call to OpenGL ES API with no current context "
+        ALOGE("call to OpenGL ES API with no current context "
              "(logged once per thread)");
     }
     return 0;
@@ -578,7 +578,7 @@ EGLBoolean egl_init_drivers_locked()
         cnx->dso = loader.open(EGL_DEFAULT_DISPLAY, 0, cnx);
         if (cnx->dso) {
             EGLDisplay dpy = cnx->egl.eglGetDisplay(EGL_DEFAULT_DISPLAY);
-            LOGE_IF(dpy==EGL_NO_DISPLAY, "No EGLDisplay for software EGL!");
+            ALOGE_IF(dpy==EGL_NO_DISPLAY, "No EGLDisplay for software EGL!");
             d->disp[IMPL_SOFTWARE].dpy = dpy; 
             if (dpy == EGL_NO_DISPLAY) {
                 loader.close(cnx->dso);
@@ -597,7 +597,7 @@ EGLBoolean egl_init_drivers_locked()
             cnx->dso = loader.open(EGL_DEFAULT_DISPLAY, 1, cnx);
             if (cnx->dso) {
                 EGLDisplay dpy = cnx->egl.eglGetDisplay(EGL_DEFAULT_DISPLAY);
-                LOGE_IF(dpy==EGL_NO_DISPLAY, "No EGLDisplay for hardware EGL!");
+                ALOGE_IF(dpy==EGL_NO_DISPLAY, "No EGLDisplay for hardware EGL!");
                 d->disp[IMPL_HARDWARE].dpy = dpy; 
                 if (dpy == EGL_NO_DISPLAY) {
                     loader.close(cnx->dso);
@@ -605,7 +605,7 @@ EGLBoolean egl_init_drivers_locked()
                 }
             }
         } else {
-            LOGD("3D hardware acceleration is disabled");
+            ALOGD("3D hardware acceleration is disabled");
         }
     }
 
@@ -694,7 +694,7 @@ EGLBoolean eglInitialize(EGLDisplay dpy, EGLint *major, EGLint *minor)
 
         EGLDisplay idpy = dp->disp[i].dpy;
         if (cnx->egl.eglInitialize(idpy, &cnx->major, &cnx->minor)) {
-            //LOGD("initialized %d dpy=%p, ver=%d.%d, cnx=%p",
+            //ALOGD("initialized %d dpy=%p, ver=%d.%d, cnx=%p",
             //        i, idpy, cnx->major, cnx->minor, cnx);
 
             // display is now initialized
@@ -711,7 +711,7 @@ EGLBoolean eglInitialize(EGLDisplay dpy, EGLint *major, EGLint *minor)
                 cnx->egl.eglQueryString(idpy, EGL_CLIENT_APIS);
 
         } else {
-            LOGW("%d: eglInitialize(%p) failed (%s)", i, idpy,
+            ALOGW("%d: eglInitialize(%p) failed (%s)", i, idpy,
                     egl_strerror(cnx->egl.eglGetError()));
         }
     }
@@ -795,7 +795,7 @@ EGLBoolean eglTerminate(EGLDisplay dpy)
         egl_connection_t* const cnx = &gEGLImpl[i];
         if (cnx->dso && dp->disp[i].state == egl_display_t::INITIALIZED) {
             if (cnx->egl.eglTerminate(dp->disp[i].dpy) == EGL_FALSE) {
-                LOGW("%d: eglTerminate(%p) failed (%s)", i, dp->disp[i].dpy,
+                ALOGW("%d: eglTerminate(%p) failed (%s)", i, dp->disp[i].dpy,
                         egl_strerror(cnx->egl.eglGetError()));
             }
             // REVISIT: it's unclear what to do if eglTerminate() fails
@@ -1429,7 +1429,7 @@ __eglMustCastToProperFunctionPointerType eglGetProcAddress(const char *procname)
         addr = gGLExtentionMap.valueFor(name);
         const int slot = gGLExtentionSlot;
 
-        LOGE_IF(slot >= MAX_NUMBER_OF_GL_EXTENSIONS,
+        ALOGE_IF(slot >= MAX_NUMBER_OF_GL_EXTENSIONS,
                 "no more slots for eglGetProcAddress(\"%s\")",
                 procname);
 

@@ -86,7 +86,7 @@ Asset::Asset(void)
   	    gTail->mNext = this;
   	    gTail = this;
   	}
-    //LOGI("Creating Asset %p #%d\n", this, gCount);
+    //ALOGI("Creating Asset %p #%d\n", this, gCount);
 }
 
 Asset::~Asset(void)
@@ -106,7 +106,7 @@ Asset::~Asset(void)
         mPrev->mNext = mNext;
     }
     mNext = mPrev = NULL;
-    //LOGI("Destroying Asset in %p #%d\n", this, gCount);
+    //ALOGI("Destroying Asset in %p #%d\n", this, gCount);
 }
 
 /*
@@ -193,7 +193,7 @@ Asset::~Asset(void)
     offset = ftell(fp);
     fclose(fp);
     if (!scanResult) {
-        LOGD("File '%s' is not in gzip format\n", fileName);
+        ALOGD("File '%s' is not in gzip format\n", fileName);
         ::close(fd);
         return NULL;
     }
@@ -310,14 +310,14 @@ off_t Asset::handleSeek(off_t offset, int whence, off_t curPosn, off_t maxPosn)
         newOffset = maxPosn + offset;
         break;
     default:
-        LOGW("unexpected whence %d\n", whence);
+        ALOGW("unexpected whence %d\n", whence);
         // this was happening due to an off_t size mismatch
         assert(false);
         return (off_t) -1;
     }
 
     if (newOffset < 0 || newOffset > maxPosn) {
-        LOGW("seek out of range: want %ld, end=%ld\n",
+        ALOGW("seek out of range: want %ld, end=%ld\n",
             (long) newOffset, (long) maxPosn);
         return (off_t) -1;
     }
@@ -367,12 +367,12 @@ status_t _FileAsset::openChunk(const char* fileName, int fd, off_t offset, size_
     fileLength = lseek(fd, 0, SEEK_END);
     if (fileLength == (off_t) -1) {
         // probably a bad file descriptor
-        LOGD("failed lseek (errno=%d)\n", errno);
+        ALOGD("failed lseek (errno=%d)\n", errno);
         return UNKNOWN_ERROR;
     }
 
     if ((off_t) (offset + length) > fileLength) {
-        LOGD("start (%ld) + len (%ld) > end (%ld)\n",
+        ALOGD("start (%ld) + len (%ld) > end (%ld)\n",
             (long) offset, (long) length, (long) fileLength);
         return BAD_INDEX;
     }
@@ -456,7 +456,7 @@ ssize_t _FileAsset::read(void* buf, size_t count)
         /* read from the file */
         //printf("file read\n");
         if (ftell(mFp) != mStart + mOffset) {
-            LOGE("Hosed: %ld != %ld+%ld\n",
+            ALOGE("Hosed: %ld != %ld+%ld\n",
                 ftell(mFp), (long) mStart, (long) mOffset);
             assert(false);
         }
@@ -564,23 +564,23 @@ const void* _FileAsset::getBuffer(bool wordAligned)
 
         buf = new unsigned char[allocLen];
         if (buf == NULL) {
-            LOGE("alloc of %ld bytes failed\n", (long) allocLen);
+            ALOGE("alloc of %ld bytes failed\n", (long) allocLen);
             return NULL;
         }
 
-        LOGV("Asset %p allocating buffer size %d (smaller than threshold)", this, (int)allocLen);
+        ALOGV("Asset %p allocating buffer size %d (smaller than threshold)", this, (int)allocLen);
         if (mLength > 0) {
             long oldPosn = ftell(mFp);
             fseek(mFp, mStart, SEEK_SET);
             if (fread(buf, 1, mLength, mFp) != (size_t) mLength) {
-                LOGE("failed reading %ld bytes\n", (long) mLength);
+                ALOGE("failed reading %ld bytes\n", (long) mLength);
                 delete[] buf;
                 return NULL;
             }
             fseek(mFp, oldPosn, SEEK_SET);
         }
 
-        LOGV(" getBuffer: loaded into buffer\n");
+        ALOGV(" getBuffer: loaded into buffer\n");
 
         mBuf = buf;
         return mBuf;
@@ -593,7 +593,7 @@ const void* _FileAsset::getBuffer(bool wordAligned)
             return NULL;
         }
 
-        LOGV(" getBuffer: mapped\n");
+        ALOGV(" getBuffer: mapped\n");
 
         mMap = map;
         if (!wordAligned) {
@@ -631,17 +631,17 @@ const void* _FileAsset::ensureAlignment(FileMap* map)
     if ((((size_t)data)&0x3) == 0) {
         // We can return this directly if it is aligned on a word
         // boundary.
-        LOGV("Returning aligned FileAsset %p (%s).", this,
+        ALOGV("Returning aligned FileAsset %p (%s).", this,
                 getAssetSource());
         return data;
     }
     // If not aligned on a word boundary, then we need to copy it into
     // our own buffer.
-    LOGV("Copying FileAsset %p (%s) to buffer size %d to make it aligned.", this,
+    ALOGV("Copying FileAsset %p (%s) to buffer size %d to make it aligned.", this,
             getAssetSource(), (int)mLength);
     unsigned char* buf = new unsigned char[mLength];
     if (buf == NULL) {
-        LOGE("alloc of %ld bytes failed\n", (long) mLength);
+        ALOGE("alloc of %ld bytes failed\n", (long) mLength);
         return NULL;
     }
     memcpy(buf, data, mLength);
@@ -838,7 +838,7 @@ const void* _CompressedAsset::getBuffer(bool wordAligned)
      */
     buf = new unsigned char[mUncompressedLen];
     if (buf == NULL) {
-        LOGW("alloc %ld bytes failed\n", (long) mUncompressedLen);
+        ALOGW("alloc %ld bytes failed\n", (long) mUncompressedLen);
         goto bail;
     }
 

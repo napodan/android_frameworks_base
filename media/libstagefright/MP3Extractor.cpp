@@ -337,7 +337,7 @@ static bool Resync(
 
             *inout_pos += len;
 
-            LOGV("skipped ID3 tag, new starting offset is %ld (0x%08lx)",
+            ALOGV("skipped ID3 tag, new starting offset is %ld (0x%08lx)",
                  *inout_pos, *inout_pos);
         }
     }
@@ -357,7 +357,7 @@ static bool Resync(
     do {
         if (pos >= *inout_pos + kMaxBytesChecked) {
             // Don't scan forever.
-            LOGV("giving up at offset %ld", pos);
+            ALOGV("giving up at offset %ld", pos);
             break;
         }
 
@@ -406,7 +406,7 @@ static bool Resync(
             continue;
         }
 
-        LOGV("found possible 1st frame at %ld (header = 0x%08x)", pos, header);
+        ALOGV("found possible 1st frame at %ld (header = 0x%08x)", pos, header);
 
         // We found what looks like a valid frame,
         // now find its successors.
@@ -423,7 +423,7 @@ static bool Resync(
 
             uint32_t test_header = U32_AT(tmp);
 
-            LOGV("subsequent header is %08x", test_header);
+            ALOGV("subsequent header is %08x", test_header);
 
             if ((test_header & kMask) != (header & kMask)) {
                 valid = false;
@@ -436,7 +436,7 @@ static bool Resync(
                 break;
             }
 
-            LOGV("found subsequent frame #%d at %ld", j + 2, test_pos);
+            ALOGV("found subsequent frame #%d at %ld", j + 2, test_pos);
 
             test_pos += test_frame_size;
         }
@@ -448,7 +448,7 @@ static bool Resync(
                 *out_header = header;
             }
         } else {
-            LOGV("no dice, no valid sequence of frames found.");
+            ALOGV("no dice, no valid sequence of frames found.");
         }
 
         ++pos;
@@ -647,7 +647,7 @@ status_t MP3Source::read(
         int32_t bitrate;
         if (!mMeta->findInt32(kKeyBitRate, &bitrate)) {
             // bitrate is in bits/sec.
-            LOGI("no bitrate");
+            ALOGI("no bitrate");
 
             return ERROR_UNSUPPORTED;
         }
@@ -709,11 +709,11 @@ status_t MP3Source::read(
         }
 
         // Lost sync.
-        LOGV("lost sync! header = 0x%08x, old header = 0x%08x\n", header, mFixedHeader);
+        ALOGV("lost sync! header = 0x%08x, old header = 0x%08x\n", header, mFixedHeader);
 
         off_t pos = mCurrentPos;
         if (!Resync(mDataSource, mFixedHeader, &pos, NULL)) {
-            LOGE("Unable to resync. Signalling end of stream.");
+            ALOGE("Unable to resync. Signalling end of stream.");
 
             buffer->release();
             buffer = NULL;

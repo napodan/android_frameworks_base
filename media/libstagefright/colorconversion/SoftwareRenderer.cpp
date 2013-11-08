@@ -44,7 +44,7 @@ SoftwareRenderer::SoftwareRenderer(
       mIndex(0) {
     mMemoryHeap = new MemoryHeapBase("/dev/pmem_adsp", 2 * mFrameSize);
     if (mMemoryHeap->heapID() < 0) {
-        LOGI("Creating physical memory heap failed, reverting to regular heap.");
+        ALOGI("Creating physical memory heap failed, reverting to regular heap.");
         mMemoryHeap = new MemoryHeapBase(2 * mFrameSize);
     } else {
         sp<MemoryHeapPmem> pmemHeap = new MemoryHeapPmem(mMemoryHeap);
@@ -77,7 +77,7 @@ SoftwareRenderer::SoftwareRenderer(
     status_t err = mISurface->registerBuffers(bufferHeap);
 
     if (err != OK) {
-        LOGW("ISurface failed to register buffers (0x%08x)", err);
+        ALOGW("ISurface failed to register buffers (0x%08x)", err);
     }
 
     mInitCheck = err;

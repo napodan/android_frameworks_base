@@ -66,7 +66,7 @@ jobject android_view_MotionEvent_fromNative(JNIEnv* env, const MotionEvent* even
     jobject eventObj = env->CallStaticObjectMethod(gMotionEventClassInfo.clazz,
             gMotionEventClassInfo.obtain, numPointers, numSamples);
     if (env->ExceptionCheck()) {
-        LOGE("An exception occurred while obtaining a motion event.");
+        ALOGE("An exception occurred while obtaining a motion event.");
         LOGE_EX(env);
         env->ExceptionClear();
         return NULL;
@@ -232,7 +232,7 @@ void android_view_MotionEvent_toNative(JNIEnv* env, jobject eventObj,
 void android_view_MotionEvent_recycle(JNIEnv* env, jobject eventObj) {
     env->CallVoidMethod(eventObj, gMotionEventClassInfo.recycle);
     if (env->ExceptionCheck()) {
-        LOGW("An exception occurred while recycling a motion event.");
+        ALOGW("An exception occurred while recycling a motion event.");
         LOGW_EX(env);
         env->ExceptionClear();
     }

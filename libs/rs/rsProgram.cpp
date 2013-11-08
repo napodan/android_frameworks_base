@@ -127,11 +127,11 @@ void Program::bindAllocation(Allocation *alloc, uint32_t slot)
 void Program::bindTexture(uint32_t slot, Allocation *a)
 {
     if (slot >= MAX_TEXTURE) {
-        LOGE("Attempt to bind a texture to a slot > MAX_TEXTURE");
+        ALOGE("Attempt to bind a texture to a slot > MAX_TEXTURE");
         return;
     }
 
-    //LOGE("bindtex %i %p", slot, a);
+    //ALOGE("bindtex %i %p", slot, a);
     mTextures[slot].set(a);
     mDirty = true;
 }
@@ -139,7 +139,7 @@ void Program::bindTexture(uint32_t slot, Allocation *a)
 void Program::bindSampler(uint32_t slot, Sampler *s)
 {
     if (slot >= MAX_TEXTURE) {
-        LOGE("Attempt to bind a Sampler to a slot > MAX_TEXTURE");
+        ALOGE("Attempt to bind a Sampler to a slot > MAX_TEXTURE");
         return;
     }
 
@@ -194,8 +194,8 @@ bool Program::loadShader(Context *rsc, uint32_t type)
     rsAssert(mShaderID);
 
     if (rsc->props.mLogShaders) {
-        LOGV("Loading shader type %x, ID %i", type, mShaderID);
-        LOGV("%s", mShader.string());
+        ALOGV("Loading shader type %x, ID %i", type, mShaderID);
+        ALOGV("%s", mShader.string());
     }
 
     if (mShaderID) {
@@ -212,7 +212,7 @@ bool Program::loadShader(Context *rsc, uint32_t type)
                 char* buf = (char*) malloc(infoLen);
                 if (buf) {
                     glGetShaderInfoLog(mShaderID, infoLen, NULL, buf);
-                    LOGE("Could not compile shader \n%s\n", buf);
+                    ALOGE("Could not compile shader \n%s\n", buf);
                     free(buf);
                 }
                 glDeleteShader(mShaderID);
@@ -224,7 +224,7 @@ bool Program::loadShader(Context *rsc, uint32_t type)
     }
 
     if (rsc->props.mLogShaders) {
-        LOGV("--Shader load result %x ", glGetError());
+        ALOGV("--Shader load result %x ", glGetError());
     }
     mIsValid = true;
     return true;

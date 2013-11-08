@@ -162,7 +162,7 @@ int androidCreateRawThreadEtc(android_thread_func_t entryFunction,
     int result = pthread_create(&thread, &attr,
                     (android_pthread_entry)entryFunction, userData);
     if (result != 0) {
-        LOGE("androidCreateRawThreadEtc failed (entry=%p, res=%d, errno=%d)\n"
+        ALOGE("androidCreateRawThreadEtc failed (entry=%p, res=%d, errno=%d)\n"
              "(android threadPriority=%d)",
             entryFunction, result, errno, threadPriority);
         return 0;
@@ -801,7 +801,7 @@ void Thread::requestExit()
 status_t Thread::requestExitAndWait()
 {
     if (mThread == getThreadId()) {
-        LOGW(
+        ALOGW(
         "Thread (this=%p): don't call waitForExit() from this "
         "Thread object's thread. It's a guaranteed deadlock!",
         this);

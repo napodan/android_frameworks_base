@@ -114,7 +114,7 @@ bool LiveSource::loadPlaylist(bool fetchMaster) {
 
             for (size_t i = 0; i < mBandwidthItems.size(); ++i) {
                 const BandwidthItem &item = mBandwidthItems.itemAt(i);
-                LOGV("item #%d: %s", i, item.mURI.c_str());
+                ALOGV("item #%d: %s", i, item.mURI.c_str());
             }
         }
     }
@@ -205,7 +205,7 @@ bool LiveSource::switchToNext() {
             mPlaylistIndex + mFirstItemSequenceNumber;
 
         if (!loadPlaylist(mLastFetchTimeUs < 0)) {
-            LOGE("failed to reload playlist");
+            ALOGE("failed to reload playlist");
             return false;
         }
 
@@ -215,7 +215,7 @@ bool LiveSource::switchToNext() {
             if (nextSequenceNumber < mFirstItemSequenceNumber
                     || nextSequenceNumber
                             >= mFirstItemSequenceNumber + (int32_t)mPlaylist->size()) {
-                LOGE("Cannot find sequence number %d in new playlist",
+                ALOGE("Cannot find sequence number %d in new playlist",
                      nextSequenceNumber);
 
                 return false;
@@ -230,7 +230,7 @@ bool LiveSource::switchToNext() {
     AString uri;
     sp<AMessage> itemMeta;
     CHECK(mPlaylist->itemAt(mPlaylistIndex, &uri, &itemMeta));
-    LOGV("switching to %s", uri.c_str());
+    ALOGV("switching to %s", uri.c_str());
 
     if (mSource->connect(uri.c_str()) != OK
             || mSource->getSize(&mSourceSize) != OK) {
@@ -263,9 +263,9 @@ ssize_t LiveSource::readAt(off_t offset, void *data, size_t size) {
         }
 
         if (mSignalDiscontinuity) {
-            LOGV("switchToNext changed streams");
+            ALOGV("switchToNext changed streams");
         } else {
-            LOGV("switchToNext stayed within the same stream");
+            ALOGV("switchToNext stayed within the same stream");
         }
 
         mOffsetBias += delta;
@@ -330,7 +330,7 @@ status_t LiveSource::fetchM3U(const char *url, sp<ABuffer> *out) {
         if (bufferRemaining == 0) {
             bufferRemaining = 32768;
 
-            LOGV("increasing download buffer to %d bytes",
+            ALOGV("increasing download buffer to %d bytes",
                  buffer->size() + bufferRemaining);
 
             sp<ABuffer> copy = new ABuffer(buffer->size() + bufferRemaining);
@@ -361,7 +361,7 @@ status_t LiveSource::fetchM3U(const char *url, sp<ABuffer> *out) {
 }
 
 bool LiveSource::seekTo(int64_t seekTimeUs) {
-    LOGV("seek to %lld us", seekTimeUs);
+    ALOGV("seek to %lld us", seekTimeUs);
 
     if (!mPlaylist->isComplete()) {
         return false;
@@ -391,7 +391,7 @@ bool LiveSource::seekTo(int64_t seekTimeUs) {
     switchToNext();
     mOffsetBias = 0;
 
-    LOGV("seeking to index %lld", index);
+    ALOGV("seeking to index %lld", index);
 
     return true;
 }

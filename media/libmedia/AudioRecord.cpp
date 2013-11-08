@@ -53,12 +53,12 @@ status_t AudioRecord::getMinFrameCount(
     size_t size = 0;
     if (AudioSystem::getInputBufferSize(sampleRate, format, channelCount, &size)
             != NO_ERROR) {
-        LOGE("AudioSystem could not query the input buffer size.");
+        ALOGE("AudioSystem could not query the input buffer size.");
         return NO_INIT;
     }
 
     if (size == 0) {
-        LOGE("Unsupported configuration: sampleRate %d, format %d, channelCount %d",
+        ALOGE("Unsupported configuration: sampleRate %d, format %d, channelCount %d",
             sampleRate, format, channelCount);
         return BAD_VALUE;
     }
@@ -128,7 +128,7 @@ status_t AudioRecord::set(
         int sessionId)
 {
 
-    LOGV("set(): sampleRate %d, channels %d, frameCount %d",sampleRate, channels, frameCount);
+    ALOGV("set(): sampleRate %d, channels %d, frameCount %d",sampleRate, channels, frameCount);
     if (mAudioRecord != 0) {
         return INVALID_OPERATION;
     }
@@ -146,7 +146,7 @@ status_t AudioRecord::set(
     }
     // validate parameters
     if (!AudioSystem::isValidFormat(format)) {
-        LOGE("Invalid format");
+        ALOGE("Invalid format");
         return BAD_VALUE;
     }
 
@@ -159,7 +159,7 @@ status_t AudioRecord::set(
     audio_io_handle_t input = AudioSystem::getInput(inputSource,
                                     sampleRate, format, channels, (AudioSystem::audio_in_acoustics)flags);
     if (input == 0) {
-        LOGE("Could not get audio input for record source %d", inputSource);
+        ALOGE("Could not get audio input for record source %d", inputSource);
         return BAD_VALUE;
     }
 
@@ -169,7 +169,7 @@ status_t AudioRecord::set(
     if (status != NO_ERROR) {
         return status;
     }
-    LOGV("AudioRecord::set() minFrameCount = %d", minFrameCount);
+    ALOGV("AudioRecord::set() minFrameCount = %d", minFrameCount);
 
     if (frameCount == 0) {
         frameCount = minFrameCount;
@@ -270,12 +270,12 @@ status_t AudioRecord::start()
     status_t ret = NO_ERROR;
     sp<ClientRecordThread> t = mClientRecordThread;
 
-    LOGV("start");
+    ALOGV("start");
 
     if (t != 0) {
         if (t->exitPending()) {
             if (t->requestExitAndWait() == WOULD_BLOCK) {
-                LOGE("AudioRecord::start called from thread");
+                ALOGE("AudioRecord::start called from thread");
                 return WOULD_BLOCK;
             }
         }
@@ -285,7 +285,7 @@ status_t AudioRecord::start()
     if (android_atomic_or(1, &mActive) == 0) {
         ret = mAudioRecord->start();
         if (ret == DEAD_OBJECT) {
-            LOGV("start() dead IAudioRecord: creating a new one");
+            ALOGV("start() dead IAudioRecord: creating a new one");
             ret = openRecord(mCblk->sampleRate, mFormat, mChannelCount,
                     mFrameCount, mFlags, getInput());
             if (ret == NO_ERROR) {
@@ -302,7 +302,7 @@ status_t AudioRecord::start()
                 setpriority(PRIO_PROCESS, 0, THREAD_PRIORITY_AUDIO_CLIENT);
             }
         } else {
-            LOGV("start() failed");
+            ALOGV("start() failed");
             android_atomic_and(~1, &mActive);
         }
     }
@@ -318,7 +318,7 @@ status_t AudioRecord::stop()
 {
     sp<ClientRecordThread> t = mClientRecordThread;
 
-    LOGV("stop");
+    ALOGV("stop");
 
     if (t != 0) {
         t->mLock.lock();
@@ -435,12 +435,12 @@ status_t AudioRecord::openRecord(
                                                        &mSessionId,
                                                        &status);
     if (record == 0) {
-        LOGE("AudioFlinger could not create record track, status: %d", status);
+        ALOGE("AudioFlinger could not create record track, status: %d", status);
         return status;
     }
     sp<IMemory> cblk = record->getCblk();
     if (cblk == 0) {
-        LOGE("Could not get control block");
+        ALOGE("Could not get control block");
         return NO_INIT;
     }
     mAudioRecord.clear();
@@ -485,12 +485,12 @@ status_t AudioRecord::obtainBuffer(Buffer* audioBuffer, int32_t waitCount)
             if (__builtin_expect(result!=NO_ERROR, false)) {
                 cblk->waitTimeMs += waitTimeMs;
                 if (cblk->waitTimeMs >= cblk->bufferTimeoutMs) {
-                    LOGW(   "obtainBuffer timed out (is the CPU pegged?) "
+                    ALOGW(   "obtainBuffer timed out (is the CPU pegged?) "
                             "user=%08x, server=%08x", cblk->user, cblk->server);
                     cblk->lock.unlock();
                     result = mAudioRecord->start();
                     if (result == DEAD_OBJECT) {
-                        LOGW("obtainBuffer() dead IAudioRecord: creating a new one");
+                        ALOGW("obtainBuffer() dead IAudioRecord: creating a new one");
                         result = openRecord(cblk->sampleRate, mFormat, mChannelCount,
                                             mFrameCount, mFlags, getInput());
                         if (result == NO_ERROR) {
@@ -566,7 +566,7 @@ ssize_t AudioRecord::read(void* buffer, size_t userSize)
 
     if (ssize_t(userSize) < 0) {
         // sanity-check. user is most-likely passing an error code.
-        LOGE("AudioRecord::read(buffer=%p, size=%u (%d)",
+        ALOGE("AudioRecord::read(buffer=%p, size=%u (%d)",
                 buffer, userSize, userSize);
         return BAD_VALUE;
     }
@@ -635,7 +635,7 @@ bool AudioRecord::processAudioBuffer(const sp<ClientRecordThread>& thread)
         status_t err = obtainBuffer(&audioBuffer, 1);
         if (err < NO_ERROR) {
             if (err != TIMED_OUT) {
-                LOGE_IF(err != status_t(NO_MORE_BUFFERS), "Error obtaining an audio buffer, giving up.");
+                ALOGE_IF(err != status_t(NO_MORE_BUFFERS), "Error obtaining an audio buffer, giving up.");
                 return false;
             }
             break;
@@ -668,7 +668,7 @@ bool AudioRecord::processAudioBuffer(const sp<ClientRecordThread>& thread)
 
     // Manage overrun callback
     if (mActive && (mCblk->framesAvailable_l() == 0)) {
-        LOGV("Overrun user: %x, server: %x, flags %04x", mCblk->user, mCblk->server, mCblk->flags);
+        ALOGV("Overrun user: %x, server: %x, flags %04x", mCblk->user, mCblk->server, mCblk->flags);
         if ((mCblk->flags & CBLK_UNDERRUN_MSK) == CBLK_UNDERRUN_OFF) {
             mCbf(EVENT_OVERRUN, mUserData, 0);
             mCblk->flags |= CBLK_UNDERRUN_ON;

@@ -199,7 +199,7 @@ void MPEG2TSExtractor::init() {
         }
     }
 
-    LOGI("haveAudio=%d, haveVideo=%d", haveAudio, haveVideo);
+    ALOGI("haveAudio=%d, haveVideo=%d", haveAudio, haveVideo);
 }
 
 static bool isDiscontinuity(const uint8_t *data, ssize_t size) {
@@ -213,7 +213,7 @@ status_t MPEG2TSExtractor::feedMore() {
     ssize_t n = mDataSource->readAt(mOffset, packet, kTSPacketSize);
 
     if (isDiscontinuity(packet, n)) {
-        LOGI("XXX discontinuity detected");
+        ALOGI("XXX discontinuity detected");
         mParser->signalDiscontinuity();
     } else if (n < (ssize_t)kTSPacketSize) {
         return (n < 0) ? (status_t)n : ERROR_END_OF_STREAM;

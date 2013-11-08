@@ -537,19 +537,19 @@ int main(int argc, char **argv)
 {
     int control_socket = android_get_control_socket("keystore");
     if (argc < 2) {
-        LOGE("A directory must be specified!");
+        ALOGE("A directory must be specified!");
         return 1;
     }
     if (chdir(argv[1]) == -1) {
-        LOGE("chdir: %s: %s", argv[1], strerror(errno));
+        ALOGE("chdir: %s: %s", argv[1], strerror(errno));
         return 1;
     }
     if ((the_entropy = open(RANDOM_DEVICE, O_RDONLY)) == -1) {
-        LOGE("open: %s: %s", RANDOM_DEVICE, strerror(errno));
+        ALOGE("open: %s: %s", RANDOM_DEVICE, strerror(errno));
         return 1;
     }
     if (listen(control_socket, 3) == -1) {
-        LOGE("listen: %s", strerror(errno));
+        ALOGE("listen: %s", strerror(errno));
         return 1;
     }
 
@@ -568,7 +568,7 @@ int main(int argc, char **argv)
         setsockopt(the_socket, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv));
 
         if (getsockopt(the_socket, SOL_SOCKET, SO_PEERCRED, &cred, &size)) {
-            LOGW("getsockopt: %s", strerror(errno));
+            ALOGW("getsockopt: %s", strerror(errno));
         } else if (recv_code(&request)) {
             int8_t old_state = state;
             int8_t response;
@@ -579,11 +579,11 @@ int main(int argc, char **argv)
                 response = -response;
             }
 
-            LOGI("uid: %d action: %c -> %d state: %d -> %d retry: %d",
+            ALOGI("uid: %d action: %c -> %d state: %d -> %d retry: %d",
                  cred.uid, request, -response, old_state, state, retry);
         }
         close(the_socket);
     }
-    LOGE("accept: %s", strerror(errno));
+    ALOGE("accept: %s", strerror(errno));
     return 1;
 }

@@ -115,7 +115,7 @@ void FindAVCDimensions(
             cropUnitY = subHeightC * (2 - frame_mbs_only_flag);
         }
 
-        LOGV("frame_crop = (%u, %u, %u, %u), cropUnitX = %u, cropUnitY = %u",
+        ALOGV("frame_crop = (%u, %u, %u, %u), cropUnitX = %u, cropUnitY = %u",
              frame_crop_left_offset, frame_crop_right_offset,
              frame_crop_top_offset, frame_crop_bottom_offset,
              cropUnitX, cropUnitY);
@@ -260,7 +260,7 @@ sp<MetaData> MakeAVCCodecSpecificData(const sp<ABuffer> &accessUnit) {
     memcpy(out, picParamSet->data(), picParamSet->size());
 
 #if 0
-    LOGI("AVC seq param set");
+    ALOGI("AVC seq param set");
     hexdump(seqParamSet->data(), seqParamSet->size());
 #endif
 
@@ -271,7 +271,7 @@ sp<MetaData> MakeAVCCodecSpecificData(const sp<ABuffer> &accessUnit) {
     meta->setInt32(kKeyWidth, width);
     meta->setInt32(kKeyHeight, height);
 
-    LOGI("found AVC codec config (%d x %d)", width, height);
+    ALOGI("found AVC codec config (%d x %d)", width, height);
 
     return meta;
 }

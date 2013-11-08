@@ -289,12 +289,12 @@ status_t AndroidRuntime::callStatic(const char* className, const char* methodNam
 
     clazz = findClass(env, className);
     if (clazz == NULL) {
-        LOGE("ERROR: could not find class '%s'\n", className);
+        ALOGE("ERROR: could not find class '%s'\n", className);
         return UNKNOWN_ERROR;
     }
     methodId = env->GetStaticMethodID(clazz, methodName, "()V");
     if (methodId == NULL) {
-        LOGE("ERROR: could not find method %s.%s\n", className, methodName);
+        ALOGE("ERROR: could not find method %s.%s\n", className, methodName);
         return UNKNOWN_ERROR;
     }
 
@@ -310,7 +310,7 @@ status_t AndroidRuntime::callMain(
     jclass clazz;
     jmethodID methodId;
 
-    LOGD("Calling main entry %s", className);
+    ALOGD("Calling main entry %s", className);
 
     env = getJNIEnv();
     if (env == NULL)
@@ -318,13 +318,13 @@ status_t AndroidRuntime::callMain(
 
     clazz = findClass(env, className);
     if (clazz == NULL) {
-        LOGE("ERROR: could not find class '%s'\n", className);
+        ALOGE("ERROR: could not find class '%s'\n", className);
         return UNKNOWN_ERROR;
     }
 
     methodId = env->GetStaticMethodID(clazz, "main", "([Ljava/lang/String;)V");
     if (methodId == NULL) {
-        LOGE("ERROR: could not find method %s.main(String[])\n", className);
+        ALOGE("ERROR: could not find method %s.main(String[])\n", className);
         return UNKNOWN_ERROR;
     }
 
@@ -355,7 +355,7 @@ jclass AndroidRuntime::findClass(JNIEnv* env, const char* className)
     char* convName = NULL;
 
     if (env->ExceptionCheck()) {
-        LOGE("ERROR: exception pending on entry to findClass()\n");
+        ALOGE("ERROR: exception pending on entry to findClass()\n");
         return NULL;
     }
 
@@ -415,17 +415,17 @@ jclass AndroidRuntime::findClass(JNIEnv* env, const char* className)
     /* create an object for the class name string; alloc could fail */
     strClassName = env->NewStringUTF(className);
     if (env->ExceptionCheck()) {
-        LOGE("ERROR: unable to convert '%s' to string\n", className);
+        ALOGE("ERROR: unable to convert '%s' to string\n", className);
         goto bail;
     }
-    LOGV("system class loader is %p, loading %p (%s)\n",
+    ALOGV("system class loader is %p, loading %p (%s)\n",
         systemClassLoader, strClassName, className);
 
     /* try to find the named class */
     cls = (jclass) env->CallObjectMethod(systemClassLoader, loadClass,
                         strClassName);
     if (env->ExceptionCheck()) {
-        LOGE("ERROR: unable to load class '%s' from %p\n",
+        ALOGE("ERROR: unable to load class '%s' from %p\n",
             className, systemClassLoader);
         cls = NULL;
         goto bail;
@@ -501,7 +501,7 @@ static void blockSigpipe()
     sigemptyset(&mask);
     sigaddset(&mask, SIGPIPE);
     if (sigprocmask(SIG_BLOCK, &mask, NULL) != 0)
-        LOGW("WARNING: SIGPIPE not blocked\n");
+        ALOGW("WARNING: SIGPIPE not blocked\n");
 }
 
 /*
@@ -520,7 +520,7 @@ static void readLocale(char* language, char* region)
     }
     strncat(language, propLang, 2);
     strncat(region, propRegn, 2);
-    //LOGD("language=%s region=%s\n", language, region);
+    //ALOGD("language=%s region=%s\n", language, region);
 }
 
 /*
@@ -651,7 +651,7 @@ int AndroidRuntime::startVm(JavaVM** pJavaVM, JNIEnv** pEnv)
 
     strcpy(heapsizeOptsBuf, "-Xmx");
     property_get("dalvik.vm.heapsize", heapsizeOptsBuf+4, "16m");
-    //LOGI("Heap size: %s", heapsizeOptsBuf);
+    //ALOGI("Heap size: %s", heapsizeOptsBuf);
     opt.optionString = heapsizeOptsBuf;
     mOptions.add(opt);
 
@@ -712,7 +712,7 @@ int AndroidRuntime::startVm(JavaVM** pJavaVM, JNIEnv** pEnv)
         "-agentlib:jdwp=transport=dt_android_adb,suspend=n,server=y";
 #else
     /* use TCP socket; address=0 means start at port 8000 and probe up */
-    LOGI("Using TCP socket for JDWP\n");
+    ALOGI("Using TCP socket for JDWP\n");
     opt.optionString =
         "-agentlib:jdwp=transport=dt_socket,suspend=n,server=y,address=0";
 #endif
@@ -727,7 +727,7 @@ int AndroidRuntime::startVm(JavaVM** pJavaVM, JNIEnv** pEnv)
         mOptions.add(opt);
     }
 
-    LOGD("CheckJNI is %s\n", checkJni ? "ON" : "OFF");
+    ALOGD("CheckJNI is %s\n", checkJni ? "ON" : "OFF");
     if (checkJni) {
         /* extended JNI checking */
         opt.optionString = "-Xcheck:jni";
@@ -802,15 +802,15 @@ int AndroidRuntime::startVm(JavaVM** pJavaVM, JNIEnv** pEnv)
         /* accept "all" to mean "all classes and packages" */
         if (strcmp(enableAssertBuf+4, "all") == 0)
             enableAssertBuf[3] = '\0';
-        LOGI("Assertions enabled: '%s'\n", enableAssertBuf);
+        ALOGI("Assertions enabled: '%s'\n", enableAssertBuf);
         opt.optionString = enableAssertBuf;
         mOptions.add(opt);
     } else {
-        LOGV("Assertions disabled\n");
+        ALOGV("Assertions disabled\n");
     }
 
     if (jniOptsBuf[10] != '\0') {
-        LOGI("JNI options: '%s'\n", jniOptsBuf);
+        ALOGI("JNI options: '%s'\n", jniOptsBuf);
         opt.optionString = jniOptsBuf;
         mOptions.add(opt);
     }
@@ -864,7 +864,7 @@ int AndroidRuntime::startVm(JavaVM** pJavaVM, JNIEnv** pEnv)
      * JNI calls.
      */
     if (JNI_CreateJavaVM(pJavaVM, pEnv, &initArgs) < 0) {
-        LOGE("JNI_CreateJavaVM failed\n");
+        ALOGE("JNI_CreateJavaVM failed\n");
         goto bail;
     }
 
@@ -882,7 +882,7 @@ bail:
  */
 void AndroidRuntime::start(const char* className, const bool startSystemServer)
 {
-    LOGD("\n>>>>>> AndroidRuntime START %s <<<<<<\n",
+    ALOGD("\n>>>>>> AndroidRuntime START %s <<<<<<\n",
             className != NULL ? className : "(unknown)");
 
     char* slashClassName = NULL;
@@ -913,7 +913,7 @@ void AndroidRuntime::start(const char* className, const bool startSystemServer)
     }
 
     //const char* kernelHack = getenv("LD_ASSUME_KERNEL");
-    //LOGD("Found LD_ASSUME_KERNEL='%s'\n", kernelHack);
+    //ALOGD("Found LD_ASSUME_KERNEL='%s'\n", kernelHack);
 
     /* start the virtual machine */
     if (startVm(&mJavaVM, &env) != 0)
@@ -923,7 +923,7 @@ void AndroidRuntime::start(const char* className, const bool startSystemServer)
      * Register android functions.
      */
     if (startReg(env) < 0) {
-        LOGE("Unable to register all android natives\n");
+        ALOGE("Unable to register all android natives\n");
         goto bail;
     }
 
@@ -962,13 +962,13 @@ void AndroidRuntime::start(const char* className, const bool startSystemServer)
 
     startClass = env->FindClass(slashClassName);
     if (startClass == NULL) {
-        LOGE("JavaVM unable to locate class '%s'\n", slashClassName);
+        ALOGE("JavaVM unable to locate class '%s'\n", slashClassName);
         /* keep going */
     } else {
         startMeth = env->GetStaticMethodID(startClass, "main",
             "([Ljava/lang/String;)V");
         if (startMeth == NULL) {
-            LOGE("JavaVM unable to find main() in '%s'\n", className);
+            ALOGE("JavaVM unable to find main() in '%s'\n", className);
             /* keep going */
         } else {
             env->CallStaticVoidMethod(startClass, startMeth, strArray);
@@ -980,11 +980,11 @@ void AndroidRuntime::start(const char* className, const bool startSystemServer)
         }
     }
 
-    LOGD("Shutting down VM\n");
+    ALOGD("Shutting down VM\n");
     if (mJavaVM->DetachCurrentThread() != JNI_OK)
-        LOGW("Warning: unable to detach main thread\n");
+        ALOGW("Warning: unable to detach main thread\n");
     if (mJavaVM->DestroyJavaVM() != 0)
-        LOGW("Warning: VM did not shut down cleanly\n");
+        ALOGW("Warning: VM did not shut down cleanly\n");
 
 bail:
     free(slashClassName);
@@ -998,7 +998,7 @@ void AndroidRuntime::start()
 
 void AndroidRuntime::onExit(int code)
 {
-    LOGV("AndroidRuntime onExit calling exit(%d)", code);
+    ALOGV("AndroidRuntime onExit calling exit(%d)", code);
     exit(code);
 }
 
@@ -1039,7 +1039,7 @@ static int javaAttachThread(const char* threadName, JNIEnv** pEnv)
 
     result = vm->AttachCurrentThread(pEnv, (void*) &args);
     if (result != JNI_OK)
-        LOGI("NOTE: attach of thread '%s' failed\n", threadName);
+        ALOGI("NOTE: attach of thread '%s' failed\n", threadName);
 
     return result;
 }
@@ -1057,7 +1057,7 @@ static int javaDetachThread(void)
 
     result = vm->DetachCurrentThread();
     if (result != JNI_OK)
-        LOGE("ERROR: thread detach failed\n");
+        ALOGE("ERROR: thread detach failed\n");
     return result;
 }
 
@@ -1160,7 +1160,7 @@ static int register_jni_procs(const RegJNIRec array[], size_t count, JNIEnv* env
     for (size_t i = 0; i < count; i++) {
         if (array[i].mProc(env) < 0) {
 #ifndef NDEBUG
-            LOGD("----------!!! %s failed to load\n", array[i].mName);
+            ALOGD("----------!!! %s failed to load\n", array[i].mName);
 #endif
             return -1;
         }
@@ -1305,7 +1305,7 @@ static const RegJNIRec gRegJNI[] = {
      */
     androidSetCreateThreadFunc((android_create_thread_fn) javaCreateThreadEtc);
 
-    LOGV("--- registering native functions ---\n");
+    ALOGV("--- registering native functions ---\n");
 
     /*
      * Every "register" function calls one or more things that return
