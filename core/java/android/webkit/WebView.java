@@ -2948,6 +2948,11 @@ public class WebView extends AbsoluteLayout
                         }
                     }
                 }
+            } else {
+                abortAnimation();
+                mPrivateHandler.removeMessages(RESUME_WEBCORE_PRIORITY);
+                WebViewCore.resumePriority();
+                WebViewCore.resumeUpdatePicture(mWebViewCore);
             }
             if (mScroller.isFinished()) {
                 mPrivateHandler.sendEmptyMessage(RESUME_WEBCORE_PRIORITY);
