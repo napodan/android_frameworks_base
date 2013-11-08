@@ -451,6 +451,25 @@ public class WebSettings {
     }
 
     /**
+     * OXYGEN BEGIN
+     * webkit: Allow control of text reflow and hiding of zoom controls
+     * Auteur: Adam Green <greena88@gmail.com>  2011-09-29 22:00:09
+     * 6d835ae35940bb8e3e3966802d548a3d78b7646c
+     */
+    /** @hide */
+    public void showZoomControls(boolean value) {
+        mWebView.showZoomControls(value);
+    }
+
+    /** @hide */
+    public void setTextReflow(boolean value) {
+        mWebView.setTextReflow(value);
+    }
+    /**
+     * OXYGEN END
+     **/
+
+    /**
      * Set whether the WebView supports zoom
      */
     public void setSupportZoom(boolean support) {

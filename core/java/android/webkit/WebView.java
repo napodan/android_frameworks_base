@@ -778,6 +778,17 @@ public class WebView extends AbsoluteLayout
 
     private int mBackgroundColor = Color.WHITE;
 
+    /**
+     * OXYGEN BEGIN
+     * webkit: Allow control of text reflow and hiding of zoom controls
+     * Auteur: Adam Green <greena88@gmail.com>  2011-09-29 22:00:09
+     * 6d835ae35940bb8e3e3966802d548a3d78b7646c
+     */
+    private boolean setTextReflow = true;
+    /**
+     * OXYGEN END
+     **/
+
     // Used to notify listeners of a new picture.
     private PictureListener mPictureListener;
     /**
@@ -927,6 +938,23 @@ public class WebView extends AbsoluteLayout
         init();
         updateMultiTouchSupport(context);
     }
+
+    /**
+     * OXYGEN BEGIN
+     * webkit: Allow control of text reflow and hiding of zoom controls
+     * Auteur: Adam Green <greena88@gmail.com>  2011-09-29 22:00:09
+     * 6d835ae35940bb8e3e3966802d548a3d78b7646c
+     */
+    void showZoomControls(boolean value) {
+        mZoomManager.showZoomControls(value);
+    }
+
+    void setTextReflow(boolean value) {
+        setTextReflow = value;
+    }
+    /**
+     * OXYGEN END
+     **/
 
     void updateMultiTouchSupport(Context context) {
         WebSettings settings = getSettings();
@@ -4972,6 +5000,19 @@ public class WebView extends AbsoluteLayout
                 boolean reflowNow = (mActualScale - mZoomManager.mMinZoomScale
                         <= MINIMUM_SCALE_INCREMENT)
                         || ((mActualScale <= 0.8 * mTextWrapScale));
+                /**
+                 * OXYGEN BEGIN
+                 * webkit: Allow control of text reflow and hiding of zoom controls
+                 * Auteur: Adam Green <greena88@gmail.com>  2011-09-29 22:00:09
+                 * 6d835ae35940bb8e3e3966802d548a3d78b7646c
+                 */
+                if (mActualScale > mTextWrapScale) {
+                    reflowNow |= setTextReflow;
+                }
+                /**
+                 * OXYGEN END
+                 **/
+
                 // force zoom after mPreviewZoomOnly is set to false so that the
                 // new view size will be passed to the WebKit
                 setNewZoomScale(mActualScale, reflowNow, true);
