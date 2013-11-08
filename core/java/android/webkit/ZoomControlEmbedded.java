@@ -27,6 +27,21 @@ class ZoomControlEmbedded implements ZoomControlBase {
     private final ZoomManager mZoomManager;
     private final WebView mWebView;
 
+    /**
+     * OXYGEN BEGIN
+     * webkit: Allow control of text reflow and hiding of zoom controls
+     * Auteur: Adam Green <greena88@gmail.com>  2011-09-29 22:00:09
+     * 6d835ae35940bb8e3e3966802d548a3d78b7646c
+     */
+    private boolean showZoomControls = true;
+
+    void showZoomControls(boolean value) {
+        showZoomControls = value;
+    }
+    /**
+     * OXYGEN END
+     **/
+
     // The controller is lazily initialized in getControls() for performance.
     private ZoomButtonsController mZoomButtonsController;
 
@@ -68,7 +83,18 @@ class ZoomControlEmbedded implements ZoomControlBase {
 
         boolean canZoomIn = mZoomManager.canZoomIn();
         boolean canZoomOut = mZoomManager.canZoomOut() && !mZoomManager.isInZoomOverview();
-        if (!canZoomIn && !canZoomOut) {
+
+        /*
+         * OXYGEN BEGIN
+         * webkit: Allow control of text reflow and hiding of zoom controls
+         * Auteur: Adam Green <greena88@gmail.com>  2011-09-29 22:00:09
+         * 6d835ae35940bb8e3e3966802d548a3d78b7646c
+         * Updated by napodan
+         */
+        if (!showZoomControls || (!canZoomIn && !canZoomOut)) {
+        /**
+         * OXYGEN END
+         **/
             // Hide the zoom in and out buttons if the page cannot zoom
             mZoomButtonsController.getZoomControls().setVisibility(View.GONE);
         } else {

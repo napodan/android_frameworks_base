@@ -169,6 +169,17 @@ class ZoomManager {
     private ScaleGestureDetector mScaleDetector;
     private boolean mPinchToZoomAnimating = false;
 
+    /**
+     * OXYGEN BEGIN
+     * webkit: Allow control of text reflow and hiding of zoom controls
+     * Auteur: Adam Green <greena88@gmail.com>  2011-09-29 22:00:09
+     * 6d835ae35940bb8e3e3966802d548a3d78b7646c
+     */
+    private boolean setTextReflow = true;
+    /**
+     * OXYGEN END
+     **/
+
     public ZoomManager(WebView webView, CallbackProxy callbackProxy) {
         mWebView = webView;
         mCallbackProxy = callbackProxy;
@@ -665,6 +676,19 @@ class ZoomManager {
                 // don't reflow when zoom in; when zoom out, do reflow if the
                 // new scale is almost minimum scale;
                 boolean reflowNow = !canZoomOut() || (mActualScale <= 0.8 * mTextWrapScale);
+                /**
+                 * OXYGEN BEGIN
+                 * webkit: Allow control of text reflow and hiding of zoom controls
+                 * Auteur: Adam Green <greena88@gmail.com>  2011-09-29 22:00:09
+                 * 6d835ae35940bb8e3e3966802d548a3d78b7646c
+                 */
+                if (mActualScale > mTextWrapScale) {
+                    reflowNow |= setTextReflow;
+                }
+                /**
+                 * OXYGEN END
+                 **/
+
                 // force zoom after mPreviewZoomOnly is set to false so that the
                 // new view size will be passed to the WebKit
                 refreshZoomScale(reflowNow);
@@ -910,4 +934,27 @@ class ZoomManager {
             return null;
         }
     }
+
+    /**
+     * OXYGEN BEGIN
+     * webkit: Allow control of text reflow and hiding of zoom controls
+     * Auteur: Adam Green <greena88@gmail.com>  2011-09-29 22:00:09
+     * 6d835ae35940bb8e3e3966802d548a3d78b7646c
+     * Updated by napodan
+     */
+    void showZoomControls(boolean value) {
+        ZoomControlBase control = getCurrentZoomControl();
+        if (control != null && control == mEmbeddedZoomControl) {
+            mEmbeddedZoomControl.showZoomControls(value);
+        }
+    }
+
+    void setTextReflow(boolean value) {
+        setTextReflow = value;
+    }
+
+    /**
+     * OXYGEN END
+     **/
+
 }
