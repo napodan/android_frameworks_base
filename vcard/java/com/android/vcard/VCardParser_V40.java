@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package android.pim.vcard;
+package com.android.vcard;
 
-import android.pim.vcard.exception.VCardException;
+import com.android.vcard.exception.VCardException;
 
 import java.io.IOException;
 import java.io.InputStream;

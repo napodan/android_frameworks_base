@@ -19,7 +19,6 @@ import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.net.QuotedPrintableCodec;
 
 import android.content.ContentProviderOperation;
-import android.pim.vcard.exception.VCardException;
 import android.provider.ContactsContract.CommonDataKinds.Im;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.CommonDataKinds.StructuredPostal;
@@ -27,6 +26,8 @@ import android.provider.ContactsContract.Data;
 import android.telephony.PhoneNumberUtils;
 import android.text.TextUtils;
 import android.util.Log;
+
+import com.android.vcard.exception.VCardException;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
