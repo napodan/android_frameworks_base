@@ -18,13 +18,16 @@ include $(CLEAR_VARS)
 
 LOCAL_MODULE_TAGS := tests
 
-LOCAL_SRC_FILES := $(call all-java-files-under, src) \
-				   ../../../coretests/src/android/app/DownloadManagerBaseTest.java
+LOCAL_SRC_FILES := $(call all-java-files-under, src)
 
-LOCAL_STATIC_JAVA_LIBRARIES := android-common frameworks-core-util-lib
-LOCAL_JAVA_LIBRARIES := android.test.runner
+LOCAL_STATIC_JAVA_LIBRARIES := android-common mockwebserver
 LOCAL_SDK_VERSION := current
 
 LOCAL_PACKAGE_NAME := DownloadManagerTestApp
+
+ifneq ($(TARGET_BUILD_VARIANT),user)
+# Need to run as system app to get access to Settings. This test won't work for user builds.
+LOCAL_CERTIFICATE := platform
+endif
 
 include $(BUILD_PACKAGE)

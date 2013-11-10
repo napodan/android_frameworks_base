@@ -21,7 +21,7 @@ import static android.database.DatabaseUtils.InsertHelper.TABLE_INFO_PRAGMA_DEFA
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteStatement;
+import android.database.sqlite.SQLiteException;
 import android.os.Handler;
 import android.os.Parcel;
 import android.test.AndroidTestCase;
@@ -37,6 +37,7 @@ import junit.framework.Assert;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 
 public class DatabaseGeneralTest extends AndroidTestCase implements PerformanceTestCase {
@@ -385,88 +386,28 @@ public class DatabaseGeneralTest extends AndroidTestCase implements PerformanceT
 
     @MediumTest
     public void testSchemaChange2() throws Exception {
-        SQLiteDatabase db1 = mDatabase;
-        SQLiteDatabase db2 = SQLiteDatabase.openOrCreateDatabase(mDatabaseFile, null);
-        Cursor cursor;
-
-        db1.execSQL("CREATE TABLE db1 (_id INTEGER PRIMARY KEY, data TEXT);");
-
-        cursor = db1.query("db1", null, null, null, null, null, null);
-        assertNotNull("Cursor is null", cursor);
+        mDatabase.execSQL("CREATE TABLE db1 (_id INTEGER PRIMARY KEY, data TEXT);");
+        Cursor cursor = mDatabase.query("db1", null, null, null, null, null, null);
+        assertNotNull(cursor);
         assertEquals(0, cursor.getCount());
-        cursor.deactivate();
-        // this cause exception because we're still using sqlite_prepate16 and not
-        // sqlite_prepare16_v2. The v2 variant added the ability to check the
-        // schema version and handle the case when the schema has changed
-        // Marco Nelissen claim it was 2x slower to compile SQL statements so
-        // I reverted back to the v1 variant.
-        /* db2.execSQL("CREATE TABLE db2 (_id INTEGER PRIMARY KEY, data TEXT);");
-
-        cursor = db1.query("db1", null, null, null, null, null, null);
-        assertNotNull("Cursor is null", cursor);
-        assertEquals(0, cursor.count());
-        cursor.deactivate();
-        */
+        cursor.close();
     }
 
     @MediumTest
     public void testSchemaChange3() throws Exception {
-        SQLiteDatabase db1 = mDatabase;
-        SQLiteDatabase db2 = SQLiteDatabase.openOrCreateDatabase(mDatabaseFile, null);
-        Cursor cursor;
-
-
-        db1.execSQL("CREATE TABLE db1 (_id INTEGER PRIMARY KEY, data TEXT);");
-        db1.execSQL("INSERT INTO db1 (data) VALUES ('test');");
-
-        cursor = db1.query("db1", null, null, null, null, null, null);
-        // this cause exception because we're still using sqlite_prepate16 and not
-        // sqlite_prepare16_v2. The v2 variant added the ability to check the
-        // schema version and handle the case when the schema has changed
-        // Marco Nelissen claim it was 2x slower to compile SQL statements so
-        // I reverted back to the v1 variant.
-        /* db2.execSQL("CREATE TABLE db2 (_id INTEGER PRIMARY KEY, data TEXT);");
-
-        assertNotNull("Cursor is null", cursor);
-        assertEquals(1, cursor.count());
-        assertTrue(cursor.first());
-        assertEquals("test", cursor.getString(cursor.getColumnIndexOrThrow("data")));
-        cursor.deactivate();
-        */
-    }
-
-    private class ChangeObserver extends ContentObserver {
-        private int mCursorNotificationCount = 0;
-        private int mNotificationCount = 0;
-
-        public int getCursorNotificationCount() {
-            return mCursorNotificationCount;
-        }
-
-        public int getNotificationCount() {
-            return mNotificationCount;
-        }
-
-        public ChangeObserver(boolean cursor) {
-            super(new Handler());
-            mCursor = cursor;
-        }
-
-        @Override
-        public boolean deliverSelfNotifications() {
-            return true;
-        }
-
-        @Override
-        public void onChange(boolean selfChange) {
-            if (mCursor) {
-                mCursorNotificationCount++;
-            } else {
-                mNotificationCount++;
+        mDatabase.execSQL("CREATE TABLE db1 (_id INTEGER PRIMARY KEY, data TEXT);");
+        mDatabase.execSQL("INSERT INTO db1 (data) VALUES ('test');");
+        mDatabase.execSQL("ALTER TABLE db1 ADD COLUMN blah int;");
+        Cursor c = null;
+        try {
+            c = mDatabase.rawQuery("select blah from db1", null);
+        } catch (SQLiteException e) {
+            fail("unexpected exception: " + e.getMessage());
+        } finally {
+            if (c != null) {
+                c.close();
             }
         }
-
-        boolean mCursor;
     }
 
     @MediumTest
@@ -953,21 +894,6 @@ public class DatabaseGeneralTest extends AndroidTestCase implements PerformanceT
     }
 
     @MediumTest
-    public void testDbCloseReleasingAllCachedSql() {
-        mDatabase.execSQL("CREATE TABLE test (_id INTEGER PRIMARY KEY, text1 TEXT, text2 TEXT, " +
-                "num1 INTEGER, num2 INTEGER, image BLOB);");
-        final String statement = "DELETE FROM test WHERE _id=?;";
-        SQLiteStatement statementDoNotClose = mDatabase.compileStatement(statement);
-        assertTrue(statementDoNotClose.getUniqueId() > 0);
-        int nStatement = statementDoNotClose.getUniqueId();
-        assertTrue(statementDoNotClose.getUniqueId() == nStatement);
-        /* do not close statementDoNotClose object. 
-         * That should leave it in SQLiteDatabase.mPrograms.
-         * mDatabase.close() in tearDown() should release it.
-         */
-    }
-
-    @MediumTest
     public void testSemicolonsInStatements() throws Exception {
         mDatabase.execSQL("CREATE TABLE pragma_test (" +
                 "i INTEGER DEFAULT 1234, " +
@@ -1103,29 +1029,6 @@ public class DatabaseGeneralTest extends AndroidTestCase implements PerformanceT
     }
 
     @SmallTest
-    public void testLruCachingOfSqliteCompiledSqlObjs() {
-        mDatabase.execSQL("CREATE TABLE test (i int, j int);");
-        mDatabase.execSQL("insert into test values(1,1);");
-        // set cache size
-        int N = SQLiteDatabase.MAX_SQL_CACHE_SIZE;
-        mDatabase.setMaxSqlCacheSize(N);
-
-        // do N+1 queries - and when the 0th entry is removed from LRU cache due to the
-        // insertion of (N+1)th entry, make sure 0th entry is closed
-        ArrayList<SQLiteStatement> stmtObjs = new ArrayList<SQLiteStatement>();
-        for (int i = 0; i < N+1; i++) {
-            SQLiteStatement c = mDatabase.compileStatement("select * from test where i = " + i);
-            c.close();
-            stmtObjs.add(i, c);
-        }
-
-        assertEquals(0, stmtObjs.get(0).getUniqueId());
-        for (int i = 1; i < N+1; i++) {
-            assertTrue(stmtObjs.get(i).getUniqueId() > 0);
-        }
-    }
-
-    @SmallTest
     public void testSetMaxCahesize() {
         mDatabase.execSQL("CREATE TABLE test (i int, j int);");
         mDatabase.execSQL("insert into test values(1,1);");
@@ -1194,7 +1097,7 @@ public class DatabaseGeneralTest extends AndroidTestCase implements PerformanceT
         assertTrue(new File(attachedDb1File).exists());
         assertNotNull(dbObj);
         assertTrue(dbObj.isOpen());
-        ArrayList<Pair<String, String>> attachedDbs = dbObj.getAttachedDbs();
+        List<Pair<String, String>> attachedDbs = dbObj.getAttachedDbs();
         try {
             errorHandler.onCorruption(dbObj);
             assertFalse(dbfile.exists());
