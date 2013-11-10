@@ -21,7 +21,7 @@ import static android.database.DatabaseUtils.InsertHelper.TABLE_INFO_PRAGMA_DEFA
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteStatement;
+import android.database.sqlite.SQLiteException;
 import android.os.Handler;
 import android.os.Parcel;
 import android.test.AndroidTestCase;
@@ -37,6 +37,7 @@ import junit.framework.Assert;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 
 public class DatabaseGeneralTest extends AndroidTestCase implements PerformanceTestCase {
@@ -385,88 +386,28 @@ public class DatabaseGeneralTest extends AndroidTestCase implements PerformanceT
 
     @MediumTest
     public void testSchemaChange2() throws Exception {
-        SQLiteDatabase db1 = mDatabase;
-        SQLiteDatabase db2 = SQLiteDatabase.openOrCreateDatabase(mDatabaseFile, null);
-        Cursor cursor;
-
-        db1.execSQL("CREATE TABLE db1 (_id INTEGER PRIMARY KEY, data TEXT);");
-
-        cursor = db1.query("db1", null, null, null, null, null, null);
-        assertNotNull("Cursor is null", cursor);
+        mDatabase.execSQL("CREATE TABLE db1 (_id INTEGER PRIMARY KEY, data TEXT);");
+        Cursor cursor = mDatabase.query("db1", null, null, null, null, null, null);
+        assertNotNull(cursor);
         assertEquals(0, cursor.getCount());
-        cursor.deactivate();
-        // this cause exception because we're still using sqlite_prepate16 and not
-        // sqlite_prepare16_v2. The v2 variant added the ability to check the
-        // schema version and handle the case when the schema has changed
-        // Marco Nelissen claim it was 2x slower to compile SQL statements so
-        // I reverted back to the v1 variant.
-        /* db2.execSQL("CREATE TABLE db2 (_id INTEGER PRIMARY KEY, data TEXT);");
-
-        cursor = db1.query("db1", null, null, null, null, null, null);
-        assertNotNull("Cursor is null", cursor);
-        assertEquals(0, cursor.count());
-        cursor.deactivate();
-        */
+        cursor.close();
     }
 
     @MediumTest
     public void testSchemaChange3() throws Exception {
-        SQLiteDatabase db1 = mDatabase;
-        SQLiteDatabase db2 = SQLiteDatabase.openOrCreateDatabase(mDatabaseFile, null);
-        Cursor cursor;
-
-
-        db1.execSQL("CREATE TABLE db1 (_id INTEGER PRIMARY KEY, data TEXT);");
-        db1.execSQL("INSERT INTO db1 (data) VALUES ('test');");
-
-        cursor = db1.query("db1", null, null, null, null, null, null);
-        // this cause exception because we're still using sqlite_prepate16 and not
-        // sqlite_prepare16_v2. The v2 variant added the ability to check the
-        // schema version and handle the case when the schema has changed
-        // Marco Nelissen claim it was 2x slower to compile SQL statements so
-        // I reverted back to the v1 variant.
-        /* db2.execSQL("CREATE TABLE db2 (_id INTEGER PRIMARY KEY, data TEXT);");
-
-        assertNotNull("Cursor is null", cursor);
-        assertEquals(1, cursor.count());
-        assertTrue(cursor.first());
-        assertEquals("test", cursor.getString(cursor.getColumnIndexOrThrow("data")));
-        cursor.deactivate();
-        */
-    }
-
-    private class ChangeObserver extends ContentObserver {
-        private int mCursorNotificationCount = 0;
-        private int mNotificationCount = 0;
-
-        public int getCursorNotificationCount() {
-            return mCursorNotificationCount;
-        }
-
-        public int getNotificationCount() {
-            return mNotificationCount;
-        }
-
-        public ChangeObserver(boolean cursor) {
-            super(new Handler());
-            mCursor = cursor;
-        }
-
-        @Override
-        public boolean deliverSelfNotifications() {
-            return true;
-        }
-
-        @Override
-        public void onChange(boolean selfChange) {
-            if (mCursor) {
-                mCursorNotificationCount++;
-            } else {
-                mNotificationCount++;
+        mDatabase.execSQL("CREATE TABLE db1 (_id INTEGER PRIMARY KEY, data TEXT);");
+        mDatabase.execSQL("INSERT INTO db1 (data) VALUES ('test');");
+        mDatabase.execSQL("ALTER TABLE db1 ADD COLUMN blah int;");
+        Cursor c = null;
+        try {
+            c = mDatabase.rawQuery("select blah from db1", null);
+        } catch (SQLiteException e) {
+            fail("unexpected exception: " + e.getMessage());
+        } finally {
+            if (c != null) {
+                c.close();
             }
         }
-
-        boolean mCursor;
     }
 
     @MediumTest
@@ -953,21 +894,6 @@ public class DatabaseGeneralTest extends AndroidTestCase implements PerformanceT
     }
 
     @MediumTest
-    public void testDbCloseReleasingAllCachedSql() {
-        mDatabase.execSQL("CREATE TABLE test (_id INTEGER PRIMARY KEY, text1 TEXT, text2 TEXT, " +
-                "num1 INTEGER, num2 INTEGER, image BLOB);");
-        final String statement = "DELETE FROM test WHERE _id=?;";
-        SQLiteStatement statementDoNotClose = mDatabase.compileStatement(statement);
-        assertTrue(statementDoNotClose.getUniqueId() > 0);
-        int nStatement = statementDoNotClose.getUniqueId();
-        assertTrue(statementDoNotClose.getUniqueId() == nStatement);
-        /* do not close statementDoNotClose object. 
-         * That should leave it in SQLiteDatabase.mPrograms.
-         * mDatabase.close() in tearDown() should release it.
-         */
-    }
-
-    @MediumTest
     public void testSemicolonsInStatements() throws Exception {
         mDatabase.execSQL("CREATE TABLE pragma_test (" +
                 "i INTEGER DEFAULT 1234, " +
@@ -1103,29 +1029,6 @@ public class DatabaseGeneralTest extends AndroidTestCase implements PerformanceT
     }
 
     @SmallTest
-    public void testLruCachingOfSqliteCompiledSqlObjs() {
-        mDatabase.execSQL("CREATE TABLE test (i int, j int);");
-        mDatabase.execSQL("insert into test values(1,1);");
-        // set cache size
-        int N = SQLiteDatabase.MAX_SQL_CACHE_SIZE;
-        mDatabase.setMaxSqlCacheSize(N);
-
-        // do N+1 queries - and when the 0th entry is removed from LRU cache due to the
-        // insertion of (N+1)th entry, make sure 0th entry is closed
-        ArrayList<SQLiteStatement> stmtObjs = new ArrayList<SQLiteStatement>();
-        for (int i = 0; i < N+1; i++) {
-            SQLiteStatement c = mDatabase.compileStatement("select * from test where i = " + i);
-            c.close();
-            stmtObjs.add(i, c);
-        }
-
-        assertEquals(0, stmtObjs.get(0).getUniqueId());
-        for (int i = 1; i < N+1; i++) {
-            assertTrue(stmtObjs.get(i).getUniqueId() > 0);
-        }
-    }
-
-    @SmallTest
     public void testSetMaxCahesize() {
         mDatabase.execSQL("CREATE TABLE test (i int, j int);");
         mDatabase.execSQL("insert into test values(1,1);");
@@ -1194,7 +1097,7 @@ public class DatabaseGeneralTest extends AndroidTestCase implements PerformanceT
         assertTrue(new File(attachedDb1File).exists());
         assertNotNull(dbObj);
         assertTrue(dbObj.isOpen());
-        ArrayList<Pair<String, String>> attachedDbs = dbObj.getAttachedDbs();
+        List<Pair<String, String>> attachedDbs = dbObj.getAttachedDbs();
         try {
             errorHandler.onCorruption(dbObj);
             assertFalse(dbfile.exists());
@@ -1231,173 +1134,5 @@ public class DatabaseGeneralTest extends AndroidTestCase implements PerformanceT
         } catch (Exception e) {
             fail("unexpected");
         }
-    }
-
-    /**
-     * test to make sure the statement finalizations are not done right away but
-     * piggybacked onto the next sql statement execution on the same database.
-     */
-    @SmallTest
-    public void testStatementClose() {
-        mDatabase.execSQL("CREATE TABLE test (i int);");
-        // fill up statement cache in mDatabase\
-        int N = 26;
-        mDatabase.setMaxSqlCacheSize(N);
-        SQLiteStatement stmt;
-        int stmt0Id = 0;
-        for (int i = 0; i < N; i ++) {
-            stmt = mDatabase.compileStatement("insert into test values(" + i + ");");
-            stmt.executeInsert();
-            // keep track of 0th entry
-            if (i == 0) {
-                stmt0Id = stmt.getUniqueId();
-            }
-            stmt.close();
-        }
-
-        // add one more to the cache - and the above 'stmt0Id' should fall out of cache
-        SQLiteStatement stmt1 = mDatabase.compileStatement("select * from test where i = 1;");
-        stmt1.close();
-
-        // the above close() should have queuedUp the statement for finalization
-        ArrayList<Integer> statementIds = mDatabase.getQueuedUpStmtList();
-        assertTrue(statementIds.contains(stmt0Id));
-
-        // execute something to see if this statement gets finalized
-        mDatabase.execSQL("delete from test where i = 10;");
-        statementIds = mDatabase.getQueuedUpStmtList();
-        assertEquals(0, statementIds.size());
-    }
-
-    /**
-     * same as above - except that the statement to be finalized is from Thread # 1.
-     * and it is eventually finalized in Thread # 2 when it executes a sql statement.
-     * @throws InterruptedException
-     */
-    @LargeTest
-    public void testStatementCloseDiffThread() throws InterruptedException {
-        mDatabase.execSQL("CREATE TABLE test (i int);");
-        // fill up statement cache in mDatabase in a thread
-        Thread t1 = new Thread() {
-            @Override public void run() {
-                int N = 26;
-                mDatabase.setMaxSqlCacheSize(N);
-                SQLiteStatement stmt;
-                for (int i = 0; i < N; i ++) {
-                    stmt = mDatabase.compileStatement("insert into test values(" + i + ");");
-                    stmt.executeInsert();
-                    // keep track of 0th entry
-                    if (i == 0) {
-                        setStmt0Id(stmt.getUniqueId());
-                    }
-                    stmt.close();
-                }
-            }
-        };
-        t1.start();
-        // wait for the thread to finish
-        t1.join();
-
-        // add one more to the cache - and the above 'stmt0Id' should fall out of cache
-        // just for the heck of it, do it in a separate thread
-        Thread t2 = new Thread() {
-            @Override public void run() {
-                SQLiteStatement stmt1 = mDatabase.compileStatement(
-                        "select * from test where i = 1;");
-                stmt1.close();
-            }
-        };
-        t2.start();
-        t2.join();
-
-        // close() in the above thread should have queuedUp the statement for finalization
-        ArrayList<Integer> statementIds = mDatabase.getQueuedUpStmtList();
-        assertTrue(getStmt0Id() > 0);
-        assertTrue(statementIds.contains(stmt0Id));
-        assertEquals(1, statementIds.size());
-
-        // execute something to see if this statement gets finalized
-        // again do it in a separate thread
-        Thread t3 = new Thread() {
-            @Override public void run() {
-                mDatabase.execSQL("delete from test where i = 10;");
-            }
-        };
-        t3.start();
-        t3.join();
-
-        // is the statement finalized?
-        statementIds = mDatabase.getQueuedUpStmtList();
-        assertEquals(0, statementIds.size());
-    }
-
-    private volatile int stmt0Id = 0;
-    private synchronized void setStmt0Id(int stmt0Id) {
-        this.stmt0Id = stmt0Id;
-    }
-    private synchronized int getStmt0Id() {
-        return this.stmt0Id;
-    }
-
-    /**
-     * same as above - except that the queue of statements to be finalized are finalized
-     * by database close() operation.
-     */
-    @LargeTest
-    public void testStatementCloseByDbClose() throws InterruptedException {
-        mDatabase.execSQL("CREATE TABLE test (i int);");
-        // fill up statement cache in mDatabase in a thread
-        Thread t1 = new Thread() {
-            @Override public void run() {
-                int N = 26;
-                mDatabase.setMaxSqlCacheSize(N);
-                SQLiteStatement stmt;
-                for (int i = 0; i < N; i ++) {
-                    stmt = mDatabase.compileStatement("insert into test values(" + i + ");");
-                    stmt.executeInsert();
-                    // keep track of 0th entry
-                    if (i == 0) {
-                        setStmt0Id(stmt.getUniqueId());
-                    }
-                    stmt.close();
-                }
-            }
-        };
-        t1.start();
-        // wait for the thread to finish
-        t1.join();
-
-        // add one more to the cache - and the above 'stmt0Id' should fall out of cache
-        // just for the heck of it, do it in a separate thread
-        Thread t2 = new Thread() {
-            @Override public void run() {
-                SQLiteStatement stmt1 = mDatabase.compileStatement(
-                        "select * from test where i = 1;");
-                stmt1.close();
-            }
-        };
-        t2.start();
-        t2.join();
-
-        // close() in the above thread should have queuedUp the statement for finalization
-        ArrayList<Integer> statementIds = mDatabase.getQueuedUpStmtList();
-        assertTrue(getStmt0Id() > 0);
-        assertTrue(statementIds.contains(stmt0Id));
-        assertEquals(1, statementIds.size());
-
-        // close the database. everything from mClosedStatementIds in mDatabase
-        // should be finalized and cleared from the list
-        // again do it in a separate thread
-        Thread t3 = new Thread() {
-            @Override public void run() {
-                mDatabase.close();
-            }
-        };
-        t3.start();
-        t3.join();
-
-        // check mClosedStatementIds in mDatabase. it should be empty
-        statementIds = mDatabase.getQueuedUpStmtList();
-        assertEquals(0, statementIds.size());
     }
 }
