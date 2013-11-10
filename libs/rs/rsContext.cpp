@@ -123,9 +123,6 @@ void Context::initEGL(bool useGL2)
         LOGE("eglCreateContext returned EGL_NO_CONTEXT");
     }
     gGLContextCount++;
-
-    eglQuerySurface(mEGL.mDisplay, mEGL.mSurface, EGL_WIDTH, &mEGL.mWidth);
-    eglQuerySurface(mEGL.mDisplay, mEGL.mSurface, EGL_HEIGHT, &mEGL.mHeight);
 }
 
 void Context::deinitEGL()
@@ -168,21 +165,7 @@ void Context::checkError(const char *msg) const
 
 uint32_t Context::runRootScript()
 {
-    timerSet(RS_TIMER_CLEAR_SWAP);
-
     glViewport(0, 0, mWidth, mHeight);
-    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-    glClearColor(mRootScript->mEnviroment.mClearColor[0],
-                 mRootScript->mEnviroment.mClearColor[1],
-                 mRootScript->mEnviroment.mClearColor[2],
-                 mRootScript->mEnviroment.mClearColor[3]);
-    if (mUseDepth) {
-        glDepthMask(GL_TRUE);
-        glClearDepthf(mRootScript->mEnviroment.mClearDepth);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    } else {
-        glClear(GL_COLOR_BUFFER_BIT);
-    }
 
     timerSet(RS_TIMER_SCRIPT);
     mStateFragmentStore.mLast.clear();
@@ -497,8 +480,6 @@ void Context::setSurface(uint32_t w, uint32_t h, ANativeWindow *sur)
         checkEglError("eglDestroySurface", ret);
 
         mEGL.mSurface = NULL;
-        mEGL.mWidth = 0;
-        mEGL.mHeight = 0;
         mWidth = 0;
         mHeight = 0;
     }
@@ -525,10 +506,6 @@ void Context::setSurface(uint32_t w, uint32_t h, ANativeWindow *sur)
         checkEglError("eglMakeCurrent", ret);
 
         mStateVertex.updateSize(this);
-
-        if ((int)mWidth != mEGL.mWidth || (int)mHeight != mEGL.mHeight) {
-            LOGE("EGL/Surface mismatch  EGL (%i x %i)  SF (%i x %i)", mEGL.mWidth, mEGL.mHeight, mWidth, mHeight);
-        }
 
         if (first) {
             mGL.mVersion = glGetString(GL_VERSION);
@@ -775,8 +752,7 @@ void Context::dumpDebug() const
     LOGE("RS Context debug");
 
     LOGE(" EGL ver %i %i", mEGL.mMajorVersion, mEGL.mMinorVersion);
-    LOGE(" EGL context %p  surface %p,  w=%i h=%i  Display=%p", mEGL.mContext,
-         mEGL.mSurface, mEGL.mWidth, mEGL.mHeight, mEGL.mDisplay);
+    LOGE(" EGL context %p  surface %p,  Display=%p", mEGL.mContext, mEGL.mSurface, mEGL.mDisplay);
     LOGE(" GL vendor: %s", mGL.mVendor);
     LOGE(" GL renderer: %s", mGL.mRenderer);
     LOGE(" GL Version: %s", mGL.mVersion);

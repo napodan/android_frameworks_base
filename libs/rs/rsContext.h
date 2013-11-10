@@ -177,8 +177,6 @@ protected:
         EGLConfig mConfig;
         EGLContext mContext;
         EGLSurface mSurface;
-        EGLint mWidth;
-        EGLint mHeight;
         EGLDisplay mDisplay;
     } mEGL;
 
