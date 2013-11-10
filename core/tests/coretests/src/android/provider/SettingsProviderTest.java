@@ -19,12 +19,21 @@ package android.provider;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.content.pm.UserInfo;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.UserHandle;
+import android.os.UserManager;
 import android.provider.Settings;
 import android.test.AndroidTestCase;
 import android.test.suitebuilder.annotation.MediumTest;
+import android.test.suitebuilder.annotation.SmallTest;
+
+import java.util.List;
 
 /** Unit test for SettingsProvider. */
 public class SettingsProviderTest extends AndroidTestCase {
@@ -123,6 +132,42 @@ public class SettingsProviderTest extends AndroidTestCase {
     }
 
     @MediumTest
+    public void testSettingsChangeForOtherUser() {
+        UserManager um = (UserManager) getContext().getSystemService(Context.USER_SERVICE);
+        ContentResolver r = getContext().getContentResolver();
+
+        // Make sure there's an owner
+        assertTrue(findUser(um, UserHandle.USER_OWNER));
+
+        // create a new user to use for testing
+        UserInfo otherUser = um.createUser("TestUser1", UserInfo.FLAG_GUEST);
+        assertTrue(otherUser != null);
+        try {
+            assertNotSame("Current calling user id should not be the new guest user",
+                    otherUser.id, UserHandle.getCallingUserId());
+
+            Settings.Secure.putString(r, Settings.Secure.LOCATION_PROVIDERS_ALLOWED, "gps");
+            Settings.Secure.putStringForUser(r,
+                    Settings.Secure.LOCATION_PROVIDERS_ALLOWED, "network", otherUser.id);
+
+            assertEquals("gps",
+                    Settings.Secure.getString(r, Settings.Secure.LOCATION_PROVIDERS_ALLOWED));
+            assertEquals("network", Settings.Secure.getStringForUser(
+                    r, Settings.Secure.LOCATION_PROVIDERS_ALLOWED, otherUser.id));
+
+            assertNotSame("Current calling user id should not be the new guest user",
+                    otherUser.id, UserHandle.getCallingUserId());
+            Settings.Secure.setLocationProviderEnabledForUser(r, "network", false, otherUser.id);
+            assertEquals("", Settings.Secure.getStringForUser(
+                    r, Settings.Secure.LOCATION_PROVIDERS_ALLOWED, otherUser.id));
+
+        } finally {
+            // Tidy up
+            um.removeUser(otherUser.id);
+        }
+    }
+
+    @MediumTest
     public void testRowNumberContentUri() {
         ContentResolver r = getContext().getContentResolver();
 
@@ -191,4 +236,96 @@ public class SettingsProviderTest extends AndroidTestCase {
         assertEquals("test1,test2",
                 Settings.Secure.getString(r, Settings.Secure.LOCATION_PROVIDERS_ALLOWED));
      }
+
+    private boolean findUser(UserManager um, int userHandle) {
+        for (UserInfo user : um.getUsers()) {
+            if (user.id == userHandle) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @MediumTest
+    public void testPerUserSettings() {
+        UserManager um = (UserManager) getContext().getSystemService(Context.USER_SERVICE);
+        ContentResolver r = getContext().getContentResolver();
+
+        // Make sure there's an owner
+        assertTrue(findUser(um, UserHandle.USER_OWNER));
+
+        // create a new user to use for testing
+        UserInfo user = um.createUser("TestUser1", UserInfo.FLAG_GUEST);
+        assertTrue(user != null);
+
+        try {
+            // Write some settings for that user as well as the current user
+            final String TEST_KEY = "test_setting";
+            final int SELF_VALUE = 40;
+            final int OTHER_VALUE = 27;
+
+            Settings.System.putInt(r, TEST_KEY, SELF_VALUE);
+            Settings.System.putIntForUser(r, TEST_KEY, OTHER_VALUE, user.id);
+
+            // Verify that they read back as intended
+            int myValue = Settings.System.getInt(r, TEST_KEY, 0);
+            int otherValue = Settings.System.getIntForUser(r, TEST_KEY, 0, user.id);
+            assertTrue("Running as user " + UserHandle.myUserId()
+                    + " and reading/writing as user " + user.id
+                    + ", expected to read " + SELF_VALUE + " but got " + myValue,
+                    myValue == SELF_VALUE);
+            assertTrue("Running as user " + UserHandle.myUserId()
+                    + " and reading/writing as user " + user.id
+                    + ", expected to read " + OTHER_VALUE + " but got " + otherValue,
+                    otherValue == OTHER_VALUE);
+        } finally {
+            // Tidy up
+            um.removeUser(user.id);
+        }
+    }
+
+     @SmallTest
+     public void testSettings() {
+        assertCanBeHandled(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS));
+        assertCanBeHandled(new Intent(Settings.ACTION_ADD_ACCOUNT));
+        assertCanBeHandled(new Intent(Settings.ACTION_AIRPLANE_MODE_SETTINGS));
+        assertCanBeHandled(new Intent(Settings.ACTION_APN_SETTINGS));
+        assertCanBeHandled(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                .setData(Uri.parse("package:" + getContext().getPackageName())));
+        assertCanBeHandled(new Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS));
+        assertCanBeHandled(new Intent(Settings.ACTION_APPLICATION_SETTINGS));
+        assertCanBeHandled(new Intent(Settings.ACTION_BLUETOOTH_SETTINGS));
+        assertCanBeHandled(new Intent(Settings.ACTION_DATA_ROAMING_SETTINGS));
+        assertCanBeHandled(new Intent(Settings.ACTION_DATE_SETTINGS));
+        assertCanBeHandled(new Intent(Settings.ACTION_DEVICE_INFO_SETTINGS));
+        assertCanBeHandled(new Intent(Settings.ACTION_DISPLAY_SETTINGS));
+        assertCanBeHandled(new Intent(Settings.ACTION_INPUT_METHOD_SETTINGS));
+        assertCanBeHandled(new Intent(Settings.ACTION_INTERNAL_STORAGE_SETTINGS));
+        assertCanBeHandled(new Intent(Settings.ACTION_LOCALE_SETTINGS));
+        assertCanBeHandled(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+        assertCanBeHandled(new Intent(Settings.ACTION_MANAGE_ALL_APPLICATIONS_SETTINGS));
+        assertCanBeHandled(new Intent(Settings.ACTION_MANAGE_APPLICATIONS_SETTINGS));
+        assertCanBeHandled(new Intent(Settings.ACTION_MEMORY_CARD_SETTINGS));
+        assertCanBeHandled(new Intent(Settings.ACTION_NETWORK_OPERATOR_SETTINGS));
+        assertCanBeHandled(new Intent(Settings.ACTION_PRIVACY_SETTINGS));
+        assertCanBeHandled(new Intent(Settings.ACTION_QUICK_LAUNCH_SETTINGS));
+        assertCanBeHandled(new Intent(Settings.ACTION_SEARCH_SETTINGS));
+        assertCanBeHandled(new Intent(Settings.ACTION_SECURITY_SETTINGS));
+        assertCanBeHandled(new Intent(Settings.ACTION_SETTINGS));
+        assertCanBeHandled(new Intent(Settings.ACTION_SOUND_SETTINGS));
+        assertCanBeHandled(new Intent(Settings.ACTION_SYNC_SETTINGS));
+        assertCanBeHandled(new Intent(Settings.ACTION_SYSTEM_UPDATE_SETTINGS));
+        assertCanBeHandled(new Intent(Settings.ACTION_USER_DICTIONARY_SETTINGS));
+        assertCanBeHandled(new Intent(Settings.ACTION_WIFI_IP_SETTINGS));
+        assertCanBeHandled(new Intent(Settings.ACTION_WIFI_SETTINGS));
+        assertCanBeHandled(new Intent(Settings.ACTION_WIRELESS_SETTINGS));
+    }
+
+    private void assertCanBeHandled(final Intent intent) {
+        PackageManager packageManager = mContext.getPackageManager();
+        List<ResolveInfo> resolveInfoList = packageManager.queryIntentActivities(intent, 0);
+        assertNotNull(resolveInfoList);
+        // one or more activity can handle this intent.
+        assertTrue(resolveInfoList.size() > 0);
+    }
 }

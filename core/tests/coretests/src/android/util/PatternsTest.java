@@ -39,6 +39,10 @@ public class PatternsTest extends TestCase {
         t = Patterns.TOP_LEVEL_DOMAIN.matcher("xn--0zwm56d").matches();
         assertTrue("Missed valid TLD", t);
 
+        // One of the new top level internationalized domain.
+        t = Patterns.TOP_LEVEL_DOMAIN.matcher("\uD55C\uAD6D").matches();
+        assertTrue("Missed valid TLD", t);
+
         t = Patterns.TOP_LEVEL_DOMAIN.matcher("mem").matches();
         assertFalse("Matched invalid TLD!", t);
 
@@ -79,6 +83,9 @@ public class PatternsTest extends TestCase {
         t = Patterns.WEB_URL.matcher("http://\uD604\uAE08\uC601\uC218\uC99D.kr").matches();
         assertTrue("Valid URL", t);
         t = Patterns.WEB_URL.matcher("\uD604\uAE08\uC601\uC218\uC99D.kr").matches();
+        assertTrue("Valid URL", t);
+        // URL with international TLD.
+        t = Patterns.WEB_URL.matcher("\uB3C4\uBA54\uC778.\uD55C\uAD6D").matches();
         assertTrue("Valid URL", t);
 
         t = Patterns.WEB_URL.matcher("http://brainstormtech.blogs.fortune.cnn.com/2010/03/11/" +
@@ -149,6 +156,8 @@ public class PatternsTest extends TestCase {
                 "Me: 16505551212 this\n",
                 "Me: 6505551212 this\n",
                 "Me: 5551212 this\n",
+                "Me: 2211 this\n",
+                "Me: 112 this\n",
 
                 "Me: 1-650-555-1212 this\n",
                 "Me: (650) 555-1212 this\n",
