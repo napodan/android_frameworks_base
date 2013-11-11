@@ -68,7 +68,7 @@ bool FileA3D::load(Context *rsc, FILE *f)
     char magicString[12];
     size_t len;
 
-    LOGE("file open 1");
+    ALOGE("file open 1");
     len = fread(magicString, 1, 12, f);
     if ((len != 12) ||
         memcmp(magicString, "Android3D_ff", 12)) {
@@ -100,7 +100,7 @@ bool FileA3D::load(Context *rsc, FILE *f)
     uint32_t flags = headerStream.loadU32();
     mUse64BitOffsets = (flags & 1) != 0;
 
-    LOGE("file open 64bit = %i", mUse64BitOffsets);
+    ALOGE("file open 64bit = %i", mUse64BitOffsets);
 
     uint32_t numIndexEntries = headerStream.loadU32();
     for(uint32_t i = 0; i < numIndexEntries; i ++) {
@@ -123,7 +123,7 @@ bool FileA3D::load(Context *rsc, FILE *f)
         return false;
     }
 
-    LOGE("file open size = %lli", mDataSize);
+    ALOGE("file open size = %lli", mDataSize);
 
     // We should know enough to read the file in at this point.
     mAlloc = malloc(mDataSize);
@@ -140,7 +140,7 @@ bool FileA3D::load(Context *rsc, FILE *f)
 
     mRsc = rsc;
 
-    LOGE("Header is read an stream initialized");
+    ALOGE("Header is read an stream initialized");
     return true;
 }
 
@@ -202,17 +202,17 @@ ObjectBase *FileA3D::initializeFromEntry(const FileA3D::A3DIndexEntry *entry) {
 bool FileA3D::writeFile(const char *filename)
 {
     if(!mWriteStream) {
-        LOGE("No objects to write\n");
+        ALOGE("No objects to write\n");
         return false;
     }
     if(mWriteStream->getPos() == 0) {
-        LOGE("No objects to write\n");
+        ALOGE("No objects to write\n");
         return false;
     }
 
     FILE *writeHandle = fopen(filename, "wb");
     if(!writeHandle) {
-        LOGE("Couldn't open the file for writing\n");
+        ALOGE("Couldn't open the file for writing\n");
         return false;
     }
 
@@ -257,7 +257,7 @@ bool FileA3D::writeFile(const char *filename)
     int status = fclose(writeHandle);
 
     if(status != 0) {
-        LOGE("Couldn't close file\n");
+        ALOGE("Couldn't close file\n");
         return false;
     }
 

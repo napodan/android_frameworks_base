@@ -36,7 +36,7 @@ MediaProfiles *sProfiles = NULL;
 static void
 android_media_MediaProfiles_native_init(JNIEnv *env)
 {
-    LOGV("native_init");
+    ALOGV("native_init");
     Mutex::Autolock lock(sLock);
 
     if (sProfiles == NULL) {
@@ -47,14 +47,14 @@ android_media_MediaProfiles_native_init(JNIEnv *env)
 static jint
 android_media_MediaProfiles_native_get_num_file_formats(JNIEnv *env, jobject thiz)
 {
-    LOGV("native_get_num_file_formats");
+    ALOGV("native_get_num_file_formats");
     return sProfiles->getOutputFileFormats().size();
 }
 
 static jint
 android_media_MediaProfiles_native_get_file_format(JNIEnv *env, jobject thiz, jint index)
 {
-    LOGV("native_get_file_format: %d", index);
+    ALOGV("native_get_file_format: %d", index);
     Vector<output_format> formats = sProfiles->getOutputFileFormats();
     int nSize = formats.size();
     if (index < 0 || index >= nSize) {
@@ -67,14 +67,14 @@ android_media_MediaProfiles_native_get_file_format(JNIEnv *env, jobject thiz, ji
 static jint
 android_media_MediaProfiles_native_get_num_video_encoders(JNIEnv *env, jobject thiz)
 {
-    LOGV("native_get_num_video_encoders");
+    ALOGV("native_get_num_video_encoders");
     return sProfiles->getVideoEncoders().size();
 }
 
 static jobject
 android_media_MediaProfiles_native_get_video_encoder_cap(JNIEnv *env, jobject thiz, jint index)
 {
-    LOGV("native_get_video_encoder_cap: %d", index);
+    ALOGV("native_get_video_encoder_cap: %d", index);
     Vector<video_encoder> encoders = sProfiles->getVideoEncoders();
     int nSize = encoders.size();
     if (index < 0 || index >= nSize) {
@@ -118,14 +118,14 @@ android_media_MediaProfiles_native_get_video_encoder_cap(JNIEnv *env, jobject th
 static jint
 android_media_MediaProfiles_native_get_num_audio_encoders(JNIEnv *env, jobject thiz)
 {
-    LOGV("native_get_num_audio_encoders");
+    ALOGV("native_get_num_audio_encoders");
     return sProfiles->getAudioEncoders().size();
 }
 
 static jobject
 android_media_MediaProfiles_native_get_audio_encoder_cap(JNIEnv *env, jobject thiz, jint index)
 {
-    LOGV("native_get_audio_encoder_cap: %d", index);
+    ALOGV("native_get_audio_encoder_cap: %d", index);
     Vector<audio_encoder> encoders = sProfiles->getAudioEncoders();
     int nSize = encoders.size();
     if (index < 0 || index >= nSize) {
@@ -164,7 +164,7 @@ android_media_MediaProfiles_native_get_audio_encoder_cap(JNIEnv *env, jobject th
 static jobject
 android_media_MediaProfiles_native_get_camcorder_profile(JNIEnv *env, jobject thiz, jint id, jint quality)
 {
-    LOGV("native_get_camcorder_profile: %d %d", id, quality);
+    ALOGV("native_get_camcorder_profile: %d %d", id, quality);
     if (quality < CAMCORDER_QUALITY_LOW || quality > CAMCORDER_QUALITY_WIDE) {
         jniThrowException(env, "java/lang/RuntimeException", "Unknown camcorder profile quality");
         return NULL;
@@ -213,14 +213,14 @@ android_media_MediaProfiles_native_get_camcorder_profile(JNIEnv *env, jobject th
 static jint
 android_media_MediaProfiles_native_get_num_video_decoders(JNIEnv *env, jobject thiz)
 {
-    LOGV("native_get_num_video_decoders");
+    ALOGV("native_get_num_video_decoders");
     return sProfiles->getVideoDecoders().size();
 }
 
 static jint
 android_media_MediaProfiles_native_get_video_decoder_type(JNIEnv *env, jobject thiz, jint index)
 {
-    LOGV("native_get_video_decoder_type: %d", index);
+    ALOGV("native_get_video_decoder_type: %d", index);
     Vector<video_decoder> decoders = sProfiles->getVideoDecoders();
     int nSize = decoders.size();
     if (index < 0 || index >= nSize) {
@@ -234,14 +234,14 @@ android_media_MediaProfiles_native_get_video_decoder_type(JNIEnv *env, jobject t
 static jint
 android_media_MediaProfiles_native_get_num_audio_decoders(JNIEnv *env, jobject thiz)
 {
-    LOGV("native_get_num_audio_decoders");
+    ALOGV("native_get_num_audio_decoders");
     return sProfiles->getAudioDecoders().size();
 }
 
 static jint
 android_media_MediaProfiles_native_get_audio_decoder_type(JNIEnv *env, jobject thiz, jint index)
 {
-    LOGV("native_get_audio_decoder_type: %d", index);
+    ALOGV("native_get_audio_decoder_type: %d", index);
     Vector<audio_decoder> decoders = sProfiles->getAudioDecoders();
     int nSize = decoders.size();
     if (index < 0 || index >= nSize) {
@@ -255,14 +255,14 @@ android_media_MediaProfiles_native_get_audio_decoder_type(JNIEnv *env, jobject t
 static jint
 android_media_MediaProfiles_native_get_num_image_encoding_quality_levels(JNIEnv *env, jobject thiz, jint cameraId)
 {
-    LOGV("native_get_num_image_encoding_quality_levels");
+    ALOGV("native_get_num_image_encoding_quality_levels");
     return sProfiles->getImageEncodingQualityLevels(cameraId).size();
 }
 
 static jint
 android_media_MediaProfiles_native_get_image_encoding_quality_level(JNIEnv *env, jobject thiz, jint cameraId, jint index)
 {
-    LOGV("native_get_image_encoding_quality_level");
+    ALOGV("native_get_image_encoding_quality_level");
     Vector<int> levels = sProfiles->getImageEncodingQualityLevels(cameraId);
     if (index < 0 || index >= levels.size()) {
         jniThrowException(env, "java/lang/IllegalArgumentException", "out of array boundary");

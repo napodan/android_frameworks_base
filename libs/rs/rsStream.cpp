@@ -53,9 +53,9 @@ uint64_t IStream::loadOffset()
 
 void IStream::loadString(String8 *s)
 {
-    LOGE("loadString");
+    ALOGE("loadString");
     uint32_t len = loadU32();
-    LOGE("loadString len %i", len);
+    ALOGE("loadString len %i", len);
     s->setTo((const char *)&mData[mPos], len);
     mPos += len;
 }

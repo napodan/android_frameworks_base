@@ -58,7 +58,7 @@ static status_t HandleMIDI(
     // get the library configuration and do sanity check
     const S_EAS_LIB_CONFIG* pLibConfig = EAS_Config();
     if ((pLibConfig == NULL) || (LIB_VERSION != pLibConfig->libVersion)) {
-        LOGE("EAS library/header mismatch\n");
+        ALOGE("EAS library/header mismatch\n");
         return UNKNOWN_ERROR;
     }
     EAS_I32 temp;
@@ -102,7 +102,7 @@ static status_t HandleMIDI(
 status_t StagefrightMediaScanner::processFile(
         const char *path, const char *mimeType,
         MediaScannerClient &client) {
-    LOGV("processFile '%s'.", path);
+    ALOGV("processFile '%s'.", path);
 
     client.setLocale(locale());
     client.beginFile();
@@ -171,7 +171,7 @@ status_t StagefrightMediaScanner::processFile(
 }
 
 char *StagefrightMediaScanner::extractAlbumArt(int fd) {
-    LOGV("extractAlbumArt %d", fd);
+    ALOGV("extractAlbumArt %d", fd);
 
     off_t size = lseek(fd, 0, SEEK_END);
     if (size < 0) {

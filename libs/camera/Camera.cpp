@@ -46,7 +46,7 @@ const sp<ICameraService>& Camera::getCameraService()
             binder = sm->getService(String16("media.camera"));
             if (binder != 0)
                 break;
-            LOGW("CameraService not published, waiting...");
+            ALOGW("CameraService not published, waiting...");
             usleep(500000); // 0.5 s
         } while(true);
         if (mDeathNotifier == NULL) {
@@ -55,7 +55,7 @@ const sp<ICameraService>& Camera::getCameraService()
         binder->linkToDeath(mDeathNotifier);
         mCameraService = interface_cast<ICameraService>(binder);
     }
-    LOGE_IF(mCameraService==0, "no CameraService!?");
+    ALOGE_IF(mCameraService==0, "no CameraService!?");
     return mCameraService;
 }
 
@@ -69,9 +69,9 @@ Camera::Camera()
 // construct a camera client from an existing camera remote
 sp<Camera> Camera::create(const sp<ICamera>& camera)
 {
-     LOGV("create");
+     ALOGV("create");
      if (camera == 0) {
-         LOGE("camera remote is a NULL pointer");
+         ALOGE("camera remote is a NULL pointer");
          return 0;
      }
 
@@ -115,7 +115,7 @@ status_t Camera::getCameraInfo(int cameraId,
 
 sp<Camera> Camera::connect(int cameraId)
 {
-    LOGV("connect");
+    ALOGV("connect");
     sp<Camera> c = new Camera();
     const sp<ICameraService>& cs = getCameraService();
     if (cs != 0) {
@@ -132,7 +132,7 @@ sp<Camera> Camera::connect(int cameraId)
 
 void Camera::disconnect()
 {
-    LOGV("disconnect");
+    ALOGV("disconnect");
     if (mCamera != 0) {
         mCamera->disconnect();
         mCamera->asBinder()->unlinkToDeath(this);
@@ -142,7 +142,7 @@ void Camera::disconnect()
 
 status_t Camera::reconnect()
 {
-    LOGV("reconnect");
+    ALOGV("reconnect");
     sp <ICamera> c = mCamera;
     if (c == 0) return NO_INIT;
     return c->connect(this);
@@ -170,22 +170,22 @@ status_t Camera::unlock()
 // pass the buffered ISurface to the camera service
 status_t Camera::setPreviewDisplay(const sp<Surface>& surface)
 {
-    LOGV("setPreviewDisplay");
+    ALOGV("setPreviewDisplay");
     sp <ICamera> c = mCamera;
     if (c == 0) return NO_INIT;
     if (surface != 0) {
         return c->setPreviewDisplay(surface->getISurface());
     } else {
-        LOGD("app passed NULL surface");
+        ALOGD("app passed NULL surface");
         return c->setPreviewDisplay(0);
     }
 }
 
 status_t Camera::setPreviewDisplay(const sp<ISurface>& surface)
 {
-    LOGV("setPreviewDisplay");
+    ALOGV("setPreviewDisplay");
     if (surface == 0) {
-        LOGD("app passed NULL surface");
+        ALOGD("app passed NULL surface");
     }
     sp <ICamera> c = mCamera;
     if (c == 0) return NO_INIT;
@@ -196,7 +196,7 @@ status_t Camera::setPreviewDisplay(const sp<ISurface>& surface)
 // start preview mode
 status_t Camera::startPreview()
 {
-    LOGV("startPreview");
+    ALOGV("startPreview");
     sp <ICamera> c = mCamera;
     if (c == 0) return NO_INIT;
     return c->startPreview();
@@ -205,7 +205,7 @@ status_t Camera::startPreview()
 // start recording mode, must call setPreviewDisplay first
 status_t Camera::startRecording()
 {
-    LOGV("startRecording");
+    ALOGV("startRecording");
     sp <ICamera> c = mCamera;
     if (c == 0) return NO_INIT;
     return c->startRecording();
@@ -214,7 +214,7 @@ status_t Camera::startRecording()
 // stop preview mode
 void Camera::stopPreview()
 {
-    LOGV("stopPreview");
+    ALOGV("stopPreview");
     sp <ICamera> c = mCamera;
     if (c == 0) return;
     c->stopPreview();
@@ -223,7 +223,7 @@ void Camera::stopPreview()
 // stop recording mode
 void Camera::stopRecording()
 {
-    LOGV("stopRecording");
+    ALOGV("stopRecording");
     sp <ICamera> c = mCamera;
     if (c == 0) return;
     c->stopRecording();
@@ -232,7 +232,7 @@ void Camera::stopRecording()
 // release a recording frame
 void Camera::releaseRecordingFrame(const sp<IMemory>& mem)
 {
-    LOGV("releaseRecordingFrame");
+    ALOGV("releaseRecordingFrame");
     sp <ICamera> c = mCamera;
     if (c == 0) return;
     c->releaseRecordingFrame(mem);
@@ -241,7 +241,7 @@ void Camera::releaseRecordingFrame(const sp<IMemory>& mem)
 // get preview state
 bool Camera::previewEnabled()
 {
-    LOGV("previewEnabled");
+    ALOGV("previewEnabled");
     sp <ICamera> c = mCamera;
     if (c == 0) return false;
     return c->previewEnabled();
@@ -250,7 +250,7 @@ bool Camera::previewEnabled()
 // get recording state
 bool Camera::recordingEnabled()
 {
-    LOGV("recordingEnabled");
+    ALOGV("recordingEnabled");
     sp <ICamera> c = mCamera;
     if (c == 0) return false;
     return c->recordingEnabled();
@@ -258,7 +258,7 @@ bool Camera::recordingEnabled()
 
 status_t Camera::autoFocus()
 {
-    LOGV("autoFocus");
+    ALOGV("autoFocus");
     sp <ICamera> c = mCamera;
     if (c == 0) return NO_INIT;
     return c->autoFocus();
@@ -266,7 +266,7 @@ status_t Camera::autoFocus()
 
 status_t Camera::cancelAutoFocus()
 {
-    LOGV("cancelAutoFocus");
+    ALOGV("cancelAutoFocus");
     sp <ICamera> c = mCamera;
     if (c == 0) return NO_INIT;
     return c->cancelAutoFocus();
@@ -275,7 +275,7 @@ status_t Camera::cancelAutoFocus()
 // take a picture
 status_t Camera::takePicture()
 {
-    LOGV("takePicture");
+    ALOGV("takePicture");
     sp <ICamera> c = mCamera;
     if (c == 0) return NO_INIT;
     return c->takePicture();
@@ -284,7 +284,7 @@ status_t Camera::takePicture()
 // set preview/capture parameters - key/value pairs
 status_t Camera::setParameters(const String8& params)
 {
-    LOGV("setParameters");
+    ALOGV("setParameters");
     sp <ICamera> c = mCamera;
     if (c == 0) return NO_INIT;
     return c->setParameters(params);
@@ -293,7 +293,7 @@ status_t Camera::setParameters(const String8& params)
 // get preview/capture parameters - key/value pairs
 String8 Camera::getParameters() const
 {
-    LOGV("getParameters");
+    ALOGV("getParameters");
     String8 params;
     sp <ICamera> c = mCamera;
     if (c != 0) params = mCamera->getParameters();
@@ -303,7 +303,7 @@ String8 Camera::getParameters() const
 // send command to camera driver
 status_t Camera::sendCommand(int32_t cmd, int32_t arg1, int32_t arg2)
 {
-    LOGV("sendCommand");
+    ALOGV("sendCommand");
     sp <ICamera> c = mCamera;
     if (c == 0) return NO_INIT;
     return c->sendCommand(cmd, arg1, arg2);
@@ -317,7 +317,7 @@ void Camera::setListener(const sp<CameraListener>& listener)
 
 void Camera::setPreviewCallbackFlags(int flag)
 {
-    LOGV("setPreviewCallbackFlags");
+    ALOGV("setPreviewCallbackFlags");
     sp <ICamera> c = mCamera;
     if (c == 0) return;
     mCamera->setPreviewCallbackFlag(flag);
@@ -360,21 +360,21 @@ void Camera::dataCallbackTimestamp(nsecs_t timestamp, int32_t msgType, const sp<
     if (listener != NULL) {
         listener->postDataTimestamp(timestamp, msgType, dataPtr);
     } else {
-        LOGW("No listener was set. Drop a recording frame.");
+        ALOGW("No listener was set. Drop a recording frame.");
         releaseRecordingFrame(dataPtr);
     }
 }
 
 void Camera::binderDied(const wp<IBinder>& who) {
-    LOGW("ICamera died");
+    ALOGW("ICamera died");
     notifyCallback(CAMERA_MSG_ERROR, CAMERA_ERROR_SERVER_DIED, 0);
 }
 
 void Camera::DeathNotifier::binderDied(const wp<IBinder>& who) {
-    LOGV("binderDied");
+    ALOGV("binderDied");
     Mutex::Autolock _l(Camera::mLock);
     Camera::mCameraService.clear();
-    LOGW("Camera server died!");
+    ALOGW("Camera server died!");
 }
 
 }; // namespace android

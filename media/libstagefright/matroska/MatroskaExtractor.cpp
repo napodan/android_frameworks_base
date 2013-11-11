@@ -170,7 +170,7 @@ MatroskaSource::MatroskaSource(
         CHECK_GE(avccSize, 5u);
 
         mNALSizeLen = 1 + (avcc[4] & 3);
-        LOGV("mNALSizeLen = %d", mNALSizeLen);
+        ALOGV("mNALSizeLen = %d", mNALSizeLen);
     } else if (!strcasecmp(mime, MEDIA_MIMETYPE_AUDIO_AAC)) {
         mType = AAC;
     }
@@ -338,7 +338,7 @@ status_t MatroskaSource::readBlock() {
         return OK;
     }
 
-    LOGV("lacing = %u, size = %d", lacing, size);
+    ALOGV("lacing = %u, size = %d", lacing, size);
 
     const uint8_t *data = (const uint8_t *)bigbuf->data();
     // hexdump(data, size);
@@ -448,7 +448,7 @@ status_t MatroskaSource::readBlock() {
         }
         out.append(StringPrintf("%llu", frameSizes.itemAt(i)));
     }
-    LOGV("sizes = [%s]", out.c_str());
+    ALOGV("sizes = [%s]", out.c_str());
 #endif
 
     for (size_t i = 0; i < frameSizes.size(); ++i) {
@@ -564,7 +564,7 @@ again:
     }
 
     if (size > NALsize + mNALSizeLen) {
-        LOGW("discarding %d bytes of data.", size - NALsize - mNALSizeLen);
+        ALOGW("discarding %d bytes of data.", size - NALsize - mNALSizeLen);
     }
 
     // actual data starts at &data[kPadding + mNALSizeLen]
@@ -708,8 +708,8 @@ void MatroskaExtractor::addTracks() {
         const mkvparser::Track *track = tracks->GetTrackByIndex(index);
 
         const char *const codecID = track->GetCodecId();
-        LOGV("codec id = %s", codecID);
-        LOGV("codec name = %s", track->GetCodecNameAsUTF8());
+        ALOGV("codec id = %s", codecID);
+        ALOGV("codec name = %s", track->GetCodecNameAsUTF8());
 
         size_t codecPrivateSize;
         const unsigned char *codecPrivate =

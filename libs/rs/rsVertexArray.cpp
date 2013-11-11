@@ -105,7 +105,7 @@ void VertexArray::addLegacy(uint32_t type, uint32_t size, uint32_t stride, RsDat
 }
 
 void VertexArray::logAttrib(uint32_t idx, uint32_t slot) const {
-    LOGE("va %i: slot=%i name=%s buf=%i  size=%i  type=0x%x  kind=%i  stride=0x%x  norm=%i  offset=0x%x", idx, slot,
+    ALOGE("va %i: slot=%i name=%s buf=%i  size=%i  type=0x%x  kind=%i  stride=0x%x  norm=%i  offset=0x%x", idx, slot,
          mAttribs[idx].name.string(),
          mAttribs[idx].buffer,
          mAttribs[idx].size,

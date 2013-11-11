@@ -118,7 +118,7 @@ public:
                             {
                                 uint32_t cur = mHeader->numColumns;
                                 if (cur > 0 && cur != numColumns) {
-                                    LOGE("Trying to go from %d columns to %d", cur, numColumns);
+                                    ALOGE("Trying to go from %d columns to %d", cur, numColumns);
                                     return false;
                                 }
                                 mHeader->numColumns = numColumns;

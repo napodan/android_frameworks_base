@@ -79,7 +79,7 @@ void OMXMaster::addPlugin(OMXPluginBase *plugin) {
         String8 name8(name);
 
         if (mPluginByComponentName.indexOfKey(name8) >= 0) {
-            LOGE("A component of name '%s' already exists, ignoring this one.",
+            ALOGE("A component of name '%s' already exists, ignoring this one.",
                  name8.string());
 
             continue;

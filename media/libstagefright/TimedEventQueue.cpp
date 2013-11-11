@@ -174,7 +174,7 @@ void TimedEventQueue::cancelEvents(
             mQueueHeadChangedCondition.signal();
         }
 
-        LOGV("cancelling event %d", (*it).event->eventID());
+        ALOGV("cancelling event %d", (*it).event->eventID());
 
         (*it).event->setEventID(0);
         it = mQueue.erase(it);
@@ -267,7 +267,7 @@ void TimedEventQueue::threadEntry() {
                 static int64_t kMaxTimeoutUs = 10000000ll;  // 10 secs
                 bool timeoutCapped = false;
                 if (delay_us > kMaxTimeoutUs) {
-                    LOGW("delay_us exceeds max timeout: %lld us", delay_us);
+                    ALOGW("delay_us exceeds max timeout: %lld us", delay_us);
 
                     // We'll never block for more than 10 secs, instead
                     // we will split up the full timeout into chunks of
@@ -317,7 +317,7 @@ sp<TimedEventQueue::Event> TimedEventQueue::removeEventFromQueue_l(
         }
     }
 
-    LOGW("Event %d was not found in the queue, already cancelled?", id);
+    ALOGW("Event %d was not found in the queue, already cancelled?", id);
 
     return NULL;
 }

@@ -223,18 +223,18 @@ status_t SharedBufferBase::waitForCondition(const ConditionBase& condition)
         if (CC_UNLIKELY(err != NO_ERROR)) {
             if (err == TIMED_OUT) {
                 if (condition()) {
-                    LOGE("waitForCondition(%s) timed out (identity=%d), "
+                    ALOGE("waitForCondition(%s) timed out (identity=%d), "
                         "but condition is true! We recovered but it "
                         "shouldn't happen." , condition.name(), stack.identity);
                     break;
                 } else {
-                    LOGW("waitForCondition(%s) timed out "
+                    ALOGW("waitForCondition(%s) timed out "
                         "(identity=%d, status=%d). "
                         "CPU may be pegged. trying again.", condition.name(),
                         stack.identity, stack.status);
                 }
             } else {
-                LOGE("waitForCondition(%s) error (%s) ",
+                ALOGE("waitForCondition(%s) error (%s) ",
                         condition.name(), strerror(-err));
                 return err;
             }
@@ -278,7 +278,7 @@ SharedBufferClient::DequeueUpdate::DequeueUpdate(SharedBufferBase* sbb)
 }
 ssize_t SharedBufferClient::DequeueUpdate::operator()() {
     if (android_atomic_dec(&stack.available) == 0) {
-        LOGW("dequeue probably called from multiple threads!");
+        ALOGW("dequeue probably called from multiple threads!");
     }
     return NO_ERROR;
 }
@@ -359,7 +359,7 @@ ssize_t SharedBufferClient::dequeue()
     SharedBufferStack& stack( *mSharedStack );
 
     if (stack.head == tail && stack.available == mNumBuffers) {
-        LOGW("dequeue: tail=%d, head=%d, avail=%d, queued=%d",
+        ALOGW("dequeue: tail=%d, head=%d, avail=%d, queued=%d",
                 tail, stack.head, stack.available, stack.queued);
     }
 
@@ -367,7 +367,7 @@ ssize_t SharedBufferClient::dequeue()
 
     const nsecs_t dequeueTime = systemTime(SYSTEM_TIME_THREAD);
 
-    //LOGD("[%d] about to dequeue a buffer",
+    //ALOGD("[%d] about to dequeue a buffer",
     //        mSharedStack->identity);
     DequeueCondition condition(this);
     status_t err = waitForCondition(condition);
@@ -379,7 +379,7 @@ ssize_t SharedBufferClient::dequeue()
 
     int dequeued = stack.index[tail];
     tail = ((tail+1 >= mNumBuffers) ? 0 : tail+1);
-    LOGD_IF(DEBUG_ATOMICS, "dequeued=%d, tail++=%d, %s",
+    ALOGD_IF(DEBUG_ATOMICS, "dequeued=%d, tail++=%d, %s",
             dequeued, tail, dump("").string());
 
     mDequeueTime[dequeued] = dequeueTime; 
@@ -427,7 +427,7 @@ status_t SharedBufferClient::queue(int buf)
 
     QueueUpdate update(this);
     status_t err = updateCondition( update );
-    LOGD_IF(DEBUG_ATOMICS, "queued=%d, %s", buf, dump("").string());
+    ALOGD_IF(DEBUG_ATOMICS, "queued=%d, %s", buf, dump("").string());
 
     const nsecs_t now = systemTime(SYSTEM_TIME_THREAD);
     stack.stats.totalTime = ns2us(now - mDequeueTime[buf]);
@@ -514,7 +514,7 @@ ssize_t SharedBufferServer::retireAndLock()
             return BAD_VALUE;
         SharedBufferStack& stack( *mSharedStack );
         buf = stack.index[buf];
-        LOGD_IF(DEBUG_ATOMICS && buf>=0, "retire=%d, %s",
+        ALOGD_IF(DEBUG_ATOMICS && buf>=0, "retire=%d, %s",
                 int(buf), dump("").string());
     }
     return buf;

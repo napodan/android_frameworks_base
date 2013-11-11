@@ -85,7 +85,7 @@ void Visualizer_reset(VisualizerContext *pContext)
 
 int Visualizer_configure(VisualizerContext *pContext, effect_config_t *pConfig)
 {
-    LOGV("Visualizer_configure start");
+    ALOGV("Visualizer_configure start");
 
     if (pConfig->inputCfg.samplingRate != pConfig->outputCfg.samplingRate) return -EINVAL;
     if (pConfig->inputCfg.channels != pConfig->outputCfg.channels) return -EINVAL;
@@ -183,7 +183,7 @@ extern "C" int EffectCreate(effect_uuid_t *uuid,
 
     ret = Visualizer_init(pContext);
     if (ret < 0) {
-        LOGW("EffectCreate() init failed");
+        ALOGW("EffectCreate() init failed");
         delete pContext;
         return ret;
     }
@@ -192,7 +192,7 @@ extern "C" int EffectCreate(effect_uuid_t *uuid,
 
     pContext->mState = VISUALIZER_STATE_INITIALIZED;
 
-    LOGV("EffectCreate %p", pContext);
+    ALOGV("EffectCreate %p", pContext);
 
     return 0;
 
@@ -201,7 +201,7 @@ extern "C" int EffectCreate(effect_uuid_t *uuid,
 extern "C" int EffectRelease(effect_interface_t interface) {
     VisualizerContext * pContext = (VisualizerContext *)interface;
 
-    LOGV("EffectRelease %p", interface);
+    ALOGV("EffectRelease %p", interface);
     if (pContext == NULL) {
         return -EINVAL;
     }
@@ -303,7 +303,7 @@ extern "C" int Visualizer_command(effect_interface_t self, uint32_t cmdCode, uin
         return -EINVAL;
     }
 
-//    LOGV("Visualizer_command command %d cmdSize %d",cmdCode, cmdSize);
+//    ALOGV("Visualizer_command command %d cmdSize %d",cmdCode, cmdSize);
 
     switch (cmdCode) {
     case EFFECT_CMD_INIT:
@@ -331,7 +331,7 @@ extern "C" int Visualizer_command(effect_interface_t self, uint32_t cmdCode, uin
             return -ENOSYS;
         }
         pContext->mState = VISUALIZER_STATE_ACTIVE;
-        LOGV("EFFECT_CMD_ENABLE() OK");
+        ALOGV("EFFECT_CMD_ENABLE() OK");
         *(int *)pReplyData = 0;
         break;
     case EFFECT_CMD_DISABLE:
@@ -342,7 +342,7 @@ extern "C" int Visualizer_command(effect_interface_t self, uint32_t cmdCode, uin
             return -ENOSYS;
         }
         pContext->mState = VISUALIZER_STATE_INITIALIZED;
-        LOGV("EFFECT_CMD_DISABLE() OK");
+        ALOGV("EFFECT_CMD_DISABLE() OK");
         *(int *)pReplyData = 0;
         break;
     case EFFECT_CMD_GET_PARAM: {
@@ -361,7 +361,7 @@ extern "C" int Visualizer_command(effect_interface_t self, uint32_t cmdCode, uin
             p->status = -EINVAL;
             break;
         }
-        LOGV("get mCaptureSize = %d", pContext->mCaptureSize);
+        ALOGV("get mCaptureSize = %d", pContext->mCaptureSize);
         *((uint32_t *)p->data + 1) = pContext->mCaptureSize;
         p->vsize = sizeof(uint32_t);
         *replySize += sizeof(uint32_t);
@@ -381,7 +381,7 @@ extern "C" int Visualizer_command(effect_interface_t self, uint32_t cmdCode, uin
             break;;
         }
         pContext->mCaptureSize = *((uint32_t *)p->data + 1);
-        LOGV("set mCaptureSize = %d", pContext->mCaptureSize);
+        ALOGV("set mCaptureSize = %d", pContext->mCaptureSize);
         } break;
     case EFFECT_CMD_SET_DEVICE:
     case EFFECT_CMD_SET_VOLUME:
@@ -391,7 +391,7 @@ extern "C" int Visualizer_command(effect_interface_t self, uint32_t cmdCode, uin
 
     case VISU_CMD_CAPTURE:
         if (pReplyData == NULL || *replySize != pContext->mCaptureSize) {
-            LOGV("VISU_CMD_CAPTURE() error *replySize %d pContext->mCaptureSize %d",
+            ALOGV("VISU_CMD_CAPTURE() error *replySize %d pContext->mCaptureSize %d",
                     *replySize, pContext->mCaptureSize);
             return -EINVAL;
         }
@@ -405,7 +405,7 @@ extern "C" int Visualizer_command(effect_interface_t self, uint32_t cmdCode, uin
         break;
 
     default:
-        LOGW("Visualizer_command invalid command %d",cmdCode);
+        ALOGW("Visualizer_command invalid command %d",cmdCode);
         return -EINVAL;
     }
 

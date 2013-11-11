@@ -80,7 +80,7 @@ size_t Element::getFieldOffsetBits(uint32_t componentNumber) const
 void Element::dumpLOGV(const char *prefix) const
 {
     ObjectBase::dumpLOGV(prefix);
-    LOGV("%s   Element: components %i,  size %i", prefix, mFieldCount, mBits);
+    ALOGV("%s   Element: components %i,  size %i", prefix, mFieldCount, mBits);
     for (uint32_t ct = 0; ct < mFieldCount; ct++) {
         char buf[1024];
         sprintf(buf, "%s component %i: ", prefix, ct);
@@ -111,7 +111,7 @@ Element *Element::createFromStream(Context *rsc, IStream *stream)
     // First make sure we are reading the correct object
     A3DClassID classID = (A3DClassID)stream->loadU32();
     if(classID != A3D_CLASS_ID_ELEMENT) {
-        LOGE("element loading skipped due to invalid class id\n");
+        ALOGE("element loading skipped due to invalid class id\n");
         return NULL;
     }
 
@@ -314,7 +314,7 @@ RsElement rsi_ElementCreate(Context *rsc,
                             bool norm,
                             uint32_t vecSize)
 {
-    //LOGE("rsi_ElementCreate %i %i %i %i", dt, dk, norm, vecSize);
+    //ALOGE("rsi_ElementCreate %i %i %i %i", dt, dk, norm, vecSize);
     const Element *e = Element::create(rsc, dt, dk, norm, vecSize);
     e->incUserRef();
     return (RsElement)e;
@@ -326,7 +326,7 @@ RsElement rsi_ElementCreate2(Context *rsc,
                              const char ** names,
                              const size_t * nameLengths)
 {
-    //LOGE("rsi_ElementCreate2 %i", count);
+    //ALOGE("rsi_ElementCreate2 %i", count);
     const Element *e = Element::create(rsc, count, (const Element **)ein, names, nameLengths);
     e->incUserRef();
     return (RsElement)e;

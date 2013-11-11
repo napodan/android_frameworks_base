@@ -50,7 +50,7 @@ static struct parcel_file_descriptor_offsets_t
 
 static void checkAndClearExceptionFromCallback(JNIEnv* env, const char* methodName) {
     if (env->ExceptionCheck()) {
-        LOGE("An exception was thrown by callback '%s'.", methodName);
+        ALOGE("An exception was thrown by callback '%s'.", methodName);
         LOGE_EX(env);
         env->ExceptionClear();
     }
@@ -74,7 +74,7 @@ static jobjectArray android_server_UsbService_getAccessoryStrings(JNIEnv *env, j
 {
     int fd = open(DRIVER_NAME, O_RDWR);
     if (fd < 0) {
-        LOGE("could not open %s", DRIVER_NAME);
+        ALOGE("could not open %s", DRIVER_NAME);
         return NULL;
     }
     jclass stringClass = env->FindClass("java/lang/String");
@@ -96,7 +96,7 @@ static jobject android_server_UsbService_openAccessory(JNIEnv *env, jobject thiz
 {
     int fd = open(DRIVER_NAME, O_RDWR);
     if (fd < 0) {
-        LOGE("could not open %s", DRIVER_NAME);
+        ALOGE("could not open %s", DRIVER_NAME);
         return NULL;
     }
     jobject fileDescriptor = env->NewObject(gFileDescriptorOffsets.mClass,

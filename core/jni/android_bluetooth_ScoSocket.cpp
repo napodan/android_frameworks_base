@@ -129,7 +129,7 @@ static inline native_data_t * get_native_data(JNIEnv *env, jobject object) {
 }
 
 static uint16_t str2scoType (char *key) {
-    LOGV("%s: key = %s", __FUNCTION__, key);
+    ALOGV("%s: key = %s", __FUNCTION__, key);
     if (COMPARE_STRING(key, "ESCO_HV1"))
         return ESCO_HV1;
     if (COMPARE_STRING(key, "ESCO_HV2"))
@@ -156,7 +156,7 @@ static uint16_t str2scoType (char *key) {
         return EDR_ESCO_MASK;
     if (COMPARE_STRING(key, "ALL_ESCO_MASK"))
         return ALL_ESCO_MASK;
-    LOGE("Unknown SCO Type (%s) skipping",key);
+    ALOGE("Unknown SCO Type (%s) skipping",key);
     return 0;
 }
 
@@ -166,12 +166,12 @@ static void parseBlacklist(void) {
     scoBlacklist_t *list = NULL;
     scoBlacklist_t *newelem;
 
-    LOGV(__FUNCTION__);
+    ALOGV(__FUNCTION__);
 
     /* Open file */
     FILE *fp = fopen(filename, "r");
     if(!fp) {
-        LOGE("Error(%s)opening blacklist file", strerror(errno));
+        ALOGE("Error(%s)opening blacklist file", strerror(errno));
         return;
     }
 
@@ -182,7 +182,7 @@ static void parseBlacklist(void) {
         if (COMPARE_STRING(module, SCO_BLACKLIST_MODULE_NAME)) {
             newelem = (scoBlacklist_t *)calloc(1, sizeof(scoBlacklist_t));
             if (newelem == NULL) {
-                LOGE("%s: out of memory!", __FUNCTION__);
+                ALOGE("%s: out of memory!", __FUNCTION__);
                 return;
             }
             // parse line
@@ -194,7 +194,7 @@ static void parseBlacklist(void) {
                 newelem->fieldType = BL_TYPE_NAME;
                 newelem->value = (char *)calloc(1, strlen(valueList));
                 if (newelem->value == NULL) {
-                    LOGE("%s: out of memory!", __FUNCTION__);
+                    ALOGE("%s: out of memory!", __FUNCTION__);
                     continue;
                 }
                 valueList++;  // Skip open quote
@@ -221,13 +221,13 @@ static void parseBlacklist(void) {
                         if (sco != 0)
                             scoTypes = sco;
                     } else {
-                        LOGE("Invalid SCO type must be =, + or -");
+                        ALOGE("Invalid SCO type must be =, + or -");
                     }
                     param = strtok(NULL, ";");
                 }
                 newelem->scoType = scoTypes;
             } else {
-                LOGE("Unknown SCO type entry in Blacklist file");
+                ALOGE("Unknown SCO type entry in Blacklist file");
                 continue;
             }
             if (list) {
@@ -236,7 +236,7 @@ static void parseBlacklist(void) {
             } else {
                 blacklist = list = newelem;
             }
-            LOGI("Entry name = %s ScoTypes = 0x%x", newelem->value,
+            ALOGI("Entry name = %s ScoTypes = 0x%x", newelem->value,
                  newelem->scoType);
         }
     }
@@ -256,16 +256,16 @@ static uint16_t getScoType(char *address, const char *name) {
         }
         list = list->next;
     }
-    LOGI("%s %s - 0x%x",  __FUNCTION__, name, ret);
+    ALOGI("%s %s - 0x%x",  __FUNCTION__, name, ret);
     return ret;
 }
 #endif
 
 static void classInitNative(JNIEnv* env, jclass clazz) {
-    LOGV(__FUNCTION__);
+    ALOGV(__FUNCTION__);
 #ifdef HAVE_BLUETOOTH
     if (env->GetJavaVM(&jvm) < 0) {
-        LOGE("Could not get handle to the VM");
+        ALOGE("Could not get handle to the VM");
     }
     field_mNativeData = get_field(env, clazz, "mNativeData", "I");
     method_onAccepted = env->GetMethodID(clazz, "onAccepted", "(I)V");
@@ -279,12 +279,12 @@ static void classInitNative(JNIEnv* env, jclass clazz) {
 
 /* Returns false if a serious error occured */
 static jboolean initNative(JNIEnv* env, jobject object) {
-    LOGV(__FUNCTION__);
+    ALOGV(__FUNCTION__);
 #ifdef HAVE_BLUETOOTH
 
     native_data_t *nat = (native_data_t *) calloc(1, sizeof(native_data_t));
     if (nat == NULL) {
-        LOGE("%s: out of memory!", __FUNCTION__);
+        ALOGE("%s: out of memory!", __FUNCTION__);
         return JNI_FALSE;
     }
 
@@ -299,7 +299,7 @@ static jboolean initNative(JNIEnv* env, jobject object) {
 }
 
 static void destroyNative(JNIEnv* env, jobject object) {
-    LOGV(__FUNCTION__);
+    ALOGV(__FUNCTION__);
 #ifdef HAVE_BLUETOOTH
     native_data_t *nat = get_native_data(env, object);
     
@@ -317,7 +317,7 @@ static void destroyNative(JNIEnv* env, jobject object) {
 }
 
 static jboolean acceptNative(JNIEnv *env, jobject object) {
-    LOGV(__FUNCTION__);
+    ALOGV(__FUNCTION__);
 #ifdef HAVE_BLUETOOTH
     native_data_t *nat = get_native_data(env, object);
     int signal_sks[2];
@@ -332,7 +332,7 @@ static jboolean acceptNative(JNIEnv *env, jobject object) {
 
     // setup socketpair to pass messages between threads
     if (socketpair(AF_UNIX, SOCK_STREAM, 0, signal_sks) < 0) {
-        LOGE("%s: socketpair() failed: %s", __FUNCTION__, strerror(errno));
+        ALOGE("%s: socketpair() failed: %s", __FUNCTION__, strerror(errno));
         pthread_mutex_unlock(&nat->mutex);
         return JNI_FALSE;
     }
@@ -341,7 +341,7 @@ static jboolean acceptNative(JNIEnv *env, jobject object) {
 
     data = (thread_data_t *)calloc(1, sizeof(thread_data_t));
     if (data == NULL) {
-        LOGE("%s: out of memory", __FUNCTION__);
+        ALOGE("%s: out of memory", __FUNCTION__);
         pthread_mutex_unlock(&nat->mutex);
         return JNI_FALSE;
     }
@@ -353,7 +353,7 @@ static jboolean acceptNative(JNIEnv *env, jobject object) {
     data->is_accept = true;
 
     if (pthread_create(&thread, NULL, &work_thread, (void *)data) < 0) {
-        LOGE("%s: pthread_create() failed: %s", __FUNCTION__, strerror(errno));
+        ALOGE("%s: pthread_create() failed: %s", __FUNCTION__, strerror(errno));
         return JNI_FALSE;
     }
     return JNI_TRUE;
@@ -365,7 +365,7 @@ static jboolean acceptNative(JNIEnv *env, jobject object) {
 static jboolean connectNative(JNIEnv *env, jobject object, jstring address,
         jstring name) {
 
-    LOGV(__FUNCTION__);
+    ALOGV(__FUNCTION__);
 #ifdef HAVE_BLUETOOTH
     native_data_t *nat = get_native_data(env, object);
     int signal_sks[2];
@@ -382,7 +382,7 @@ static jboolean connectNative(JNIEnv *env, jobject object, jstring address,
 
     // setup socketpair to pass messages between threads
     if (socketpair(AF_UNIX, SOCK_STREAM, 0, signal_sks) < 0) {
-        LOGE("%s: socketpair() failed: %s\n", __FUNCTION__, strerror(errno));
+        ALOGE("%s: socketpair() failed: %s\n", __FUNCTION__, strerror(errno));
         pthread_mutex_unlock(&nat->mutex);
         return JNI_FALSE;
     }
@@ -391,7 +391,7 @@ static jboolean connectNative(JNIEnv *env, jobject object, jstring address,
 
     data = (thread_data_t *)calloc(1, sizeof(thread_data_t));
     if (data == NULL) {
-        LOGE("%s: out of memory", __FUNCTION__);
+        ALOGE("%s: out of memory", __FUNCTION__);
         pthread_mutex_unlock(&nat->mutex);
         return JNI_FALSE;
     }
@@ -405,7 +405,7 @@ static jboolean connectNative(JNIEnv *env, jobject object, jstring address,
     data->is_accept = false;
 
     if (name == NULL) {
-        LOGE("%s: Null pointer passed in for device name", __FUNCTION__);
+        ALOGE("%s: Null pointer passed in for device name", __FUNCTION__);
         data->sco_pkt_type = 0;
     } else {
         c_name = env->GetStringUTFChars(name, NULL);
@@ -414,7 +414,7 @@ static jboolean connectNative(JNIEnv *env, jobject object, jstring address,
         env->ReleaseStringUTFChars(name, c_name);
     }
     if (pthread_create(&thread, NULL, &work_thread, (void *)data) < 0) {
-        LOGE("%s: pthread_create() failed: %s", __FUNCTION__, strerror(errno));
+        ALOGE("%s: pthread_create() failed: %s", __FUNCTION__, strerror(errno));
         return JNI_FALSE;
     }
     return JNI_TRUE;
@@ -424,7 +424,7 @@ static jboolean connectNative(JNIEnv *env, jobject object, jstring address,
 }
 
 static void closeNative(JNIEnv *env, jobject object) {
-    LOGV(__FUNCTION__);
+    ALOGV(__FUNCTION__);
 #ifdef HAVE_BLUETOOTH
     native_data_t *nat = get_native_data(env, object);
     int signal_sk;
@@ -437,7 +437,7 @@ static void closeNative(JNIEnv *env, jobject object) {
     pthread_mutex_unlock(&nat->mutex);
 
     if (signal_sk >= 0) {
-        LOGV("%s: signal_sk = %d", __FUNCTION__, signal_sk);
+        ALOGV("%s: signal_sk = %d", __FUNCTION__, signal_sk);
         unsigned char dummy;
         write(signal_sk, &dummy, sizeof(dummy));
         close(signal_sk);
@@ -452,30 +452,30 @@ static void *work_thread(void *arg) {
     thread_data_t *data = (thread_data_t *)arg;
     int sk;
 
-    LOGV(__FUNCTION__);
+    ALOGV(__FUNCTION__);
     if (jvm->AttachCurrentThread(&env, NULL) != JNI_OK) {
-        LOGE("%s: AttachCurrentThread() failed", __FUNCTION__);
+        ALOGE("%s: AttachCurrentThread() failed", __FUNCTION__);
         return NULL;
     }
 
     /* connect the SCO socket */
     if (data->is_accept) {
-        LOGV("SCO OBJECT %p ACCEPT #####", data->nat->object);
+        ALOGV("SCO OBJECT %p ACCEPT #####", data->nat->object);
         sk = accept_work(data->signal_sk);
-        LOGV("SCO OBJECT %p END ACCEPT *****", data->nat->object);
+        ALOGV("SCO OBJECT %p END ACCEPT *****", data->nat->object);
     } else {
         sk = connect_work(data->address, data->sco_pkt_type);
     }
 
     /* callback with connection result */
     if (data->nat == NULL) {
-        LOGV("%s: object destroyed!", __FUNCTION__);
+        ALOGV("%s: object destroyed!", __FUNCTION__);
         goto done;
     }
     pthread_mutex_lock(&data->nat->mutex);
     if (data->nat->object == NULL) {
         pthread_mutex_unlock(&data->nat->mutex);
-        LOGV("%s: callback cancelled", __FUNCTION__);
+        ALOGV("%s: callback cancelled", __FUNCTION__);
         goto done;
     }
     if (data->is_accept) {
@@ -489,22 +489,22 @@ static void *work_thread(void *arg) {
         goto done;
     }
 
-    LOGV("SCO OBJECT %p %d CONNECTED +++ (%s)", data->nat->object, sk,
+    ALOGV("SCO OBJECT %p %d CONNECTED +++ (%s)", data->nat->object, sk,
          data->is_accept ? "in" : "out");
 
     /* wait for the socket to close */
-    LOGV("wait_for_close()...");
+    ALOGV("wait_for_close()...");
     wait_for_close(sk, data->signal_sk);
-    LOGV("wait_for_close() returned");
+    ALOGV("wait_for_close() returned");
 
     /* callback with close result */
     if (data->nat == NULL) {
-        LOGV("%s: object destroyed!", __FUNCTION__);
+        ALOGV("%s: object destroyed!", __FUNCTION__);
         goto done;
     }
     pthread_mutex_lock(&data->nat->mutex);
     if (data->nat->object == NULL) {
-        LOGV("%s: callback cancelled", __FUNCTION__);
+        ALOGV("%s: callback cancelled", __FUNCTION__);
     } else {
         env->CallVoidMethod(data->nat->object, method_onClosed);
     }
@@ -513,12 +513,12 @@ static void *work_thread(void *arg) {
 done:
     if (sk >= 0) {
         close(sk);
-        LOGV("SCO OBJECT %p %d CLOSED --- (%s)", data->nat->object, sk, data->is_accept ? "in" : "out");
+        ALOGV("SCO OBJECT %p %d CLOSED --- (%s)", data->nat->object, sk, data->is_accept ? "in" : "out");
     }
     if (data->signal_sk >= 0) {
         close(data->signal_sk);
     }
-    LOGV("SCO socket closed");
+    ALOGV("SCO socket closed");
 
     if (data->nat != NULL) {
         pthread_mutex_lock(&data->nat->mutex);
@@ -530,15 +530,15 @@ done:
 
     free(data);
     if (jvm->DetachCurrentThread() != JNI_OK) {
-        LOGE("%s: DetachCurrentThread() failed", __FUNCTION__);
+        ALOGE("%s: DetachCurrentThread() failed", __FUNCTION__);
     }
 
-    LOGV("work_thread() done");
+    ALOGV("work_thread() done");
     return NULL;
 }
 
 static int accept_work(int signal_sk) {
-    LOGV(__FUNCTION__);
+    ALOGV(__FUNCTION__);
     int sk;
     int nsk;
     int addr_sz;
@@ -548,7 +548,7 @@ static int accept_work(int signal_sk) {
 
     sk = socket(PF_BLUETOOTH, SOCK_SEQPACKET, BTPROTO_SCO);
     if (sk < 0) {
-        LOGE("%s socket() failed: %s", __FUNCTION__, strerror(errno));
+        ALOGE("%s socket() failed: %s", __FUNCTION__, strerror(errno));
         return -1;
     }
 
@@ -556,12 +556,12 @@ static int accept_work(int signal_sk) {
     addr.sco_family = AF_BLUETOOTH;
     memcpy(&addr.sco_bdaddr, BDADDR_ANY, sizeof(bdaddr_t));
     if (bind(sk, (struct sockaddr *) &addr, sizeof(addr)) < 0) {
-        LOGE("%s bind() failed: %s", __FUNCTION__, strerror(errno));
+        ALOGE("%s bind() failed: %s", __FUNCTION__, strerror(errno));
         goto error;
     }
 
     if (listen(sk, 1)) {
-        LOGE("%s: listen() failed: %s", __FUNCTION__, strerror(errno));
+        ALOGE("%s: listen() failed: %s", __FUNCTION__, strerror(errno));
         goto error;
     }
 
@@ -573,31 +573,31 @@ static int accept_work(int signal_sk) {
     FD_SET(signal_sk, &fds);
 
     max_fd = (sk > signal_sk) ? sk : signal_sk;
-    LOGI("Listening SCO socket...");
+    ALOGI("Listening SCO socket...");
     while (select(max_fd + 1, &fds, NULL, NULL, NULL) < 0) {
         if (errno != EINTR) {
-            LOGE("%s: select() failed: %s", __FUNCTION__, strerror(errno));
+            ALOGE("%s: select() failed: %s", __FUNCTION__, strerror(errno));
             goto error;
         }
-        LOGV("%s: select() EINTR, retrying", __FUNCTION__);
+        ALOGV("%s: select() EINTR, retrying", __FUNCTION__);
     }
-    LOGV("select() returned");
+    ALOGV("select() returned");
     if (FD_ISSET(signal_sk, &fds)) {
         // signal to cancel listening
-        LOGV("cancelled listening socket, closing");
+        ALOGV("cancelled listening socket, closing");
         goto error;
     }
     if (!FD_ISSET(sk, &fds)) {
-        LOGE("error: select() returned >= 0 with no fds set");
+        ALOGE("error: select() returned >= 0 with no fds set");
         goto error;
     }
 
     nsk = accept(sk, (struct sockaddr *)&addr, &addr_sz);
     if (nsk < 0) {
-        LOGE("%s: accept() failed: %s", __FUNCTION__, strerror(errno));
+        ALOGE("%s: accept() failed: %s", __FUNCTION__, strerror(errno));
         goto error;
     }
-    LOGI("Connected SCO socket (incoming)");
+    ALOGI("Connected SCO socket (incoming)");
     close(sk);  // The listening socket
 
     return nsk;
@@ -609,13 +609,13 @@ error:
 }
 
 static int connect_work(const char *address, uint16_t sco_pkt_type) {
-    LOGV(__FUNCTION__);
+    ALOGV(__FUNCTION__);
     struct sockaddr_sco addr;
     int sk = -1;
 
     sk = socket(PF_BLUETOOTH, SOCK_SEQPACKET, BTPROTO_SCO);
     if (sk < 0) {
-        LOGE("%s: socket() failed: %s", __FUNCTION__, strerror(errno));
+        ALOGE("%s: socket() failed: %s", __FUNCTION__, strerror(errno));
         return -1;
     }
 
@@ -624,7 +624,7 @@ static int connect_work(const char *address, uint16_t sco_pkt_type) {
     addr.sco_family = AF_BLUETOOTH;
     memcpy(&addr.sco_bdaddr, BDADDR_ANY, sizeof(bdaddr_t));
     if (bind(sk, (struct sockaddr *) &addr, sizeof(addr)) < 0) {
-        LOGE("%s: bind() failed: %s", __FUNCTION__, strerror(errno));
+        ALOGE("%s: bind() failed: %s", __FUNCTION__, strerror(errno));
         goto error;
     }
 
@@ -632,15 +632,15 @@ static int connect_work(const char *address, uint16_t sco_pkt_type) {
     addr.sco_family = AF_BLUETOOTH;
     get_bdaddr(address, &addr.sco_bdaddr);
     addr.sco_pkt_type = sco_pkt_type;
-    LOGI("Connecting to socket");
+    ALOGI("Connecting to socket");
     while (connect(sk, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
         if (errno != EINTR) {
-            LOGE("%s: connect() failed: %s", __FUNCTION__, strerror(errno));
+            ALOGE("%s: connect() failed: %s", __FUNCTION__, strerror(errno));
             goto error;
         }
-        LOGV("%s: connect() EINTR, retrying", __FUNCTION__);
+        ALOGV("%s: connect() EINTR, retrying", __FUNCTION__);
     }
-    LOGI("SCO socket connected (outgoing)");
+    ALOGI("SCO socket connected (outgoing)");
 
     return sk;
 
@@ -650,7 +650,7 @@ error:
 }
 
 static void wait_for_close(int sk, int signal_sk) {
-    LOGV(__FUNCTION__);
+    ALOGV(__FUNCTION__);
     pollfd p[2];
 
     memset(p, 0, 2 * sizeof(pollfd));
@@ -658,17 +658,17 @@ static void wait_for_close(int sk, int signal_sk) {
     p[1].fd = signal_sk;
     p[1].events = POLLIN | POLLPRI;
 
-    LOGV("poll...");
+    ALOGV("poll...");
 
     while (poll(p, 2, -1) < 0) {  // blocks
         if (errno != EINTR) {
-            LOGE("%s: poll() failed: %s", __FUNCTION__, strerror(errno));
+            ALOGE("%s: poll() failed: %s", __FUNCTION__, strerror(errno));
             break;
         }
-        LOGV("%s: poll() EINTR, retrying", __FUNCTION__);
+        ALOGV("%s: poll() EINTR, retrying", __FUNCTION__);
     }
 
-    LOGV("poll() returned");
+    ALOGV("poll() returned");
 }
 #endif
 

@@ -56,13 +56,13 @@ sp<IOMXRenderer> IOMX::createRendererFromJavaSurface(
         int32_t rotationDegrees) {
     jclass surfaceClass = env->FindClass("android/view/Surface");
     if (surfaceClass == NULL) {
-        LOGE("Can't find android/view/Surface");
+        ALOGE("Can't find android/view/Surface");
         return NULL;
     }
 
     jfieldID surfaceID = env->GetFieldID(surfaceClass, ANDROID_VIEW_SURFACE_JNI_ID, "I");
     if (surfaceID == NULL) {
-        LOGE("Can't find Surface.mSurface");
+        ALOGE("Can't find Surface.mSurface");
         return NULL;
     }
 
@@ -379,7 +379,7 @@ IMPLEMENT_META_INTERFACE(OMX, "android.hardware.IOMX");
 
 #define CHECK_INTERFACE(interface, data, reply) \
         do { if (!data.enforceInterface(interface::getInterfaceDescriptor())) { \
-            LOGW("Call incorrectly routed to " #interface); \
+            ALOGW("Call incorrectly routed to " #interface); \
             return PERMISSION_DENIED; \
         } } while (0)
 

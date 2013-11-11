@@ -145,7 +145,7 @@ extern "C" int EffectCreate(effect_uuid_t *uuid,
     int ret;
     int i;
 
-    LOGV("EffectLibCreateEffect start");
+    ALOGV("EffectLibCreateEffect start");
 
     if (pInterface == NULL || uuid == NULL) {
         return -EINVAL;
@@ -163,7 +163,7 @@ extern "C" int EffectCreate(effect_uuid_t *uuid,
 
     ret = Equalizer_init(pContext);
     if (ret < 0) {
-        LOGW("EffectLibCreateEffect() init failed");
+        ALOGW("EffectLibCreateEffect() init failed");
         delete pContext;
         return ret;
     }
@@ -171,7 +171,7 @@ extern "C" int EffectCreate(effect_uuid_t *uuid,
     *pInterface = (effect_interface_t)pContext;
     pContext->state = EQUALIZER_STATE_INITIALIZED;
 
-    LOGV("EffectLibCreateEffect %p, size %d", pContext, AudioEqualizer::GetInstanceSize(kNumBands)+sizeof(EqualizerContext));
+    ALOGV("EffectLibCreateEffect %p, size %d", pContext, AudioEqualizer::GetInstanceSize(kNumBands)+sizeof(EqualizerContext));
 
     return 0;
 
@@ -180,7 +180,7 @@ extern "C" int EffectCreate(effect_uuid_t *uuid,
 extern "C" int EffectRelease(effect_interface_t interface) {
     EqualizerContext * pContext = (EqualizerContext *)interface;
 
-    LOGV("EffectLibReleaseEffect %p", interface);
+    ALOGV("EffectLibReleaseEffect %p", interface);
     if (pContext == NULL) {
         return -EINVAL;
     }
@@ -199,7 +199,7 @@ extern "C" int EffectRelease(effect_interface_t interface) {
 
 #define CHECK_ARG(cond) {                     \
     if (!(cond)) {                            \
-        LOGV("Invalid argument: "#cond);      \
+        ALOGV("Invalid argument: "#cond);      \
         return -EINVAL;                       \
     }                                         \
 }
@@ -220,7 +220,7 @@ extern "C" int EffectRelease(effect_interface_t interface) {
 
 int Equalizer_configure(EqualizerContext *pContext, effect_config_t *pConfig)
 {
-    LOGV("Equalizer_configure start");
+    ALOGV("Equalizer_configure start");
 
     CHECK_ARG(pContext != NULL);
     CHECK_ARG(pConfig != NULL);
@@ -272,7 +272,7 @@ int Equalizer_init(EqualizerContext *pContext)
 {
     int status;
 
-    LOGV("Equalizer_init start");
+    ALOGV("Equalizer_init start");
 
     CHECK_ARG(pContext != NULL);
 
@@ -396,13 +396,13 @@ int Equalizer_getParameter(AudioEqualizer * pEqualizer, int32_t *pParam, size_t 
     switch (param) {
     case EQ_PARAM_NUM_BANDS:
         *(uint16_t *)pValue = (uint16_t)kNumBands;
-        LOGV("Equalizer_getParameter() EQ_PARAM_NUM_BANDS %d", *(int16_t *)pValue);
+        ALOGV("Equalizer_getParameter() EQ_PARAM_NUM_BANDS %d", *(int16_t *)pValue);
         break;
 
     case EQ_PARAM_LEVEL_RANGE:
         *(int16_t *)pValue = -9600;
         *((int16_t *)pValue + 1) = 4800;
-        LOGV("Equalizer_getParameter() EQ_PARAM_LEVEL_RANGE min %d, max %d", *(int32_t *)pValue, *((int32_t *)pValue + 1));
+        ALOGV("Equalizer_getParameter() EQ_PARAM_LEVEL_RANGE min %d, max %d", *(int32_t *)pValue, *((int32_t *)pValue + 1));
         break;
 
     case EQ_PARAM_BAND_LEVEL:
@@ -412,7 +412,7 @@ int Equalizer_getParameter(AudioEqualizer * pEqualizer, int32_t *pParam, size_t 
             break;
         }
         *(int16_t *)pValue = (int16_t)pEqualizer->getGain(param2);
-        LOGV("Equalizer_getParameter() EQ_PARAM_BAND_LEVEL band %d, level %d", param2, *(int32_t *)pValue);
+        ALOGV("Equalizer_getParameter() EQ_PARAM_BAND_LEVEL band %d, level %d", param2, *(int32_t *)pValue);
         break;
 
     case EQ_PARAM_CENTER_FREQ:
@@ -422,7 +422,7 @@ int Equalizer_getParameter(AudioEqualizer * pEqualizer, int32_t *pParam, size_t 
             break;
         }
         *(int32_t *)pValue = pEqualizer->getFrequency(param2);
-        LOGV("Equalizer_getParameter() EQ_PARAM_CENTER_FREQ band %d, frequency %d", param2, *(int32_t *)pValue);
+        ALOGV("Equalizer_getParameter() EQ_PARAM_CENTER_FREQ band %d, frequency %d", param2, *(int32_t *)pValue);
         break;
 
     case EQ_PARAM_BAND_FREQ_RANGE:
@@ -432,23 +432,23 @@ int Equalizer_getParameter(AudioEqualizer * pEqualizer, int32_t *pParam, size_t 
             break;
         }
         pEqualizer->getBandRange(param2, *(uint32_t *)pValue, *((uint32_t *)pValue + 1));
-        LOGV("Equalizer_getParameter() EQ_PARAM_BAND_FREQ_RANGE band %d, min %d, max %d", param2, *(int32_t *)pValue, *((int32_t *)pValue + 1));
+        ALOGV("Equalizer_getParameter() EQ_PARAM_BAND_FREQ_RANGE band %d, min %d, max %d", param2, *(int32_t *)pValue, *((int32_t *)pValue + 1));
         break;
 
     case EQ_PARAM_GET_BAND:
         param2 = *pParam;
         *(uint16_t *)pValue = (uint16_t)pEqualizer->getMostRelevantBand(param2);
-        LOGV("Equalizer_getParameter() EQ_PARAM_GET_BAND frequency %d, band %d", param2, *(int32_t *)pValue);
+        ALOGV("Equalizer_getParameter() EQ_PARAM_GET_BAND frequency %d, band %d", param2, *(int32_t *)pValue);
         break;
 
     case EQ_PARAM_CUR_PRESET:
         *(uint16_t *)pValue = (uint16_t)pEqualizer->getPreset();
-        LOGV("Equalizer_getParameter() EQ_PARAM_CUR_PRESET %d", *(int32_t *)pValue);
+        ALOGV("Equalizer_getParameter() EQ_PARAM_CUR_PRESET %d", *(int32_t *)pValue);
         break;
 
     case EQ_PARAM_GET_NUM_OF_PRESETS:
         *(uint16_t *)pValue = (uint16_t)pEqualizer->getNumPresets();
-        LOGV("Equalizer_getParameter() EQ_PARAM_GET_NUM_OF_PRESETS %d", *(int16_t *)pValue);
+        ALOGV("Equalizer_getParameter() EQ_PARAM_GET_NUM_OF_PRESETS %d", *(int16_t *)pValue);
         break;
 
     case EQ_PARAM_GET_PRESET_NAME:
@@ -461,12 +461,12 @@ int Equalizer_getParameter(AudioEqualizer * pEqualizer, int32_t *pParam, size_t 
         strncpy(name, pEqualizer->getPresetName(param2), *pValueSize - 1);
         name[*pValueSize - 1] = 0;
         *pValueSize = strlen(name) + 1;
-        LOGV("Equalizer_getParameter() EQ_PARAM_GET_PRESET_NAME preset %d, name %s len %d", param2, gEqualizerPresets[param2].name, *pValueSize);
+        ALOGV("Equalizer_getParameter() EQ_PARAM_GET_PRESET_NAME preset %d, name %s len %d", param2, gEqualizerPresets[param2].name, *pValueSize);
         break;
 
     case EQ_PARAM_PROPERTIES: {
         int16_t *p = (int16_t *)pValue;
-        LOGV("Equalizer_getParameter() EQ_PARAM_PROPERTIES");
+        ALOGV("Equalizer_getParameter() EQ_PARAM_PROPERTIES");
         p[0] = (int16_t)pEqualizer->getPreset();
         p[1] = (int16_t)kNumBands;
         for (int i = 0; i < kNumBands; i++) {
@@ -475,7 +475,7 @@ int Equalizer_getParameter(AudioEqualizer * pEqualizer, int32_t *pParam, size_t 
     } break;
 
     default:
-        LOGV("Equalizer_getParameter() invalid param %d", param);
+        ALOGV("Equalizer_getParameter() invalid param %d", param);
         status = -EINVAL;
         break;
     }
@@ -515,7 +515,7 @@ int Equalizer_setParameter (AudioEqualizer * pEqualizer, int32_t *pParam, void *
     case EQ_PARAM_CUR_PRESET:
         preset = (int32_t)(*(uint16_t *)pValue);
 
-        LOGV("setParameter() EQ_PARAM_CUR_PRESET %d", preset);
+        ALOGV("setParameter() EQ_PARAM_CUR_PRESET %d", preset);
         if (preset < 0 || preset >= pEqualizer->getNumPresets()) {
             status = -EINVAL;
             break;
@@ -526,7 +526,7 @@ int Equalizer_setParameter (AudioEqualizer * pEqualizer, int32_t *pParam, void *
     case EQ_PARAM_BAND_LEVEL:
         band =  *pParam;
         level = (int32_t)(*(int16_t *)pValue);
-        LOGV("setParameter() EQ_PARAM_BAND_LEVEL band %d, level %d", band, level);
+        ALOGV("setParameter() EQ_PARAM_BAND_LEVEL band %d, level %d", band, level);
         if (band >= kNumBands) {
             status = -EINVAL;
             break;
@@ -535,7 +535,7 @@ int Equalizer_setParameter (AudioEqualizer * pEqualizer, int32_t *pParam, void *
         pEqualizer->commit(true);
        break;
     case EQ_PARAM_PROPERTIES: {
-        LOGV("setParameter() EQ_PARAM_PROPERTIES");
+        ALOGV("setParameter() EQ_PARAM_PROPERTIES");
         int16_t *p = (int16_t *)pValue;
         if ((int)p[0] >= pEqualizer->getNumPresets()) {
             status = -EINVAL;
@@ -555,7 +555,7 @@ int Equalizer_setParameter (AudioEqualizer * pEqualizer, int32_t *pParam, void *
         pEqualizer->commit(true);
     } break;
     default:
-        LOGV("setParameter() invalid param %d", param);
+        ALOGV("setParameter() invalid param %d", param);
         status = -EINVAL;
         break;
     }
@@ -608,7 +608,7 @@ extern "C" int Equalizer_command(effect_interface_t self, uint32_t cmdCode, uint
 
     android::AudioEqualizer * pEqualizer = pContext->pEqualizer;
 
-    LOGV("Equalizer_command command %d cmdSize %d",cmdCode, cmdSize);
+    ALOGV("Equalizer_command command %d cmdSize %d",cmdCode, cmdSize);
 
     switch (cmdCode) {
     case EFFECT_CMD_INIT:
@@ -640,14 +640,14 @@ extern "C" int Equalizer_command(effect_interface_t self, uint32_t cmdCode, uint
         p->status = android::Equalizer_getParameter(pEqualizer, (int32_t *)p->data, &p->vsize,
                 p->data + voffset);
         *replySize = sizeof(effect_param_t) + voffset + p->vsize;
-        LOGV("Equalizer_command EFFECT_CMD_GET_PARAM *pCmdData %d, *replySize %d, *pReplyData %08x %08x",
+        ALOGV("Equalizer_command EFFECT_CMD_GET_PARAM *pCmdData %d, *replySize %d, *pReplyData %08x %08x",
                 *(int32_t *)((char *)pCmdData + sizeof(effect_param_t)), *replySize,
                 *(int32_t *)((char *)pReplyData + sizeof(effect_param_t) + voffset),
                 *(int32_t *)((char *)pReplyData + sizeof(effect_param_t) + voffset + sizeof(int32_t)));
 
         } break;
     case EFFECT_CMD_SET_PARAM: {
-        LOGV("Equalizer_command EFFECT_CMD_SET_PARAM cmdSize %d pCmdData %p, *replySize %d, pReplyData %p", cmdSize, pCmdData, *replySize, pReplyData);
+        ALOGV("Equalizer_command EFFECT_CMD_SET_PARAM cmdSize %d pCmdData %p, *replySize %d, pReplyData %p", cmdSize, pCmdData, *replySize, pReplyData);
         if (pCmdData == NULL || cmdSize < (int)(sizeof(effect_param_t) + sizeof(int32_t)) ||
             pReplyData == NULL || *replySize != sizeof(int32_t)) {
             return -EINVAL;
@@ -664,7 +664,7 @@ extern "C" int Equalizer_command(effect_interface_t self, uint32_t cmdCode, uint
             return -ENOSYS;
         }
         pContext->state = EQUALIZER_STATE_ACTIVE;
-        LOGV("EFFECT_CMD_ENABLE() OK");
+        ALOGV("EFFECT_CMD_ENABLE() OK");
         *(int *)pReplyData = 0;
         break;
     case EFFECT_CMD_DISABLE:
@@ -675,7 +675,7 @@ extern "C" int Equalizer_command(effect_interface_t self, uint32_t cmdCode, uint
             return -ENOSYS;
         }
         pContext->state = EQUALIZER_STATE_INITIALIZED;
-        LOGV("EFFECT_CMD_DISABLE() OK");
+        ALOGV("EFFECT_CMD_DISABLE() OK");
         *(int *)pReplyData = 0;
         break;
     case EFFECT_CMD_SET_DEVICE:
@@ -683,7 +683,7 @@ extern "C" int Equalizer_command(effect_interface_t self, uint32_t cmdCode, uint
     case EFFECT_CMD_SET_AUDIO_MODE:
         break;
     default:
-        LOGW("Equalizer_command invalid command %d",cmdCode);
+        ALOGW("Equalizer_command invalid command %d",cmdCode);
         return -EINVAL;
     }
 

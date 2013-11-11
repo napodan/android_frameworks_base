@@ -455,14 +455,14 @@ ssize_t HTTPStream::receive(void *data, size_t size) {
         ssize_t n = MyReceive(mSocket, (char *)data + total, size - total, 0);
 
         if (n < 0) {
-            LOGE("recv failed, errno = %d (%s)", (int)n, strerror(-n));
+            ALOGE("recv failed, errno = %d (%s)", (int)n, strerror(-n));
 
             disconnect();
             return (ssize_t)ERROR_IO;
         } else if (n == 0) {
             disconnect();
 
-            LOGE("recv failed, server is gone, total received: %d bytes",
+            ALOGE("recv failed, server is gone, total received: %d bytes",
                  total);
 
             return total == 0 ? (ssize_t)ERROR_CONNECTION_LOST : total;

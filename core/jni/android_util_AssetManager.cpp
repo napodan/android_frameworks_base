@@ -119,7 +119,7 @@ static jint android_content_AssetManager_openAsset(JNIEnv* env, jobject clazz,
         return 0;
     }
 
-    LOGV("openAsset in %p (Java object %p)\n", am, clazz);
+    ALOGV("openAsset in %p (Java object %p)\n", am, clazz);
 
     if (fileName == NULL) {
         jniThrowException(env, "java/lang/NullPointerException", "fileName");
@@ -187,7 +187,7 @@ static jobject android_content_AssetManager_openAssetFd(JNIEnv* env, jobject cla
         return NULL;
     }
 
-    LOGV("openAssetFd in %p (Java object %p)\n", am, clazz);
+    ALOGV("openAssetFd in %p (Java object %p)\n", am, clazz);
 
     if (fileName == NULL) {
         jniThrowException(env, "java/lang/NullPointerException", "fileName");
@@ -219,7 +219,7 @@ static jint android_content_AssetManager_openNonAssetNative(JNIEnv* env, jobject
         return 0;
     }
 
-    LOGV("openNonAssetNative in %p (Java object %p)\n", am, clazz);
+    ALOGV("openNonAssetNative in %p (Java object %p)\n", am, clazz);
 
     if (fileName == NULL) {
         jniThrowException(env, "java/lang/NullPointerException", "fileName");
@@ -259,7 +259,7 @@ static jobject android_content_AssetManager_openNonAssetFdNative(JNIEnv* env, jo
         return NULL;
     }
 
-    LOGV("openNonAssetFd in %p (Java object %p)\n", am, clazz);
+    ALOGV("openNonAssetFd in %p (Java object %p)\n", am, clazz);
 
     if (fileName == NULL ) {
         jniThrowException(env, "java/lang/NullPointerException", "fileName");
@@ -920,7 +920,7 @@ static jboolean android_content_AssetManager_applyStyle(JNIEnv* env, jobject cla
         return JNI_FALSE;
     }
 
-    DEBUG_STYLES(LOGI("APPLY STYLE: theme=0x%x defStyleAttr=0x%x defStyleRes=0x%x xml=0x%x",
+    DEBUG_STYLES(ALOGI("APPLY STYLE: theme=0x%x defStyleAttr=0x%x defStyleRes=0x%x xml=0x%x",
         themeToken, defStyleAttr, defStyleRes, xmlParserToken));
         
     ResTable::Theme* theme = (ResTable::Theme*)themeToken;
@@ -1020,7 +1020,7 @@ static jboolean android_content_AssetManager_applyStyle(JNIEnv* env, jobject cla
     for (jsize ii=0; ii<NI; ii++) {
         const uint32_t curIdent = (uint32_t)src[ii];
 
-        DEBUG_STYLES(LOGI("RETRIEVING ATTR 0x%08x...", curIdent));
+        DEBUG_STYLES(ALOGI("RETRIEVING ATTR 0x%08x...", curIdent));
         
         // Try to find a value for this attribute...  we prioritize values
         // coming from, first XML attributes, then XML style, then default
@@ -1041,7 +1041,7 @@ static jboolean android_content_AssetManager_applyStyle(JNIEnv* env, jobject cla
             xmlParser->getAttributeValue(ix, &value);
             ix++;
             curXmlAttr = xmlParser->getAttributeNameResID(ix);
-            DEBUG_STYLES(LOGI("-> From XML: type=0x%x, data=0x%08x",
+            DEBUG_STYLES(ALOGI("-> From XML: type=0x%x, data=0x%08x",
                     value.dataType, value.data));
         }
 
@@ -1055,7 +1055,7 @@ static jboolean android_content_AssetManager_applyStyle(JNIEnv* env, jobject cla
                 block = styleEnt->stringBlock;
                 typeSetFlags = styleTypeSetFlags;
                 value = styleEnt->map.value;
-                DEBUG_STYLES(LOGI("-> From style: type=0x%x, data=0x%08x",
+                DEBUG_STYLES(ALOGI("-> From style: type=0x%x, data=0x%08x",
                         value.dataType, value.data));
             }
             styleEnt++;
@@ -1071,7 +1071,7 @@ static jboolean android_content_AssetManager_applyStyle(JNIEnv* env, jobject cla
                 block = defStyleEnt->stringBlock;
                 typeSetFlags = defStyleTypeSetFlags;
                 value = defStyleEnt->map.value;
-                DEBUG_STYLES(LOGI("-> From def style: type=0x%x, data=0x%08x",
+                DEBUG_STYLES(ALOGI("-> From def style: type=0x%x, data=0x%08x",
                         value.dataType, value.data));
             }
             defStyleEnt++;
@@ -1083,14 +1083,14 @@ static jboolean android_content_AssetManager_applyStyle(JNIEnv* env, jobject cla
             ssize_t newBlock = theme->resolveAttributeReference(&value, block,
                     &resid, &typeSetFlags, &config);
             if (newBlock >= 0) block = newBlock;
-            DEBUG_STYLES(LOGI("-> Resolved attr: type=0x%x, data=0x%08x",
+            DEBUG_STYLES(ALOGI("-> Resolved attr: type=0x%x, data=0x%08x",
                     value.dataType, value.data));
         } else {
             // If we still don't have a value for this attribute, try to find
             // it in the theme!
             ssize_t newBlock = theme->getAttribute(curIdent, &value, &typeSetFlags);
             if (newBlock >= 0) {
-                DEBUG_STYLES(LOGI("-> From theme: type=0x%x, data=0x%08x",
+                DEBUG_STYLES(ALOGI("-> From theme: type=0x%x, data=0x%08x",
                         value.dataType, value.data));
                 newBlock = res.resolveReference(&value, block, &resid,
                         &typeSetFlags, &config);
@@ -1101,18 +1101,18 @@ static jboolean android_content_AssetManager_applyStyle(JNIEnv* env, jobject cla
                 }
 #endif
                 if (newBlock >= 0) block = newBlock;
-                DEBUG_STYLES(LOGI("-> Resolved theme: type=0x%x, data=0x%08x",
+                DEBUG_STYLES(ALOGI("-> Resolved theme: type=0x%x, data=0x%08x",
                         value.dataType, value.data));
             }
         }
 
         // Deal with the special @null value -- it turns back to TYPE_NULL.
         if (value.dataType == Res_value::TYPE_REFERENCE && value.data == 0) {
-            DEBUG_STYLES(LOGI("-> Setting to @null!"));
+            DEBUG_STYLES(ALOGI("-> Setting to @null!"));
             value.dataType = Res_value::TYPE_NULL;
         }
 
-        DEBUG_STYLES(LOGI("Attribute 0x%08x: type=0x%x, data=0x%08x",
+        DEBUG_STYLES(ALOGI("Attribute 0x%08x: type=0x%x, data=0x%08x",
                 curIdent, value.dataType, value.data));
 
         // Write the final value back to Java.
@@ -1403,7 +1403,7 @@ static jint android_content_AssetManager_openXmlAssetNative(JNIEnv* env, jobject
         return 0;
     }
 
-    LOGV("openXmlAsset in %p (Java object %p)\n", am, clazz);
+    ALOGV("openXmlAsset in %p (Java object %p)\n", am, clazz);
 
     if (fileName == NULL) {
         jniThrowException(env, "java/lang/NullPointerException", "fileName");
@@ -1614,7 +1614,7 @@ static void android_content_AssetManager_init(JNIEnv* env, jobject clazz)
 
     am->addDefaultAssets();
 
-    LOGV("Created AssetManager %p for Java object %p\n", am, clazz);
+    ALOGV("Created AssetManager %p for Java object %p\n", am, clazz);
     env->SetIntField(clazz, gAssetManagerOffsets.mObject, (jint)am);
 }
 
@@ -1622,7 +1622,7 @@ static void android_content_AssetManager_destroy(JNIEnv* env, jobject clazz)
 {
     AssetManager* am = (AssetManager*)
         (env->GetIntField(clazz, gAssetManagerOffsets.mObject));
-    LOGV("Destroying AssetManager %p for Java object %p\n", am, clazz);
+    ALOGV("Destroying AssetManager %p for Java object %p\n", am, clazz);
     if (am != NULL) {
         delete am;
         env->SetIntField(clazz, gAssetManagerOffsets.mObject, 0);

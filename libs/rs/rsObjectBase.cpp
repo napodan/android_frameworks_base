@@ -39,7 +39,7 @@ ObjectBase::ObjectBase(Context *rsc)
 
 ObjectBase::~ObjectBase()
 {
-    //LOGV("~ObjectBase %p  ref %i,%i", this, mUserRefCount, mSysRefCount);
+    //ALOGV("~ObjectBase %p  ref %i,%i", this, mUserRefCount, mSysRefCount);
     rsAssert(!mUserRefCount);
     rsAssert(!mSysRefCount);
     remove();
@@ -48,10 +48,10 @@ ObjectBase::~ObjectBase()
 void ObjectBase::dumpLOGV(const char *op) const
 {
     if (mName.size()) {
-        LOGV("%s RSobj %p, name %s, refs %i,%i  from %s,%i links %p,%p,%p",
+        ALOGV("%s RSobj %p, name %s, refs %i,%i  from %s,%i links %p,%p,%p",
              op, this, mName.string(), mUserRefCount, mSysRefCount, mAllocFile, mAllocLine, mNext, mPrev, mRSC);
     } else {
-        LOGV("%s RSobj %p, no-name, refs %i,%i  from %s,%i links %p,%p,%p",
+        ALOGV("%s RSobj %p, no-name, refs %i,%i  from %s,%i links %p,%p,%p",
              op, this, mUserRefCount, mSysRefCount, mAllocFile, mAllocLine, mNext, mPrev, mRSC);
     }
 }
@@ -70,13 +70,13 @@ void ObjectBase::setContext(Context *rsc)
 void ObjectBase::incUserRef() const
 {
     mUserRefCount ++;
-    //LOGV("ObjectBase %p inc ref %i", this, mRefCount);
+    //ALOGV("ObjectBase %p inc ref %i", this, mRefCount);
 }
 
 void ObjectBase::incSysRef() const
 {
     mSysRefCount ++;
-    //LOGV("ObjectBase %p inc ref %i", this, mRefCount);
+    //ALOGV("ObjectBase %p inc ref %i", this, mRefCount);
 }
 
 bool ObjectBase::checkDelete() const
@@ -128,7 +128,7 @@ void ObjectBase::add() const
 {
     rsAssert(!mNext);
     rsAssert(!mPrev);
-    //LOGV("calling add  rsc %p", mRSC);
+    //ALOGV("calling add  rsc %p", mRSC);
     mNext = mRSC->mObjHead;
     if (mRSC->mObjHead) {
         mRSC->mObjHead->mPrev = this;
@@ -138,7 +138,7 @@ void ObjectBase::add() const
 
 void ObjectBase::remove() const
 {
-    //LOGV("calling remove  rsc %p", mRSC);
+    //ALOGV("calling remove  rsc %p", mRSC);
     if (!mRSC) {
         rsAssert(!mPrev);
         rsAssert(!mNext);
@@ -160,35 +160,35 @@ void ObjectBase::remove() const
 void ObjectBase::zeroAllUserRef(Context *rsc)
 {
     if (rsc->props.mLogObjects) {
-        LOGV("Forcing release of all outstanding user refs.");
+        ALOGV("Forcing release of all outstanding user refs.");
     }
 
     // This operation can be slow, only to be called during context cleanup.
     const ObjectBase * o = rsc->mObjHead;
     while (o) {
-        //LOGE("o %p", o);
+        //ALOGE("o %p", o);
         if (o->zeroUserRef()) {
             // deleted the object and possibly others, restart from head.
             o = rsc->mObjHead;
-            //LOGE("o head %p", o);
+            //ALOGE("o head %p", o);
         } else {
             o = o->mNext;
-            //LOGE("o next %p", o);
+            //ALOGE("o next %p", o);
         }
     }
 
     if (rsc->props.mLogObjects) {
-        LOGV("Objects remaining.");
+        ALOGV("Objects remaining.");
         dumpAll(rsc);
     }
 }
 
 void ObjectBase::dumpAll(Context *rsc)
 {
-    LOGV("Dumping all objects");
+    ALOGV("Dumping all objects");
     const ObjectBase * o = rsc->mObjHead;
     while (o) {
-        LOGV(" Object %p", o);
+        ALOGV(" Object %p", o);
         o->dumpLOGV("  ");
         o = o->mNext;
     }

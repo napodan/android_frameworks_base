@@ -166,7 +166,7 @@ bool InputDeviceCalibration::tryGetProperty(const String8& key, int32_t& outValu
     char* end;
     int value = strtol(stringValue.string(), & end, 10);
     if (*end != '\0') {
-        LOGW("Input device calibration key '%s' has invalid value '%s'.  Expected an integer.",
+        ALOGW("Input device calibration key '%s' has invalid value '%s'.  Expected an integer.",
                 key.string(), stringValue.string());
         return false;
     }
@@ -183,7 +183,7 @@ bool InputDeviceCalibration::tryGetProperty(const String8& key, float& outValue)
     char* end;
     float value = strtof(stringValue.string(), & end);
     if (*end != '\0') {
-        LOGW("Input device calibration key '%s' has invalid value '%s'.  Expected a float.",
+        ALOGW("Input device calibration key '%s' has invalid value '%s'.  Expected a float.",
                 key.string(), stringValue.string());
         return false;
     }
@@ -215,7 +215,7 @@ void InputReader::loopOnce() {
     mEventHub->getEvent(& rawEvent);
 
 #if DEBUG_RAW_EVENTS
-    LOGD("Input event: device=0x%x type=0x%x scancode=%d keycode=%d value=%d",
+    ALOGD("Input event: device=0x%x type=0x%x scancode=%d keycode=%d value=%d",
             rawEvent.deviceId, rawEvent.type, rawEvent.scanCode, rawEvent.keyCode,
             rawEvent.value);
 #endif
@@ -251,9 +251,9 @@ void InputReader::addDevice(int32_t deviceId) {
     device->configure();
 
     if (device->isIgnored()) {
-        LOGI("Device added: id=0x%x, name=%s (ignored non-input device)", deviceId, name.string());
+        ALOGI("Device added: id=0x%x, name=%s (ignored non-input device)", deviceId, name.string());
     } else {
-        LOGI("Device added: id=0x%x, name=%s, sources=%08x", deviceId, name.string(),
+        ALOGI("Device added: id=0x%x, name=%s, sources=%08x", deviceId, name.string(),
                 device->getSources());
     }
 
@@ -269,7 +269,7 @@ void InputReader::addDevice(int32_t deviceId) {
     } // release device registry writer lock
 
     if (! added) {
-        LOGW("Ignoring spurious device added event for deviceId %d.", deviceId);
+        ALOGW("Ignoring spurious device added event for deviceId %d.", deviceId);
         delete device;
         return;
     }
@@ -290,15 +290,15 @@ void InputReader::removeDevice(int32_t deviceId) {
     } // release device registry writer lock
 
     if (! removed) {
-        LOGW("Ignoring spurious device removed event for deviceId %d.", deviceId);
+        ALOGW("Ignoring spurious device removed event for deviceId %d.", deviceId);
         return;
     }
 
     if (device->isIgnored()) {
-        LOGI("Device removed: id=0x%x, name=%s (ignored non-input device)",
+        ALOGI("Device removed: id=0x%x, name=%s (ignored non-input device)",
                 device->getId(), device->getName().string());
     } else {
-        LOGI("Device removed: id=0x%x, name=%s, sources=%08x",
+        ALOGI("Device removed: id=0x%x, name=%s, sources=%08x",
                 device->getId(), device->getName().string(), device->getSources());
     }
 
@@ -358,13 +358,13 @@ void InputReader::consumeEvent(const RawEvent* rawEvent) {
 
         ssize_t deviceIndex = mDevices.indexOfKey(deviceId);
         if (deviceIndex < 0) {
-            LOGW("Discarding event for unknown deviceId %d.", deviceId);
+            ALOGW("Discarding event for unknown deviceId %d.", deviceId);
             return;
         }
 
         InputDevice* device = mDevices.valueAt(deviceIndex);
         if (device->isIgnored()) {
-            //LOGD("Discarding event for ignored deviceId %d.", deviceId);
+            //ALOGD("Discarding event for ignored deviceId %d.", deviceId);
             return;
         }
 
@@ -460,7 +460,7 @@ void InputReader::disableVirtualKeysUntil(nsecs_t time) {
 bool InputReader::shouldDropVirtualKey(nsecs_t now,
         InputDevice* device, int32_t keyCode, int32_t scanCode) {
     if (now < mDisableVirtualKeysTimeout) {
-        LOGI("Dropping virtual key from device %s because virtual keys are "
+        ALOGI("Dropping virtual key from device %s because virtual keys are "
                 "temporarily disabled for the next %0.3fms.  keyCode=%d, scanCode=%d",
                 device->getName().string(),
                 (mDisableVirtualKeysTimeout - now) * 0.000001,
@@ -980,7 +980,7 @@ void KeyboardInputMapper::processKey(nsecs_t when, bool down, int32_t keyCode,
                 mLocked.keyDowns.removeAt(size_t(keyDownIndex));
             } else {
                 // key was not actually down
-                LOGI("Dropping key up from device %s because the key was not down.  "
+                ALOGI("Dropping key up from device %s because the key was not down.  "
                         "keyCode=%d, scanCode=%d",
                         getDeviceName().string(), keyCode, scanCode);
                 return;
@@ -1433,7 +1433,7 @@ bool TouchInputMapper::configureSurfaceLocked() {
 
     bool sizeChanged = mLocked.surfaceWidth != width || mLocked.surfaceHeight != height;
     if (sizeChanged) {
-        LOGI("Device reconfigured: id=0x%x, name=%s, display size is now %dx%d",
+        ALOGI("Device reconfigured: id=0x%x, name=%s, display size is now %dx%d",
                 getDeviceId(), getDeviceName().string(), width, height);
 
         mLocked.surfaceWidth = width;
@@ -1450,7 +1450,7 @@ bool TouchInputMapper::configureSurfaceLocked() {
 
             configureVirtualKeysLocked();
         } else {
-            LOGW(INDENT "Touch device did not report support for X or Y axis!");
+            ALOGW(INDENT "Touch device did not report support for X or Y axis!");
             mLocked.xOrigin = 0;
             mLocked.yOrigin = 0;
             mLocked.xScale = 1.0f;
@@ -1666,7 +1666,7 @@ void TouchInputMapper::configureVirtualKeysLocked() {
         uint32_t flags;
         if (getEventHub()->scancodeToKeycode(getDeviceId(), virtualKey.scanCode,
                 & keyCode, & flags)) {
-            LOGW(INDENT "VirtualKey %d: could not obtain key code, ignoring",
+            ALOGW(INDENT "VirtualKey %d: could not obtain key code, ignoring",
                     virtualKey.scanCode);
             mLocked.virtualKeys.pop(); // drop the key
             continue;
@@ -1721,7 +1721,7 @@ void TouchInputMapper::parseCalibration() {
         } else if (touchSizeCalibrationString == "pressure") {
             out.touchSizeCalibration = Calibration::TOUCH_SIZE_CALIBRATION_PRESSURE;
         } else if (touchSizeCalibrationString != "default") {
-            LOGW("Invalid value for touch.touchSize.calibration: '%s'",
+            ALOGW("Invalid value for touch.touchSize.calibration: '%s'",
                     touchSizeCalibrationString.string());
         }
     }
@@ -1739,7 +1739,7 @@ void TouchInputMapper::parseCalibration() {
         } else if (toolSizeCalibrationString == "area") {
             out.toolSizeCalibration = Calibration::TOOL_SIZE_CALIBRATION_AREA;
         } else if (toolSizeCalibrationString != "default") {
-            LOGW("Invalid value for touch.toolSize.calibration: '%s'",
+            ALOGW("Invalid value for touch.toolSize.calibration: '%s'",
                     toolSizeCalibrationString.string());
         }
     }
@@ -1766,7 +1766,7 @@ void TouchInputMapper::parseCalibration() {
         } else if (pressureCalibrationString == "amplitude") {
             out.pressureCalibration = Calibration::PRESSURE_CALIBRATION_AMPLITUDE;
         } else if (pressureCalibrationString != "default") {
-            LOGW("Invalid value for touch.pressure.calibration: '%s'",
+            ALOGW("Invalid value for touch.pressure.calibration: '%s'",
                     pressureCalibrationString.string());
         }
     }
@@ -1779,7 +1779,7 @@ void TouchInputMapper::parseCalibration() {
         } else if (pressureSourceString == "touch") {
             out.pressureSource = Calibration::PRESSURE_SOURCE_TOUCH;
         } else if (pressureSourceString != "default") {
-            LOGW("Invalid value for touch.pressure.source: '%s'",
+            ALOGW("Invalid value for touch.pressure.source: '%s'",
                     pressureSourceString.string());
         }
     }
@@ -1796,7 +1796,7 @@ void TouchInputMapper::parseCalibration() {
         } else if (sizeCalibrationString == "normalized") {
             out.sizeCalibration = Calibration::SIZE_CALIBRATION_NORMALIZED;
         } else if (sizeCalibrationString != "default") {
-            LOGW("Invalid value for touch.size.calibration: '%s'",
+            ALOGW("Invalid value for touch.size.calibration: '%s'",
                     sizeCalibrationString.string());
         }
     }
@@ -1810,7 +1810,7 @@ void TouchInputMapper::parseCalibration() {
         } else if (orientationCalibrationString == "interpolated") {
             out.orientationCalibration = Calibration::ORIENTATION_CALIBRATION_INTERPOLATED;
         } else if (orientationCalibrationString != "default") {
-            LOGW("Invalid value for touch.orientation.calibration: '%s'",
+            ALOGW("Invalid value for touch.orientation.calibration: '%s'",
                     orientationCalibrationString.string());
         }
     }
@@ -1829,14 +1829,14 @@ void TouchInputMapper::resolveCalibration() {
 
     case Calibration::PRESSURE_SOURCE_PRESSURE:
         if (! mRawAxes.pressure.valid) {
-            LOGW("Calibration property touch.pressure.source is 'pressure' but "
+            ALOGW("Calibration property touch.pressure.source is 'pressure' but "
                     "the pressure axis is not available.");
         }
         break;
 
     case Calibration::PRESSURE_SOURCE_TOUCH:
         if (! mRawAxes.touchMajor.valid) {
-            LOGW("Calibration property touch.pressure.source is 'touch' but "
+            ALOGW("Calibration property touch.pressure.source is 'touch' but "
                     "the touchMajor axis is not available.");
         }
         break;
@@ -2121,7 +2121,7 @@ TouchInputMapper::TouchResult TouchInputMapper::consumeOffScreenTouches(
                 // Pointer went up while virtual key was down.
                 mLocked.currentVirtualKey.down = false;
 #if DEBUG_VIRTUAL_KEYS
-                LOGD("VirtualKeys: Generating key up: keyCode=%d, scanCode=%d",
+                ALOGD("VirtualKeys: Generating key up: keyCode=%d, scanCode=%d",
                         mLocked.currentVirtualKey.keyCode, mLocked.currentVirtualKey.scanCode);
 #endif
                 keyEventAction = AKEY_EVENT_ACTION_UP;
@@ -2146,7 +2146,7 @@ TouchInputMapper::TouchResult TouchInputMapper::consumeOffScreenTouches(
             // virtual key area into the main display surface.
             mLocked.currentVirtualKey.down = false;
 #if DEBUG_VIRTUAL_KEYS
-            LOGD("VirtualKeys: Canceling key: keyCode=%d, scanCode=%d",
+            ALOGD("VirtualKeys: Canceling key: keyCode=%d, scanCode=%d",
                     mLocked.currentVirtualKey.keyCode, mLocked.currentVirtualKey.scanCode);
 #endif
             keyEventAction = AKEY_EVENT_ACTION_UP;
@@ -2184,7 +2184,7 @@ TouchInputMapper::TouchResult TouchInputMapper::consumeOffScreenTouches(
                             mLocked.currentVirtualKey.keyCode = virtualKey->keyCode;
                             mLocked.currentVirtualKey.scanCode = virtualKey->scanCode;
 #if DEBUG_VIRTUAL_KEYS
-                            LOGD("VirtualKeys: Generating key down: keyCode=%d, scanCode=%d",
+                            ALOGD("VirtualKeys: Generating key down: keyCode=%d, scanCode=%d",
                                     mLocked.currentVirtualKey.keyCode,
                                     mLocked.currentVirtualKey.scanCode);
 #endif
@@ -2564,7 +2564,7 @@ const TouchInputMapper::VirtualKey* TouchInputMapper::findVirtualKeyHitLocked(
         const VirtualKey& virtualKey = mLocked.virtualKeys[i];
 
 #if DEBUG_VIRTUAL_KEYS
-        LOGD("VirtualKeys: Hit test (%d, %d): keyCode=%d, scanCode=%d, "
+        ALOGD("VirtualKeys: Hit test (%d, %d): keyCode=%d, scanCode=%d, "
                 "left=%d, top=%d, right=%d, bottom=%d",
                 x, y,
                 virtualKey.keyCode, virtualKey.scanCode,
@@ -2652,9 +2652,9 @@ void TouchInputMapper::calculatePointerIds() {
         }
 
 #if DEBUG_POINTER_ASSIGNMENT
-        LOGD("calculatePointerIds - initial distance min-heap: size=%d", heapSize);
+        ALOGD("calculatePointerIds - initial distance min-heap: size=%d", heapSize);
         for (size_t i = 0; i < heapSize; i++) {
-            LOGD("  heap[%d]: cur=%d, last=%d, distance=%lld",
+            ALOGD("  heap[%d]: cur=%d, last=%d, distance=%lld",
                     i, heap[i].currentPointerIndex, heap[i].lastPointerIndex,
                     heap[i].distance);
         }
@@ -2702,9 +2702,9 @@ void TouchInputMapper::calculatePointerIds() {
                     }
 
 #if DEBUG_POINTER_ASSIGNMENT
-                    LOGD("calculatePointerIds - reduced distance min-heap: size=%d", heapSize);
+                    ALOGD("calculatePointerIds - reduced distance min-heap: size=%d", heapSize);
                     for (size_t i = 0; i < heapSize; i++) {
-                        LOGD("  heap[%d]: cur=%d, last=%d, distance=%lld",
+                        ALOGD("  heap[%d]: cur=%d, last=%d, distance=%lld",
                                 i, heap[i].currentPointerIndex, heap[i].lastPointerIndex,
                                 heap[i].distance);
                     }
@@ -2726,7 +2726,7 @@ void TouchInputMapper::calculatePointerIds() {
                 usedIdBits.markBit(id);
 
 #if DEBUG_POINTER_ASSIGNMENT
-                LOGD("calculatePointerIds - matched: cur=%d, last=%d, id=%d, distance=%lld",
+                ALOGD("calculatePointerIds - matched: cur=%d, last=%d, id=%d, distance=%lld",
                         lastPointerIndex, currentPointerIndex, id, heap[0].distance);
 #endif
                 break;
@@ -2744,7 +2744,7 @@ void TouchInputMapper::calculatePointerIds() {
                 usedIdBits.markBit(id);
 
 #if DEBUG_POINTER_ASSIGNMENT
-                LOGD("calculatePointerIds - assigned: cur=%d, id=%d",
+                ALOGD("calculatePointerIds - assigned: cur=%d, id=%d",
                         currentPointerIndex, id);
 #endif
 
@@ -2805,7 +2805,7 @@ bool TouchInputMapper::applyBadTouchFilter() {
         int32_t closestDeltaY = 0;
 
 #if DEBUG_HACKS
-        LOGD("BadTouchFilter: Looking at next point #%d: y=%d", i, y);
+        ALOGD("BadTouchFilter: Looking at next point #%d: y=%d", i, y);
 #endif
 
         for (uint32_t j = pointerCount; j-- > 0; ) {
@@ -2813,7 +2813,7 @@ bool TouchInputMapper::applyBadTouchFilter() {
             int32_t deltaY = abs(y - lastY);
 
 #if DEBUG_HACKS
-            LOGD("BadTouchFilter: Comparing with last point #%d: y=%d deltaY=%d",
+            ALOGD("BadTouchFilter: Comparing with last point #%d: y=%d deltaY=%d",
                     j, lastY, deltaY);
 #endif
 
@@ -2828,7 +2828,7 @@ bool TouchInputMapper::applyBadTouchFilter() {
 
         // Must not have found a close enough match.
 #if DEBUG_HACKS
-        LOGD("BadTouchFilter: Dropping bad point #%d: newY=%d oldY=%d deltaY=%d maxDeltaY=%d",
+        ALOGD("BadTouchFilter: Dropping bad point #%d: newY=%d oldY=%d deltaY=%d maxDeltaY=%d",
                 i, y, closestY, closestDeltaY, maxDeltaY);
 #endif
 
@@ -2854,10 +2854,10 @@ bool TouchInputMapper::applyJumpyTouchFilter() {
     uint32_t pointerCount = mCurrentTouch.pointerCount;
     if (mLastTouch.pointerCount != pointerCount) {
 #if DEBUG_HACKS
-        LOGD("JumpyTouchFilter: Different pointer count %d -> %d",
+        ALOGD("JumpyTouchFilter: Different pointer count %d -> %d",
                 mLastTouch.pointerCount, pointerCount);
         for (uint32_t i = 0; i < pointerCount; i++) {
-            LOGD("  Pointer %d (%d, %d)", i,
+            ALOGD("  Pointer %d (%d, %d)", i,
                     mCurrentTouch.pointers[i].x, mCurrentTouch.pointers[i].y);
         }
 #endif
@@ -2870,7 +2870,7 @@ bool TouchInputMapper::applyJumpyTouchFilter() {
                 mJumpyTouchFilter.jumpyPointsDropped += 1;
 
 #if DEBUG_HACKS
-                LOGD("JumpyTouchFilter: Pointer 2 dropped");
+                ALOGD("JumpyTouchFilter: Pointer 2 dropped");
 #endif
                 return true;
             } else if (mLastTouch.pointerCount == 2 && pointerCount == 1) {
@@ -2882,7 +2882,7 @@ bool TouchInputMapper::applyJumpyTouchFilter() {
 
 #if DEBUG_HACKS
                 for (int32_t i = 0; i < 2; i++) {
-                    LOGD("JumpyTouchFilter: Pointer %d replaced (%d, %d)", i,
+                    ALOGD("JumpyTouchFilter: Pointer %d replaced (%d, %d)", i,
                             mCurrentTouch.pointers[i].x, mCurrentTouch.pointers[i].y);
                 }
 #endif
@@ -2893,7 +2893,7 @@ bool TouchInputMapper::applyJumpyTouchFilter() {
         mJumpyTouchFilter.jumpyPointsDropped = 0;
 
 #if DEBUG_HACKS
-        LOGD("JumpyTouchFilter: Transition - drop limit reset");
+        ALOGD("JumpyTouchFilter: Transition - drop limit reset");
 #endif
         return false;
     }
@@ -2920,7 +2920,7 @@ bool TouchInputMapper::applyJumpyTouchFilter() {
             int32_t y = mCurrentTouch.pointers[i].y;
 
 #if DEBUG_HACKS
-            LOGD("JumpyTouchFilter: Point %d (%d, %d)", i, x, y);
+            ALOGD("JumpyTouchFilter: Point %d (%d, %d)", i, x, y);
 #endif
 
             // Check if a touch point is too close to another's coordinates
@@ -2985,7 +2985,7 @@ bool TouchInputMapper::applyJumpyTouchFilter() {
         // Correct the jumpy pointer if one was found.
         if (badPointerIndex >= 0) {
 #if DEBUG_HACKS
-            LOGD("JumpyTouchFilter: Replacing bad pointer %d with (%d, %d)",
+            ALOGD("JumpyTouchFilter: Replacing bad pointer %d with (%d, %d)",
                     badPointerIndex,
                     mLastTouch.pointers[badPointerReplacementIndex].x,
                     mLastTouch.pointers[badPointerReplacementIndex].y);
@@ -3036,7 +3036,7 @@ void TouchInputMapper::applyAveragingTouchFilter() {
             uint64_t distance = uint64_t(deltaX * deltaX + deltaY * deltaY);
 
 #if DEBUG_HACKS
-            LOGD("AveragingTouchFilter: Pointer id %d - Distance from last sample: %lld",
+            ALOGD("AveragingTouchFilter: Pointer id %d - Distance from last sample: %lld",
                     id, distance);
 #endif
 
@@ -3093,7 +3093,7 @@ void TouchInputMapper::applyAveragingTouchFilter() {
                     averagedY /= totalPressure;
 
 #if DEBUG_HACKS
-                    LOGD("AveragingTouchFilter: Pointer id %d - "
+                    ALOGD("AveragingTouchFilter: Pointer id %d - "
                             "totalPressure=%d, averagedX=%d, averagedY=%d", id, totalPressure,
                             averagedX, averagedY);
 #endif
@@ -3103,12 +3103,12 @@ void TouchInputMapper::applyAveragingTouchFilter() {
                 }
             } else {
 #if DEBUG_HACKS
-                LOGD("AveragingTouchFilter: Pointer id %d - Exceeded max distance", id);
+                ALOGD("AveragingTouchFilter: Pointer id %d - Exceeded max distance", id);
 #endif
             }
         } else {
 #if DEBUG_HACKS
-            LOGD("AveragingTouchFilter: Pointer id %d - Pointer went up", id);
+            ALOGD("AveragingTouchFilter: Pointer id %d - Pointer went up", id);
 #endif
         }
 
@@ -3386,7 +3386,7 @@ void MultiTouchInputMapper::process(const RawEvent* rawEvent) {
 
             if (mAccumulator.pointers[pointerIndex].fields) {
                 if (pointerIndex == MAX_POINTERS) {
-                    LOGW("MultiTouch device driver returned more than maximum of %d pointers.",
+                    ALOGW("MultiTouch device driver returned more than maximum of %d pointers.",
                             MAX_POINTERS);
                 } else {
                     pointerIndex += 1;
@@ -3489,7 +3489,7 @@ void MultiTouchInputMapper::sync(nsecs_t when) {
 
                 if (id > MAX_POINTER_ID) {
 #if DEBUG_POINTERS
-                    LOGD("Pointers: Ignoring driver provided pointer id %d because "
+                    ALOGD("Pointers: Ignoring driver provided pointer id %d because "
                             "it is larger than max supported id %d",
                             id, MAX_POINTER_ID);
 #endif

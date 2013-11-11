@@ -273,7 +273,7 @@ WAVSource::~WAVSource() {
 }
 
 status_t WAVSource::start(MetaData *params) {
-    LOGV("WAVSource::start");
+    ALOGV("WAVSource::start");
 
     CHECK(!mStarted);
 
@@ -293,7 +293,7 @@ status_t WAVSource::start(MetaData *params) {
 }
 
 status_t WAVSource::stop() {
-    LOGV("WAVSource::stop");
+    ALOGV("WAVSource::stop");
 
     CHECK(mStarted);
 
@@ -306,7 +306,7 @@ status_t WAVSource::stop() {
 }
 
 sp<MetaData> WAVSource::getFormat() {
-    LOGV("WAVSource::getFormat");
+    ALOGV("WAVSource::getFormat");
 
     return mMeta;
 }

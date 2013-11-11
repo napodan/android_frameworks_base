@@ -90,7 +90,7 @@ status_t Layer::setToken(const sp<UserClient>& userClient,
 
     status_t err = mUserClientRef.setToken(userClient, lcblk, token);
 
-    LOGE_IF(err != NO_ERROR,
+    ALOGE_IF(err != NO_ERROR,
             "ClientRef::setToken(%p, %p, %u) failed",
             userClient.get(), lcblk.get(), token);
 
@@ -192,7 +192,7 @@ slowpath:
         GGLSurface t;
         if (buffer->usage & GRALLOC_USAGE_SW_READ_MASK) {
             status_t res = buffer->lock(&t, GRALLOC_USAGE_SW_READ_OFTEN);
-            LOGE_IF(res, "error %d (%s) locking buffer %p",
+            ALOGE_IF(res, "error %d (%s) locking buffer %p",
                     res, strerror(res), buffer.get());
             if (res == NO_ERROR) {
                 mBufferManager.loadTexture(dirty, t);
@@ -391,11 +391,11 @@ sp<GraphicBuffer> Layer::requestBuffer(int index,
 
     if (err || buffer->handle == 0) {
         GraphicBuffer::dumpAllocationsToSystemLog();
-        LOGE_IF(err || buffer->handle == 0,
+        ALOGE_IF(err || buffer->handle == 0,
                 "Layer::requestBuffer(this=%p), index=%d, w=%d, h=%d failed (%s)",
                 this, index, w, h, strerror(-err));
     } else {
-        LOGD_IF(DEBUG_RESIZE,
+        ALOGD_IF(DEBUG_RESIZE,
                 "Layer::requestBuffer(this=%p), index=%d, w=%d, h=%d, handle=%p",
                 this, index, w, h, buffer->handle);
     }
@@ -477,7 +477,7 @@ uint32_t Layer::doTransaction(uint32_t flags)
 
     if (sizeChanged) {
         // the size changed, we need to ask our client to request a new buffer
-        LOGD_IF(DEBUG_RESIZE,
+        ALOGD_IF(DEBUG_RESIZE,
                 "resize (layer=%p), requested (%dx%d), drawing (%d,%d)",
                 this,
                 int(temp.requested_w), int(temp.requested_h),
@@ -564,14 +564,14 @@ void Layer::lockPageFlip(bool& recomputeVisibleRegions)
     }
 
     if (buf < NO_ERROR) {
-        LOGE("retireAndLock() buffer index (%d) out of range", int(buf));
+        ALOGE("retireAndLock() buffer index (%d) out of range", int(buf));
         mPostedDirtyRegion.clear();
         return;
     }
 
     // we retired a buffer, which becomes the new front buffer
     if (mBufferManager.setActiveBufferIndex(buf) < NO_ERROR) {
-        LOGE("retireAndLock() buffer index (%d) out of range", int(buf));
+        ALOGE("retireAndLock() buffer index (%d) out of range", int(buf));
         mPostedDirtyRegion.clear();
         return;
     }

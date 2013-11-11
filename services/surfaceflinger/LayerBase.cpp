@@ -603,7 +603,7 @@ status_t LayerBaseClient::Surface::onTransact(
                 IPCThreadState* ipc = IPCThreadState::self();
                 const int pid = ipc->getCallingPid();
                 const int uid = ipc->getCallingUid();
-                LOGE("Permission Denial: "
+                ALOGE("Permission Denial: "
                         "can't access SurfaceFlinger pid=%d, uid=%d", pid, uid);
                 return PERMISSION_DENIED;
             }

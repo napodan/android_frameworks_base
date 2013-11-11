@@ -99,7 +99,7 @@ void Context::initEGL(bool useGL2)
     configAttribsPtr[0] = EGL_NONE;
     rsAssert(configAttribsPtr < (configAttribs + (sizeof(configAttribs) / sizeof(EGLint))));
 
-    LOGV("initEGL start");
+    ALOGV("initEGL start");
     mEGL.mDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     checkEglError("eglGetDisplay");
 
@@ -108,7 +108,7 @@ void Context::initEGL(bool useGL2)
 
     status_t err = EGLUtils::selectConfigForNativeWindow(mEGL.mDisplay, configAttribs, mWndSurface, &mEGL.mConfig);
     if (err) {
-       LOGE("couldn't find an EGLConfig matching the screen format\n");
+       ALOGE("couldn't find an EGLConfig matching the screen format\n");
     }
     //eglChooseConfig(mEGL.mDisplay, configAttribs, &mEGL.mConfig, 1, &mEGL.mNumConfigs);
 
@@ -120,14 +120,14 @@ void Context::initEGL(bool useGL2)
     }
     checkEglError("eglCreateContext");
     if (mEGL.mContext == EGL_NO_CONTEXT) {
-        LOGE("eglCreateContext returned EGL_NO_CONTEXT");
+        ALOGE("eglCreateContext returned EGL_NO_CONTEXT");
     }
     gGLContextCount++;
 }
 
 void Context::deinitEGL()
 {
-    LOGV("deinitEGL");
+    ALOGV("deinitEGL");
     setSurface(0, 0, NULL);
     eglDestroyContext(mEGL.mDisplay, mEGL.mContext);
     checkEglError("eglDestroyContext");
@@ -159,7 +159,7 @@ void Context::checkError(const char *msg) const
 {
     GLenum err = glGetError();
     if (err != GL_NO_ERROR) {
-        LOGE("GL Error, 0x%x, from %s", err, msg);
+        ALOGE("GL Error, 0x%x, from %s", err, msg);
     }
 }
 
@@ -230,7 +230,7 @@ void Context::timerPrint()
 
 
     if (props.mLogTimes) {
-        LOGV("RS: Frame (%i),   Script %2.1f (%i),  Clear & Swap %2.1f (%i),  Idle %2.1f (%lli),  Internal %2.1f (%lli)",
+        ALOGV("RS: Frame (%i),   Script %2.1f (%i),  Clear & Swap %2.1f (%i),  Idle %2.1f (%lli),  Internal %2.1f (%lli)",
              mTimeMSLastFrame,
              100.0 * mTimers[RS_TIMER_SCRIPT] / total, mTimeMSLastScript,
              100.0 * mTimers[RS_TIMER_CLEAR_SWAP] / total, mTimeMSLastSwap,
@@ -243,7 +243,7 @@ bool Context::setupCheck()
 {
     if (checkVersion2_0()) {
         if (!mShaderCache.lookup(this, mVertex.get(), mFragment.get())) {
-            LOGE("Context::setupCheck() 1 fail");
+            ALOGE("Context::setupCheck() 1 fail");
             return false;
         }
 
@@ -283,14 +283,14 @@ void * Context::threadProc(void *vrsc)
 
      ScriptTLSStruct *tlsStruct = new ScriptTLSStruct;
      if (!tlsStruct) {
-         LOGE("Error allocating tls storage");
+         ALOGE("Error allocating tls storage");
          return NULL;
      }
      tlsStruct->mContext = rsc;
      tlsStruct->mScript = NULL;
      int status = pthread_setspecific(rsc->gThreadTLSKey, tlsStruct);
      if (status) {
-         LOGE("pthread_setspecific %i", status);
+         ALOGE("pthread_setspecific %i", status);
      }
 
      if (rsc->mIsGraphicsContext) {
@@ -334,7 +334,7 @@ void * Context::threadProc(void *vrsc)
          }
      }
 
-     LOGV("RS Thread exiting");
+     ALOGV("RS Thread exiting");
      if (rsc->mIsGraphicsContext) {
          rsc->mRaster.clear();
          rsc->mFragment.clear();
@@ -357,7 +357,7 @@ void * Context::threadProc(void *vrsc)
          pthread_mutex_unlock(&gInitMutex);
      }
 
-     LOGV("RS Thread exited");
+     ALOGV("RS Thread exited");
      return NULL;
 }
 
@@ -405,7 +405,7 @@ Context::Context(Device *dev, bool isGraphics, bool useDepth)
     if (!gThreadTLSKeyCount) {
         status = pthread_key_create(&gThreadTLSKey, NULL);
         if (status) {
-            LOGE("Failed to init thread tls key.");
+            ALOGE("Failed to init thread tls key.");
             pthread_mutex_unlock(&gInitMutex);
             return;
         }
@@ -417,7 +417,7 @@ Context::Context(Device *dev, bool isGraphics, bool useDepth)
 
     status = pthread_attr_init(&threadAttr);
     if (status) {
-        LOGE("Failed to init thread attribute.");
+        ALOGE("Failed to init thread attribute.");
         return;
     }
 
@@ -427,10 +427,10 @@ Context::Context(Device *dev, bool isGraphics, bool useDepth)
     timerInit();
     timerSet(RS_TIMER_INTERNAL);
 
-    LOGV("RS Launching thread");
+    ALOGV("RS Launching thread");
     status = pthread_create(&mThreadId, &threadAttr, threadProc, this);
     if (status) {
-        LOGE("Failed to start rs context thread.");
+        ALOGE("Failed to start rs context thread.");
     }
 
     while(!mRunning) {
@@ -442,7 +442,7 @@ Context::Context(Device *dev, bool isGraphics, bool useDepth)
 
 Context::~Context()
 {
-    LOGV("Context::~Context");
+    ALOGV("Context::~Context");
     mExit = true;
     mPaused = false;
     void *res;
@@ -499,7 +499,7 @@ void Context::setSurface(uint32_t w, uint32_t h, ANativeWindow *sur)
         mEGL.mSurface = eglCreateWindowSurface(mEGL.mDisplay, mEGL.mConfig, mWndSurface, NULL);
         checkEglError("eglCreateWindowSurface");
         if (mEGL.mSurface == EGL_NO_SURFACE) {
-            LOGE("eglCreateWindowSurface returned EGL_NO_SURFACE");
+            ALOGE("eglCreateWindowSurface returned EGL_NO_SURFACE");
         }
 
         ret = eglMakeCurrent(mEGL.mDisplay, mEGL.mSurface, mEGL.mSurface, mEGL.mContext);
@@ -513,11 +513,11 @@ void Context::setSurface(uint32_t w, uint32_t h, ANativeWindow *sur)
             mGL.mRenderer = glGetString(GL_RENDERER);
             mGL.mExtensions = glGetString(GL_EXTENSIONS);
 
-            //LOGV("EGL Version %i %i", mEGL.mMajorVersion, mEGL.mMinorVersion);
-            LOGV("GL Version %s", mGL.mVersion);
-            //LOGV("GL Vendor %s", mGL.mVendor);
-            LOGV("GL Renderer %s", mGL.mRenderer);
-            //LOGV("GL Extensions %s", mGL.mExtensions);
+            //ALOGV("EGL Version %i %i", mEGL.mMajorVersion, mEGL.mMinorVersion);
+            ALOGV("GL Version %s", mGL.mVersion);
+            //ALOGV("GL Vendor %s", mGL.mVendor);
+            ALOGV("GL Renderer %s", mGL.mRenderer);
+            //ALOGV("GL Extensions %s", mGL.mExtensions);
 
             const char *verptr = NULL;
             if (strlen((const char *)mGL.mVersion) > 9) {
@@ -530,7 +530,7 @@ void Context::setSurface(uint32_t w, uint32_t h, ANativeWindow *sur)
             }
 
             if (!verptr) {
-                LOGE("Error, OpenGL ES Lite not supported");
+                ALOGE("Error, OpenGL ES Lite not supported");
             } else {
                 sscanf(verptr, " %i.%i", &mGL.mMajorVersion, &mGL.mMinorVersion);
             }
@@ -630,7 +630,7 @@ void Context::removeName(ObjectBase *obj)
 bool Context::objDestroyOOBInit()
 {
     if (!mObjDestroy.mMutex.init()) {
-        LOGE("Context::ObjDestroyOOBInit mutex init failure");
+        ALOGE("Context::ObjDestroyOOBInit mutex init failure");
         return false;
     }
     return true;
@@ -640,7 +640,7 @@ void Context::objDestroyOOBRun()
 {
     if (mObjDestroy.mNeedToEmpty) {
         if (!mObjDestroy.mMutex.lock()) {
-            LOGE("Context::ObjDestroyOOBRun: error locking for OOBRun.");
+            ALOGE("Context::ObjDestroyOOBRun: error locking for OOBRun.");
             return;
         }
 
@@ -661,7 +661,7 @@ void Context::objDestroyOOBDestroy()
 void Context::objDestroyAdd(ObjectBase *obj)
 {
     if (!mObjDestroy.mMutex.lock()) {
-        LOGE("Context::ObjDestroyOOBRun: error locking for OOBRun.");
+        ALOGE("Context::ObjDestroyOOBRun: error locking for OOBRun.");
         return;
     }
 
@@ -672,7 +672,7 @@ void Context::objDestroyAdd(ObjectBase *obj)
 
 uint32_t Context::getMessageToClient(void *data, size_t *receiveLen, size_t bufferLen, bool wait)
 {
-    //LOGE("getMessageToClient %i %i", bufferLen, wait);
+    //ALOGE("getMessageToClient %i %i", bufferLen, wait);
     if (!wait) {
         if (mIO.mToClient.isEmpty()) {
             // No message to get and not going to wait for one.
@@ -681,11 +681,11 @@ uint32_t Context::getMessageToClient(void *data, size_t *receiveLen, size_t buff
         }
     }
 
-    //LOGE("getMessageToClient 2 con=%p", this);
+    //ALOGE("getMessageToClient 2 con=%p", this);
     uint32_t bytesData = 0;
     uint32_t commandID = 0;
     const void *d = mIO.mToClient.get(&commandID, &bytesData);
-    //LOGE("getMessageToClient 3    %i  %i", commandID, bytesData);
+    //ALOGE("getMessageToClient 3    %i  %i", commandID, bytesData);
 
     *receiveLen = bytesData;
     if (bufferLen >= bytesData) {
@@ -698,9 +698,9 @@ uint32_t Context::getMessageToClient(void *data, size_t *receiveLen, size_t buff
 
 bool Context::sendMessageToClient(void *data, uint32_t cmdID, size_t len, bool waitForSpace)
 {
-    //LOGE("sendMessageToClient %i %i %i", cmdID, len, waitForSpace);
+    //ALOGE("sendMessageToClient %i %i %i", cmdID, len, waitForSpace);
     if (cmdID == 0) {
-        LOGE("Attempting to send invalid command 0 to client.");
+        ALOGE("Attempting to send invalid command 0 to client.");
         return false;
     }
     if (!waitForSpace) {
@@ -709,11 +709,11 @@ bool Context::sendMessageToClient(void *data, uint32_t cmdID, size_t len, bool w
             return false;
         }
     }
-    //LOGE("sendMessageToClient 2");
+    //ALOGE("sendMessageToClient 2");
     void *p = mIO.mToClient.reserve(len);
     memcpy(p, data, len);
     mIO.mToClient.commit(cmdID, len);
-    //LOGE("sendMessageToClient 3");
+    //ALOGE("sendMessageToClient 3");
     return true;
 }
 
@@ -748,24 +748,24 @@ void Context::setError(RsError e, const char *msg)
 
 void Context::dumpDebug() const
 {
-    LOGE("RS Context debug %p", this);
-    LOGE("RS Context debug");
+    ALOGE("RS Context debug %p", this);
+    ALOGE("RS Context debug");
 
-    LOGE(" EGL ver %i %i", mEGL.mMajorVersion, mEGL.mMinorVersion);
-    LOGE(" EGL context %p  surface %p,  Display=%p", mEGL.mContext, mEGL.mSurface, mEGL.mDisplay);
-    LOGE(" GL vendor: %s", mGL.mVendor);
-    LOGE(" GL renderer: %s", mGL.mRenderer);
-    LOGE(" GL Version: %s", mGL.mVersion);
-    LOGE(" GL Extensions: %s", mGL.mExtensions);
-    LOGE(" GL int Versions %i %i", mGL.mMajorVersion, mGL.mMinorVersion);
-    LOGE(" RS width %i, height %i", mWidth, mHeight);
-    LOGE(" RS running %i, exit %i, useDepth %i, paused %i", mRunning, mExit, mUseDepth, mPaused);
-    LOGE(" RS pThreadID %li, nativeThreadID %i", mThreadId, mNativeThreadId);
+    ALOGE(" EGL ver %i %i", mEGL.mMajorVersion, mEGL.mMinorVersion);
+    ALOGE(" EGL context %p  surface %p,  Display=%p", mEGL.mContext, mEGL.mSurface, mEGL.mDisplay);
+    ALOGE(" GL vendor: %s", mGL.mVendor);
+    ALOGE(" GL renderer: %s", mGL.mRenderer);
+    ALOGE(" GL Version: %s", mGL.mVersion);
+    ALOGE(" GL Extensions: %s", mGL.mExtensions);
+    ALOGE(" GL int Versions %i %i", mGL.mMajorVersion, mGL.mMinorVersion);
+    ALOGE(" RS width %i, height %i", mWidth, mHeight);
+    ALOGE(" RS running %i, exit %i, useDepth %i, paused %i", mRunning, mExit, mUseDepth, mPaused);
+    ALOGE(" RS pThreadID %li, nativeThreadID %i", mThreadId, mNativeThreadId);
 
-    LOGV("MAX Textures %i, %i  %i", mGL.mMaxVertexTextureUnits, mGL.mMaxFragmentTextureImageUnits, mGL.mMaxTextureImageUnits);
-    LOGV("MAX Attribs %i", mGL.mMaxVertexAttribs);
-    LOGV("MAX Uniforms %i, %i", mGL.mMaxVertexUniformVectors, mGL.mMaxFragmentUniformVectors);
-    LOGV("MAX Varyings %i", mGL.mMaxVaryingVectors);
+    ALOGV("MAX Textures %i, %i  %i", mGL.mMaxVertexTextureUnits, mGL.mMaxFragmentTextureImageUnits, mGL.mMaxTextureImageUnits);
+    ALOGV("MAX Attribs %i", mGL.mMaxVertexAttribs);
+    ALOGV("MAX Uniforms %i, %i", mGL.mMaxVertexUniformVectors, mGL.mMaxFragmentUniformVectors);
+    ALOGV("MAX Varyings %i", mGL.mMaxVaryingVectors);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -786,7 +786,7 @@ void rsi_ContextBindSampler(Context *rsc, uint32_t slot, RsSampler vs)
     Sampler *s = static_cast<Sampler *>(vs);
 
     if (slot > RS_MAX_SAMPLER_SLOT) {
-        LOGE("Invalid sampler slot");
+        ALOGE("Invalid sampler slot");
         return;
     }
 
@@ -859,7 +859,7 @@ const char * rsi_ContextGetError(Context *rsc, RsError *e)
 {
     const char *msg = rsc->getError(e);
     if (*e != RS_ERROR_NONE) {
-        LOGE("RS Error %i %s", *e, msg);
+        ALOGE("RS Error %i %s", *e, msg);
     }
     return msg;
 }
@@ -870,7 +870,7 @@ const char * rsi_ContextGetError(Context *rsc, RsError *e)
 
 RsContext rsContextCreate(RsDevice vdev, uint32_t version)
 {
-    LOGV("rsContextCreate %p", vdev);
+    ALOGV("rsContextCreate %p", vdev);
     Device * dev = static_cast<Device *>(vdev);
     Context *rsc = new Context(dev, false, false);
     return rsc;
@@ -878,7 +878,7 @@ RsContext rsContextCreate(RsDevice vdev, uint32_t version)
 
 RsContext rsContextCreateGL(RsDevice vdev, uint32_t version, bool useDepth)
 {
-    LOGV("rsContextCreateGL %p, %i", vdev, useDepth);
+    ALOGV("rsContextCreateGL %p, %i", vdev, useDepth);
     Device * dev = static_cast<Device *>(vdev);
     Context *rsc = new Context(dev, true, useDepth);
     return rsc;

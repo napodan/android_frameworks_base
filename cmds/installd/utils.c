@@ -40,7 +40,7 @@ int create_pkg_path(char path[PKG_PATH_MAX],
         } else if (*x == '.') {
             if ((x == pkgname) || (x[1] == '.') || (x[1] == 0)) {
                     /* periods must not be first, last, or doubled */
-                LOGE("invalid package name '%s'\n", pkgname);
+                ALOGE("invalid package name '%s'\n", pkgname);
                 return -1;
             }
         } else if (*x == '-') {
@@ -49,7 +49,7 @@ int create_pkg_path(char path[PKG_PATH_MAX],
             alpha = 1;
         }else {
                 /* anything not A-Z, a-z, 0-9, _, or . is invalid */
-            LOGE("invalid package name '%s'\n", pkgname);
+            ALOGE("invalid package name '%s'\n", pkgname);
             return -1;
         }
         x++;
@@ -59,7 +59,7 @@ int create_pkg_path(char path[PKG_PATH_MAX],
         x++;
         while (*x) {
             if (!isalnum(*x)) {
-                LOGE("invalid package name '%s' should include only numbers after -\n", pkgname);
+                ALOGE("invalid package name '%s' should include only numbers after -\n", pkgname);
                 return -1;
             }
             x++;
@@ -98,13 +98,13 @@ static int _delete_dir_contents(DIR *d, const char *ignore)
 
             subfd = openat(dfd, name, O_RDONLY | O_DIRECTORY);
             if (subfd < 0) {
-                LOGE("Couldn't openat %s: %s\n", name, strerror(errno));
+                ALOGE("Couldn't openat %s: %s\n", name, strerror(errno));
                 result = -1;
                 continue;
             }
             subdir = fdopendir(subfd);
             if (subdir == NULL) {
-                LOGE("Couldn't fdopendir %s: %s\n", name, strerror(errno));
+                ALOGE("Couldn't fdopendir %s: %s\n", name, strerror(errno));
                 close(subfd);
                 result = -1;
                 continue;
@@ -114,12 +114,12 @@ static int _delete_dir_contents(DIR *d, const char *ignore)
             }
             closedir(subdir);
             if (unlinkat(dfd, name, AT_REMOVEDIR) < 0) {
-                LOGE("Couldn't unlinkat %s: %s\n", name, strerror(errno));
+                ALOGE("Couldn't unlinkat %s: %s\n", name, strerror(errno));
                 result = -1;
             }
         } else {
             if (unlinkat(dfd, name, 0) < 0) {
-                LOGE("Couldn't unlinkat %s: %s\n", name, strerror(errno));
+                ALOGE("Couldn't unlinkat %s: %s\n", name, strerror(errno));
                 result = -1;
             }
         }
@@ -137,14 +137,14 @@ int delete_dir_contents(const char *pathname,
 
     d = opendir(pathname);
     if (d == NULL) {
-        LOGE("Couldn't opendir %s: %s\n", pathname, strerror(errno));
+        ALOGE("Couldn't opendir %s: %s\n", pathname, strerror(errno));
         return -errno;
     }
     res = _delete_dir_contents(d, ignore);
     closedir(d);
     if (also_delete_dir) {
         if (rmdir(pathname)) {
-            LOGE("Couldn't rmdir %s: %s\n", pathname, strerror(errno));
+            ALOGE("Couldn't rmdir %s: %s\n", pathname, strerror(errno));
             res = -1;
         }
     }
@@ -158,12 +158,12 @@ int delete_dir_contents_fd(int dfd, const char *name)
 
     fd = openat(dfd, name, O_RDONLY | O_DIRECTORY);
     if (fd < 0) {
-        LOGE("Couldn't openat %s: %s\n", name, strerror(errno));
+        ALOGE("Couldn't openat %s: %s\n", name, strerror(errno));
         return -1;
     }
     d = fdopendir(fd);
     if (d == NULL) {
-        LOGE("Couldn't fdopendir %s: %s\n", name, strerror(errno));
+        ALOGE("Couldn't fdopendir %s: %s\n", name, strerror(errno));
         close(fd);
         return -1;
     }

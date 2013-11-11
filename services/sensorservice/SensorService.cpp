@@ -52,7 +52,7 @@ SensorService::SensorService()
 
 void SensorService::onFirstRef()
 {
-    LOGD("nuSensorService starting...");
+    ALOGD("nuSensorService starting...");
 
     SensorDevice& dev(SensorDevice::getInstance());
 
@@ -164,7 +164,7 @@ status_t SensorService::dump(int fd, const Vector<String16>& args)
 
 bool SensorService::threadLoop()
 {
-    LOGD("nuSensorService thread starting...");
+    ALOGD("nuSensorService thread starting...");
 
     const size_t numEventMax = 16 * (1 + mVirtualSensorList.size());
     sensors_event_t buffer[numEventMax];
@@ -176,7 +176,7 @@ bool SensorService::threadLoop()
     do {
         count = device.poll(buffer, numEventMax);
         if (count<0) {
-            LOGE("sensor poll failed (%s)", strerror(-count));
+            ALOGE("sensor poll failed (%s)", strerror(-count));
             break;
         }
 
@@ -222,7 +222,7 @@ bool SensorService::threadLoop()
         }
     } while (count >= 0 || Thread::exitPending());
 
-    LOGW("Exiting SensorService::threadLoop!");
+    ALOGW("Exiting SensorService::threadLoop!");
     return false;
 }
 
@@ -509,11 +509,11 @@ status_t SensorService::SensorEventConnection::sendEvents(
     if (size == -EAGAIN) {
         // the destination doesn't accept events anymore, it's probably
         // full. For now, we just drop the events on the floor.
-        LOGW("dropping %d events on the floor", count);
+        ALOGW("dropping %d events on the floor", count);
         return size;
     }
 
-    LOGE_IF(size<0, "dropping %d events on the floor (%s)",
+    ALOGE_IF(size<0, "dropping %d events on the floor (%s)",
             count, strerror(-size));
 
     return size < 0 ? status_t(size) : status_t(NO_ERROR);

@@ -31,13 +31,13 @@ namespace android
 
 static void vibratorOn(JNIEnv *env, jobject clazz, jlong timeout_ms)
 {
-    // LOGI("vibratorOn\n");
+    // ALOGI("vibratorOn\n");
     vibrator_on(timeout_ms);
 }
 
 static void vibratorOff(JNIEnv *env, jobject clazz)
 {
-    // LOGI("vibratorOff\n");
+    // ALOGI("vibratorOff\n");
     vibrator_off();
 }
 

@@ -494,22 +494,22 @@ static uint32_t SC_allocGetDimFaces(RsAllocation va)
 
 
 static void SC_debugF(const char *s, float f) {
-    LOGE("%s %f, 0x%08x", s, f, *((int *) (&f)));
+    ALOGE("%s %f, 0x%08x", s, f, *((int *) (&f)));
 }
 static void SC_debugFv2(const char *s, rsvF_2 fv) {
     float *f = (float *)&fv;
-    LOGE("%s {%f, %f}", s, f[0], f[1]);
+    ALOGE("%s {%f, %f}", s, f[0], f[1]);
 }
 static void SC_debugFv3(const char *s, rsvF_4 fv) {
     float *f = (float *)&fv;
-    LOGE("%s {%f, %f, %f}", s, f[0], f[1], f[2]);
+    ALOGE("%s {%f, %f, %f}", s, f[0], f[1], f[2]);
 }
 static void SC_debugFv4(const char *s, rsvF_4 fv) {
     float *f = (float *)&fv;
-    LOGE("%s {%f, %f, %f, %f}", s, f[0], f[1], f[2], f[3]);
+    ALOGE("%s {%f, %f, %f, %f}", s, f[0], f[1], f[2], f[3]);
 }
 static void SC_debugI32(const char *s, int32_t i) {
-    LOGE("%s %i  0x%x", s, i, i);
+    ALOGE("%s %i  0x%x", s, i, i);
 }
 
 static uchar4 SC_convertColorTo8888_f3(float r, float g, float b) {

@@ -41,7 +41,7 @@
 #include <RenderScript.h>
 #include <RenderScriptEnv.h>
 
-//#define LOG_API LOGE
+//#define LOG_API ALOGE
 #define LOG_API(...)
 
 using namespace android;
@@ -233,7 +233,7 @@ nContextGetMessage(JNIEnv *_env, jobject _this, jintArray data, jboolean wait)
     size_t receiveLen;
     int id = rsContextGetMessage(con, ptr, &receiveLen, len * 4, wait);
     if (!id && receiveLen) {
-        LOGE("message receive buffer too small.  %i", receiveLen);
+        ALOGE("message receive buffer too small.  %i", receiveLen);
     }
     _env->ReleaseIntArrayElements(data, ptr, 0);
     return id;
@@ -475,7 +475,7 @@ static RsElement SkBitmapToPredefined(SkBitmap::Config cfg)
         break;
     }
     // If we don't have a conversion mark it as a user type.
-    LOGE("Unsupported bitmap type");
+    ALOGE("Unsupported bitmap type");
     return NULL;
 }
 
@@ -1458,13 +1458,13 @@ jint JNI_OnLoad(JavaVM* vm, void* reserved)
     jint result = -1;
 
     if (vm->GetEnv((void**) &env, JNI_VERSION_1_4) != JNI_OK) {
-        LOGE("ERROR: GetEnv failed\n");
+        ALOGE("ERROR: GetEnv failed\n");
         goto bail;
     }
     assert(env != NULL);
 
     if (registerFuncs(env) < 0) {
-        LOGE("ERROR: MediaPlayer native registration failed\n");
+        ALOGE("ERROR: MediaPlayer native registration failed\n");
         goto bail;
     }
 
