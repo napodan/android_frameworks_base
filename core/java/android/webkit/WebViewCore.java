@@ -284,34 +284,34 @@ final class WebViewCore {
 
     /**
      * Called by JNI.  Open a file chooser to upload a file.
-     * @return String version of the URI plus the name of the file.
-     * FIXME: Just return the URI here, and in FileSystem::pathGetFileName, call
-     * into Java to get the filename.
+     * @param acceptType The value of the 'accept' attribute of the
+     *         input tag associated with this file picker.
+     * @return String version of the URI.
      */
-    private String openFileChooser() {
-        Uri uri = mCallbackProxy.openFileChooser();
-        if (uri == null) return "";
-        // Find out the name, and append it to the URI.
-        // Webkit will treat the name as the filename, and
-        // the URI as the path.  The URI will be used
-        // in BrowserFrame to get the actual data.
-        Cursor cursor = mContext.getContentResolver().query(
-                uri,
-                new String[] { OpenableColumns.DISPLAY_NAME },
-                null,
-                null,
-                null);
-        String name = "";
-        if (cursor != null) {
-            try {
-                if (cursor.moveToNext()) {
-                    name = cursor.getString(0);
+    private String openFileChooser(String acceptType) {
+        Uri uri = mCallbackProxy.openFileChooser(acceptType);
+        if (uri != null) {
+            String fileName = "";
+            Cursor cursor = mContext.getContentResolver().query(
+                    uri,
+                    new String[] { OpenableColumns.DISPLAY_NAME },
+                    null, null, null);
+            if (cursor != null) {
+                try {
+                    if (cursor.moveToNext()) {
+                        fileName = cursor.getString(0);
+                    }
+                } finally {
+                    cursor.close();
                 }
-            } finally {
-                cursor.close();
+            } else {
+                fileName = uri.getLastPathSegment();
             }
+            String uriString = uri.toString();
+            BrowserFrame.sJavaBridge.storeFileNameForContentUri(fileName, uriString);
+            return uriString;
         }
-        return uri.toString() + "/" + name;
+        return "";
     }
 
     /**
