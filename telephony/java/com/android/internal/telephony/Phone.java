@@ -1542,6 +1542,11 @@ public interface Phone {
     boolean isOtaSpNumber(String dialStr);
 
     /**
+     * Returns true if OTA Service Provisioning needs to be performed.
+     */
+    boolean needsOtaServiceProvisioning();
+
+    /**
      * Register for notifications when CDMA call waiting comes
      *
      * @param h Handler that receives the notification message.
