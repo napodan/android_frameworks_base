@@ -139,14 +139,14 @@ void Context::deinitEGL()
 }
 
 
-uint32_t Context::runScript(Script *s, uint32_t launchID)
+uint32_t Context::runScript(Script *s)
 {
     ObjectBaseRef<ProgramFragment> frag(mFragment);
     ObjectBaseRef<ProgramVertex> vtx(mVertex);
     ObjectBaseRef<ProgramStore> store(mFragmentStore);
     ObjectBaseRef<ProgramRaster> raster(mRaster);
 
-    uint32_t ret = s->run(this, launchID);
+    uint32_t ret = s->run(this);
 
     mFragment.set(frag);
     mVertex.set(vtx);
@@ -169,7 +169,7 @@ uint32_t Context::runRootScript()
 
     timerSet(RS_TIMER_SCRIPT);
     mStateFragmentStore.mLast.clear();
-    uint32_t ret = runScript(mRootScript.get(), 0);
+    uint32_t ret = runScript(mRootScript.get());
 
     checkError("runRootScript");
     if (mError != RS_ERROR_NONE) {
