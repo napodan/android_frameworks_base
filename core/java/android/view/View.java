@@ -8736,13 +8736,12 @@ public class View implements Drawable.Callback, KeyEvent.Callback, Accessibility
         if (mAttachInfo == null) {
             return false;
         }
-        if ((flags&HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING) == 0
+        if ((flags & HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING) == 0
                 && !isHapticFeedbackEnabled()) {
             return false;
         }
-        return mAttachInfo.mRootCallbacks.performHapticFeedback(
-                feedbackConstant,
-                (flags&HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING) != 0);
+        return mAttachInfo.mRootCallbacks.performHapticFeedback(feedbackConstant,
+                (flags & HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING) != 0);
     }
 
     /**
@@ -8813,8 +8812,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback, Accessibility
                 ViewConfiguration.getLongPressTimeout() - delayOffset);
     }
 
-    private static int[] stateSetUnion(final int[] stateSet1,
-                                       final int[] stateSet2) {
+    private static int[] stateSetUnion(final int[] stateSet1, final int[] stateSet2) {
         final int stateSet1Length = stateSet1.length;
         final int stateSet2Length = stateSet2.length;
         final int[] newSet = new int[stateSet1Length + stateSet2Length];
@@ -8852,7 +8850,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback, Accessibility
         LayoutInflater factory = LayoutInflater.from(context);
         return factory.inflate(resource, root);
     }
-
+    
     /**
      * Scroll the view with standard behavior for scrolling beyond the normal
      * content boundaries. Views that call this method should override
