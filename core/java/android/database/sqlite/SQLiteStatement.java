@@ -25,7 +25,7 @@ import dalvik.system.BlockGuard;
  * The statement cannot return multiple rows, but 1x1 result sets are allowed.
  * Don't use SQLiteStatement constructor directly, please use
  * {@link SQLiteDatabase#compileStatement(String)}
- *
+ *<p>
  * SQLiteStatement is not internally synchronized so code using a SQLiteStatement from multiple
  * threads should perform its own synchronization when using the SQLiteStatement.
  */
@@ -50,9 +50,7 @@ public class SQLiteStatement extends SQLiteProgram
      */
     public void execute() {
         BlockGuard.getThreadPolicy().onWriteToDisk();
-        if (!mDatabase.isOpen()) {
-            throw new IllegalStateException("database " + mDatabase.getPath() + " already closed");
-        }
+        mDatabase.verifyDbIsOpen();
         long timeStart = SystemClock.uptimeMillis();
         mDatabase.lock();
 
@@ -78,9 +76,7 @@ public class SQLiteStatement extends SQLiteProgram
      */
     public long executeInsert() {
         BlockGuard.getThreadPolicy().onWriteToDisk();
-        if (!mDatabase.isOpen()) {
-            throw new IllegalStateException("database " + mDatabase.getPath() + " already closed");
-        }
+        mDatabase.verifyDbIsOpen();
         long timeStart = SystemClock.uptimeMillis();
         mDatabase.lock();
 
@@ -106,9 +102,7 @@ public class SQLiteStatement extends SQLiteProgram
      */
     public long simpleQueryForLong() {
         BlockGuard.getThreadPolicy().onReadFromDisk();
-        if (!mDatabase.isOpen()) {
-            throw new IllegalStateException("database " + mDatabase.getPath() + " already closed");
-        }
+        mDatabase.verifyDbIsOpen();
         long timeStart = SystemClock.uptimeMillis();
         mDatabase.lock();
 
@@ -134,9 +128,7 @@ public class SQLiteStatement extends SQLiteProgram
      */
     public String simpleQueryForString() {
         BlockGuard.getThreadPolicy().onReadFromDisk();
-        if (!mDatabase.isOpen()) {
-            throw new IllegalStateException("database " + mDatabase.getPath() + " already closed");
-        }
+        mDatabase.verifyDbIsOpen();
         long timeStart = SystemClock.uptimeMillis();
         mDatabase.lock();
 
