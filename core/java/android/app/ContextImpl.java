@@ -58,6 +58,7 @@ import android.content.pm.PackageParser.Package;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
+import android.database.DatabaseErrorHandler;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import android.graphics.Bitmap;
@@ -547,6 +548,15 @@ class ContextImpl extends Context {
     public SQLiteDatabase openOrCreateDatabase(String name, int mode, CursorFactory factory) {
         File f = validateFilePath(name, true);
         SQLiteDatabase db = SQLiteDatabase.openOrCreateDatabase(f, factory);
+        setFilePermissionsFromMode(f.getPath(), mode, 0);
+        return db;
+    }
+
+    @Override
+    public SQLiteDatabase openOrCreateDatabase(String name, int mode, CursorFactory factory,
+            DatabaseErrorHandler errorHandler) {
+        File f = validateFilePath(name, true);
+        SQLiteDatabase db = SQLiteDatabase.openOrCreateDatabase(f.getPath(), factory, errorHandler);
         setFilePermissionsFromMode(f.getPath(), mode, 0);
         return db;
     }
