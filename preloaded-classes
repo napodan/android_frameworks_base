@@ -757,6 +757,7 @@ android.widget.ImageView$ScaleType
 android.widget.LinearLayout
 android.widget.LinearLayout$LayoutParams
 android.widget.ListAdapter
+android.widget.ListPopupWindow
 android.widget.ListView
 android.widget.ListView$ArrowScrollFocusResult
 android.widget.NumberPicker
