@@ -41,7 +41,8 @@ LOCAL_C_INCLUDES := external/sqlite/dist
 
 LOCAL_CFLAGS := -DMTP_DEVICE
 
-LOCAL_SHARED_LIBRARIES := libutils libsqlite libstagefright
+LOCAL_SHARED_LIBRARIES := libutils libsqlite libstagefright libcutils \
+	libmedia
 
 include $(BUILD_EXECUTABLE)
 
@@ -91,7 +92,7 @@ LOCAL_SRC_FILES:=                                       \
 #LOCAL_LDLIBS := -lpthread
 
 LOCAL_C_INCLUDES := external/sqlite/dist
-LOCAL_SHARED_LIBRARIES := libutils libsqlite libstagefright
+LOCAL_SHARED_LIBRARIES := libutils libsqlite libstagefright libmedia
 
 
 LOCAL_CFLAGS := -g

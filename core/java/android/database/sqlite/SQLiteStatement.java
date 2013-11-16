@@ -49,8 +49,8 @@ public class SQLiteStatement extends SQLiteProgram
      *         some reason
      */
     public void execute() {
-        BlockGuard.getThreadPolicy().onWriteToDisk();
         mDatabase.verifyDbIsOpen();
+        BlockGuard.getThreadPolicy().onWriteToDisk();
         long timeStart = SystemClock.uptimeMillis();
         mDatabase.lock();
 
@@ -75,8 +75,8 @@ public class SQLiteStatement extends SQLiteProgram
      *         some reason
      */
     public long executeInsert() {
-        BlockGuard.getThreadPolicy().onWriteToDisk();
         mDatabase.verifyDbIsOpen();
+        BlockGuard.getThreadPolicy().onWriteToDisk();
         long timeStart = SystemClock.uptimeMillis();
         mDatabase.lock();
 
@@ -101,8 +101,8 @@ public class SQLiteStatement extends SQLiteProgram
      * @throws android.database.sqlite.SQLiteDoneException if the query returns zero rows
      */
     public long simpleQueryForLong() {
-        BlockGuard.getThreadPolicy().onReadFromDisk();
         mDatabase.verifyDbIsOpen();
+        BlockGuard.getThreadPolicy().onReadFromDisk();
         long timeStart = SystemClock.uptimeMillis();
         mDatabase.lock();
 
@@ -127,8 +127,8 @@ public class SQLiteStatement extends SQLiteProgram
      * @throws android.database.sqlite.SQLiteDoneException if the query returns zero rows
      */
     public String simpleQueryForString() {
-        BlockGuard.getThreadPolicy().onReadFromDisk();
         mDatabase.verifyDbIsOpen();
+        BlockGuard.getThreadPolicy().onReadFromDisk();
         long timeStart = SystemClock.uptimeMillis();
         mDatabase.lock();
 
