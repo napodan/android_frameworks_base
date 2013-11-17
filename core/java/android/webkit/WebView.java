@@ -427,10 +427,6 @@ public class WebView extends AbsoluteLayout
     private static final int TOUCH_DONE_MODE = 7;
     private static final int TOUCH_PINCH_DRAG = 8;
 
-    /**
-     * True if we have a touch panel capable of detecting smooth pan/scale at the same time
-     */
-    private boolean mAllowPanAndScale;
 
     // Whether to forward the touch events to WebCore
     private boolean mForwardTouchEvents = false;
@@ -536,11 +532,6 @@ public class WebView extends AbsoluteLayout
     private static final int MOTIONLESS_TRUE            = 2;
     private static final int MOTIONLESS_IGNORE          = 3;
     private int mHeldMotionless;
-
-    // whether support multi-touch
-    private boolean mSupportMultiTouch;
-    // use the framework's ScaleGestureDetector to handle multi-touch
-    private ScaleGestureDetector mScaleDetector;
 
     // An instance for injecting accessibility in WebViews with disabled
     // JavaScript or ones for which no accessibility script exists
@@ -915,18 +906,7 @@ public class WebView extends AbsoluteLayout
     }
 
     void updateMultiTouchSupport(Context context) {
-        WebSettings settings = getSettings();
-        final PackageManager pm = context.getPackageManager();
-        mSupportMultiTouch = pm.hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN_MULTITOUCH)
-                && settings.supportZoom() && settings.getBuiltInZoomControls();
-        mAllowPanAndScale = pm.hasSystemFeature(
-                PackageManager.FEATURE_TOUCHSCREEN_MULTITOUCH_DISTINCT);
-        if (mSupportMultiTouch && (mScaleDetector == null)) {
-            mScaleDetector = new ScaleGestureDetector(context,
-                    new ScaleDetectorListener());
-        } else if (!mSupportMultiTouch && (mScaleDetector != null)) {
-            mScaleDetector = null;
-        }
+        mZoomManager.updateMultiTouchSupport(context);
     }
 
     private void init() {
@@ -2200,7 +2180,7 @@ public class WebView extends AbsoluteLayout
     private Rect mLastGlobalRect;
 
     Rect sendOurVisibleRect() {
-        if (mZoomManager.mPreviewZoomOnly) return mLastVisibleRectSent;
+        if (mZoomManager.isPreventingWebkitUpdates()) return mLastVisibleRectSent;
 
         Rect rect = new Rect();
         calcOurContentVisibleRect(rect);
@@ -2292,7 +2272,7 @@ public class WebView extends AbsoluteLayout
      * @return true if new values were sent
      */
     boolean sendViewSizeZoom(boolean force) {
-        if (mZoomManager.mPreviewZoomOnly) return false;
+        if (mZoomManager.isPreventingWebkitUpdates()) return false;
 
         int viewWidth = getViewWidth();
         int newWidth = Math.round(viewWidth * mZoomManager.mInvActualScale);
@@ -2315,7 +2295,8 @@ public class WebView extends AbsoluteLayout
             data.mHeight = newHeight;
             data.mTextWrapWidth = Math.round(viewWidth / mZoomManager.mTextWrapScale);
             data.mScale = mZoomManager.mActualScale;
-            data.mIgnoreHeight = mZoomManager.isZoomAnimating() && !mHeightCanMeasure;
+            data.mIgnoreHeight = mZoomManager.isFixedLengthAnimationInProgress()
+                    && !mHeightCanMeasure;
             data.mAnchorX = mAnchorX;
             data.mAnchorY = mAnchorY;
             mWebViewCore.sendMessage(EventHub.VIEW_SIZE_CHANGED, data);
@@ -3543,15 +3524,6 @@ public class WebView extends AbsoluteLayout
         return false;
     }
 
-    /**
-     * Need to adjust the WebTextView after a change in zoom, since mActualScale
-     * has changed.  This is especially important for password fields, which are
-     * drawn by the WebTextView, since it conveys more information than what
-     * webkit draws.  Thus we need to reposition it to show in the correct
-     * place.
-     */
-    private boolean mNeedToAdjustWebTextView;
-
     private boolean didUpdateTextViewBounds(boolean allowIntersect) {
         Rect contentBounds = nativeFocusCandidateNodeBounds();
         Rect vBox = contentToViewRect(contentBounds);
@@ -3589,6 +3561,32 @@ public class WebView extends AbsoluteLayout
         canvas.setDrawFilter(null);
     }
 
+    private void onZoomAnimationStart() {
+        // If it is in password mode, turn it off so it does not draw misplaced.
+        if (inEditingMode() && nativeFocusCandidateIsPassword()) {
+            mWebTextView.setInPassword(false);
+        }
+    }
+
+    private void onZoomAnimationEnd() {
+        // adjust the edit text view if needed
+        if (inEditingMode() && didUpdateTextViewBounds(false) && nativeFocusCandidateIsPassword()) {
+            // If it is a password field, start drawing the WebTextView once
+            // again.
+            mWebTextView.setInPassword(true);
+        }
+    }
+
+    void onFixedLengthZoomAnimationStart() {
+        WebViewCore.pauseUpdatePicture(getWebViewCore());
+        onZoomAnimationStart();
+    }
+
+    void onFixedLengthZoomAnimationEnd() {
+        WebViewCore.resumeUpdatePicture(mWebViewCore);
+        onZoomAnimationEnd();
+    }
+
     private void drawCoreAndCursorRing(Canvas canvas, int color,
         boolean drawCursorRing) {
         if (mDrawHistory) {
@@ -3597,7 +3595,7 @@ public class WebView extends AbsoluteLayout
             return;
         }
 
-        boolean animateZoom = mZoomManager.isZoomAnimating();
+        boolean animateZoom = mZoomManager.isFixedLengthAnimationInProgress();
         boolean animateScroll = ((!mScroller.isFinished()
                 || mVelocityTracker != null)
                 && (mTouchMode != TOUCH_DRAG_MODE ||
@@ -3616,39 +3614,7 @@ public class WebView extends AbsoluteLayout
             }
         }
         if (animateZoom) {
-            final float[] zoomValues = mZoomManager.animateZoom();
-            final boolean isStillAnimating = mZoomManager.isZoomAnimating();
-
-            if (isStillAnimating) {
-                invalidate();
-            } else {
-                WebViewCore.resumeUpdatePicture(mWebViewCore);
-                // call invalidate() again to draw with the final filters
-                invalidate();
-                if (mNeedToAdjustWebTextView) {
-                    mNeedToAdjustWebTextView = false;
-                    if (didUpdateTextViewBounds(false)
-                            && nativeFocusCandidateIsPassword()) {
-                        // If it is a password field, start drawing the
-                        // WebTextView once again.
-                        mWebTextView.setInPassword(true);
-                    }
-                }
-            }
-
-            canvas.translate(zoomValues[0], zoomValues[1]);
-            canvas.scale(zoomValues[2], zoomValues[2]);
-
-            if (inEditingMode() && !mNeedToAdjustWebTextView && isStillAnimating) {
-                // The WebTextView is up.  Keep track of this so we can adjust
-                // its size and placement when we finish zooming
-                mNeedToAdjustWebTextView = true;
-                // If it is in password mode, turn it off so it does not draw
-                // misplaced.
-                if (nativeFocusCandidateIsPassword()) {
-                    mWebTextView.setInPassword(false);
-                }
-            }
+            mZoomManager.animateZoom(canvas);
         } else {
             canvas.scale(mZoomManager.mActualScale, mZoomManager.mActualScale);
         }
@@ -3663,13 +3629,13 @@ public class WebView extends AbsoluteLayout
             invalidate();
         }
         mWebViewCore.drawContentPicture(canvas, color,
-                (animateZoom || mZoomManager.mPreviewZoomOnly || UIAnimationsRunning),
+                (mZoomManager.isZoomAnimating() || UIAnimationsRunning),
                 animateScroll);
         if (mNativeClass == 0) return;
         // decide which adornments to draw
         int extras = DRAW_EXTRAS_NONE;
         if (mFindIsUp) {
-                extras = DRAW_EXTRAS_FIND;
+            extras = DRAW_EXTRAS_FIND;
         } else if (mSelectingText) {
             extras = DRAW_EXTRAS_SELECTION;
             nativeSetSelectionPointer(mDrawSelectionPointer,
@@ -4813,79 +4779,6 @@ public class WebView extends AbsoluteLayout
     private DragTracker mDragTracker;
     private DragTrackerHandler mDragTrackerHandler;
 
-    private class ScaleDetectorListener implements
-            ScaleGestureDetector.OnScaleGestureListener {
-
-        public boolean onScaleBegin(ScaleGestureDetector detector) {
-            // cancel the single touch handling
-            cancelTouch();
-            mZoomManager.dismissZoomPicker();
-            // reset the zoom overview mode so that the page won't auto grow
-            mZoomManager.mInZoomOverview = false;
-            // If it is in password mode, turn it off so it does not draw
-            // misplaced.
-            if (inEditingMode() && nativeFocusCandidateIsPassword()) {
-                mWebTextView.setInPassword(false);
-            }
-
-            mViewManager.startZoom();
-
-            return true;
-        }
-
-        public void onScaleEnd(ScaleGestureDetector detector) {
-            if (mZoomManager.mPreviewZoomOnly) {
-                mZoomManager.mPreviewZoomOnly = false;
-                mAnchorX = viewToContentX((int) mZoomManager.mZoomCenterX + mScrollX);
-                mAnchorY = viewToContentY((int) mZoomManager.mZoomCenterY + mScrollY);
-                // don't reflow when zoom in; when zoom out, do reflow if the
-                // new scale is almost minimum scale;
-                boolean reflowNow = !mZoomManager.canZoomOut()
-                        || (mZoomManager.mActualScale <= 0.8 * mZoomManager.mTextWrapScale);
-                // force zoom after mPreviewZoomOnly is set to false so that the
-                // new view size will be passed to the WebKit
-                mZoomManager.refreshZoomScale(reflowNow);
-                // call invalidate() to draw without zoom filter
-                invalidate();
-            }
-            // adjust the edit text view if needed
-            if (inEditingMode() && didUpdateTextViewBounds(false)
-                    && nativeFocusCandidateIsPassword()) {
-                // If it is a password field, start drawing the
-                // WebTextView once again.
-                mWebTextView.setInPassword(true);
-            }
-            // start a drag, TOUCH_PINCH_DRAG, can't use TOUCH_INIT_MODE as it
-            // may trigger the unwanted click, can't use TOUCH_DRAG_MODE as it
-            // may trigger the unwanted fling.
-            mTouchMode = TOUCH_PINCH_DRAG;
-            mConfirmMove = true;
-            startTouch(detector.getFocusX(), detector.getFocusY(),
-                    mLastTouchTime);
-
-            mViewManager.endZoom();
-        }
-
-        public boolean onScale(ScaleGestureDetector detector) {
-            float scale = (float) (Math.round(detector.getScaleFactor()
-                    * mZoomManager.mActualScale * 100) / 100.0);
-            if (mZoomManager.willScaleTriggerZoom(scale)) {
-                mZoomManager.mPreviewZoomOnly = true;
-                // limit the scale change per step
-                if (scale > mZoomManager.mActualScale) {
-                    scale = Math.min(scale, mZoomManager.mActualScale * 1.25f);
-                } else {
-                    scale = Math.max(scale, mZoomManager.mActualScale * 0.8f);
-                }
-                mZoomManager.setZoomCenter(detector.getFocusX(), detector.getFocusY());
-                mZoomManager.setZoomScale(scale, false);
-                invalidate();
-                return true;
-            }
-            return false;
-        }
-    }
-
     private boolean hitFocusedPlugin(int contentX, int contentY) {
         if (DebugFlags.WEB_VIEW) {
             Log.v(LOGTAG, "nativeFocusIsPlugin()=" + nativeFocusIsPlugin());
@@ -4907,6 +4800,22 @@ public class WebView extends AbsoluteLayout
         return mFullScreenHolder != null;
     }
 
+    void onPinchToZoomAnimationStart() {
+        // cancel the single touch handling
+        cancelTouch();
+        onZoomAnimationStart();
+    }
+
+    void onPinchToZoomAnimationEnd(ScaleGestureDetector detector) {
+        onZoomAnimationEnd();
+        // start a drag, TOUCH_PINCH_DRAG, can't use TOUCH_INIT_MODE as
+        // it may trigger the unwanted click, can't use TOUCH_DRAG_MODE
+        // as it may trigger the unwanted fling.
+        mTouchMode = TOUCH_PINCH_DRAG;
+        mConfirmMove = true;
+        startTouch(detector.getFocusX(), detector.getFocusY(), mLastTouchTime);
+    }
+
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
         if (mNativeClass == 0 || (!isClickable() && !isLongClickable())) {
@@ -4922,38 +4831,39 @@ public class WebView extends AbsoluteLayout
         float x, y;
         long eventTime = ev.getEventTime();
 
+        ScaleGestureDetector detector =
+                mZoomManager.getMultiTouchGestureDetector();
         // FIXME: we may consider to give WebKit an option to handle multi-touch
         // events later.
-        if (mSupportMultiTouch && ev.getPointerCount() > 1) {
-            if (mAllowPanAndScale || mZoomManager.mMinZoomScale < mZoomManager.mMaxZoomScale) {
-                mScaleDetector.onTouchEvent(ev);
-                if (mScaleDetector.isInProgress()) {
-                    mLastTouchTime = eventTime;
-                    if (!mAllowPanAndScale) {
-                        return true;
-                    }
-                    mPrivateHandler.removeMessages(SWITCH_TO_SHORTPRESS);
-                    mPrivateHandler.removeMessages(SWITCH_TO_LONGPRESS);
-                }
-                x = mScaleDetector.getFocusX();
-                y = mScaleDetector.getFocusY();
-                action = ev.getAction() & MotionEvent.ACTION_MASK;
-                if (action == MotionEvent.ACTION_POINTER_DOWN) {
-                    cancelTouch();
-                    action = MotionEvent.ACTION_DOWN;
-                } else if (action == MotionEvent.ACTION_POINTER_UP) {
-                    // set mLastTouchX/Y to the remaining point
-                    mLastTouchX = x;
-                    mLastTouchY = y;
-                } else if (action == MotionEvent.ACTION_MOVE) {
-                    // negative x or y indicate it is on the edge, skip it.
-                    if (x < 0 || y < 0) {
-                        return true;
-                    }
-                }
-            } else {
-                // if the page disallow zoom, skip multi-pointer action
+        if (mZoomManager.supportsMultiTouchZoom() && ev.getPointerCount() > 1) {
+
+            // if the page disallows zoom, then skip multi-pointer action
+            if (!mZoomManager.supportsPanDuringZoom() && mZoomManager.mMinZoomScale >= mZoomManager.mMaxZoomScale) {
                 return true;
+            }
+
+            detector.onTouchEvent(ev);
+
+            if (detector.isInProgress()) {
+                mLastTouchTime = eventTime;
+                return true;
+            }
+
+            x = detector.getFocusX();
+            y = detector.getFocusY();
+            action = ev.getAction() & MotionEvent.ACTION_MASK;
+            if (action == MotionEvent.ACTION_POINTER_DOWN) {
+                cancelTouch();
+                action = MotionEvent.ACTION_DOWN;
+            } else if (action == MotionEvent.ACTION_POINTER_UP) {
+                // set mLastTouchX/Y to the remaining point
+                mLastTouchX = x;
+                mLastTouchY = y;
+            } else if (action == MotionEvent.ACTION_MOVE) {
+                // negative x or y indicate it is on the edge, skip it.
+                if (x < 0 || y < 0) {
+                    return true;
+                }
             }
         } else {
             action = ev.getAction();
@@ -5007,7 +4917,6 @@ public class WebView extends AbsoluteLayout
                                 contentX, contentY) : false;
                     }
                 } else { // the normal case
-                    mZoomManager.mPreviewZoomOnly = false;
                     mTouchMode = TOUCH_INIT_MODE;
                     mDeferTouchProcess = (!inFullScreenMode()
                             && mForwardTouchEvents) ? hitFocusedPlugin(
@@ -5166,9 +5075,9 @@ public class WebView extends AbsoluteLayout
                     }
 
                     // Only lock dragging to one axis if we don't have a scale in progress.
-                    // Scaling implies free-roaming movement. Note we'll only ever get here
-                    // if mAllowPanAndScale is true.
-                    if (mScaleDetector != null && !mScaleDetector.isInProgress()) {
+                    // Scaling implies free-roaming movement. Note this is only ever a question
+                    // if mZoomManager.supportsPanDuringZoom() is true.
+                    if (detector != null && !detector.isInProgress()) {
                         // if it starts nearly horizontal or vertical, enforce it
                         int ax = Math.abs(deltaX);
                         int ay = Math.abs(deltaY);
@@ -6398,7 +6307,7 @@ public class WebView extends AbsoluteLayout
                                                  boolean immediate) {
         // don't scroll while in zoom animation. When it is done, we will adjust
         // the necessary components (e.g., WebTextView if it is in editing mode)
-        if(mZoomManager.isZoomAnimating()) {
+        if (mZoomManager.isFixedLengthAnimationInProgress()) {
             return false;
         }
 
