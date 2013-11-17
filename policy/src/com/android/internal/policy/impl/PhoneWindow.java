@@ -320,9 +320,11 @@ public class PhoneWindow extends Window implements MenuBuilder.Callback {
 
         if (st.createdPanelView == null) {
             // Init the panel state's menu--return false if init failed
-            if (st.menu == null) {
-                if (!initializePanelMenu(st) || (st.menu == null)) {
-                    return false;
+            if (st.menu == null || st.refreshMenuContent) {
+                if (st.menu == null) {
+                    if (!initializePanelMenu(st) || (st.menu == null)) {
+                        return false;
+                    }
                 }
                 // Call callback, and return if it doesn't want to display menu
                 if ((cb == null) || !cb.onCreatePanelMenu(st.featureId, st.menu)) {
@@ -331,6 +333,7 @@ public class PhoneWindow extends Window implements MenuBuilder.Callback {
 
                     return false;
                 }
+                st.refreshMenuContent = false;
             }
 
             // Callback and return if the callback does not want to show the menu
@@ -550,6 +553,16 @@ public class PhoneWindow extends Window implements MenuBuilder.Callback {
         }
     }
 
+    @Override
+    public void invalidatePanelMenu(int featureId) {
+        PanelFeatureState st = getPanelState(featureId, true);
+        if (st.menu != null) {
+            st.menu.clear();
+        }
+        st.refreshMenuContent = true;
+        st.refreshDecorView = true;
+    }
+    
     /**
      * Called when the panel key is pushed down.
      * @param featureId The feature ID of the relevant panel (defaults to FEATURE_OPTIONS_PANEL}.
@@ -2645,6 +2658,8 @@ public class PhoneWindow extends Window implements MenuBuilder.Callback {
 
         boolean refreshDecorView;
 
+        boolean refreshMenuContent;
+        
         boolean wasLastOpen;
         
         boolean wasLastExpanded;
