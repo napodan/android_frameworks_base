@@ -618,9 +618,13 @@ include $(BUILD_DROIDDOC)
 ext_dirs := \
 	../../external/nist-sip/java \
 	../../external/apache-http/src \
-	../../external/tagsoup/src
+	../../external/tagsoup/src \
+	../../external/libphonenumber/java/src
 
 ext_src_files := $(call all-java-files-under,$(ext_dirs))
+
+ext_res_dirs := \
+	../../external/libphonenumber/java/src
 
 # ====  the library  =========================================
 include $(CLEAR_VARS)
@@ -629,6 +633,7 @@ LOCAL_SRC_FILES := $(ext_src_files)
 
 LOCAL_NO_STANDARD_LIBRARIES := true
 LOCAL_JAVA_LIBRARIES := core
+LOCAL_JAVA_RESOURCE_DIRS := $(ext_res_dirs)
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE := ext
 
