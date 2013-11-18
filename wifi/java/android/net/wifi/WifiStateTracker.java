@@ -73,7 +73,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *
  * @hide
  */
-public class WifiStateTracker extends NetworkStateTracker {
+public class WifiStateTracker extends Handler implements NetworkStateTracker {
 
     private static final boolean LOCAL_LOGD = Config.LOGD || false;
     
@@ -208,6 +208,8 @@ public class WifiStateTracker extends NetworkStateTracker {
     private boolean mHaveIpAddress;
     private boolean mObtainingIpAddress;
     private boolean mTornDownByConnMgr;
+    private NetworkInfo mNetworkInfo;
+    private boolean mTeardownRequested = false;
     /**
      * A DISCONNECT event has been received, but processing it
      * is being deferred.
@@ -340,6 +342,11 @@ public class WifiStateTracker extends NetworkStateTracker {
     private static String LS = System.getProperty("line.separator");
 
     private static String[] sDnsPropNames;
+    private Handler mTarget;
+    private Context mContext;
+    private boolean mPrivateDnsRouteSet = false;
+    private int mDefaultGatewayAddr = 0;
+    private boolean mDefaultRouteSet = false;
 
     /**
      * Keep track of whether we last told the battery stats we had started.
@@ -390,8 +397,9 @@ public class WifiStateTracker extends NetworkStateTracker {
     }
 
     public WifiStateTracker(Context context, Handler target) {
-        super(context, target, ConnectivityManager.TYPE_WIFI, 0, "WIFI", "");
-        
+        mTarget = target;
+        mContext = context;
+        mNetworkInfo = new NetworkInfo(ConnectivityManager.TYPE_WIFI, 0, "WIFI", "");
         mWifiInfo = new WifiInfo();
         mWifiMonitor = new WifiMonitor(this);
         mHaveIpAddress = false;
@@ -468,6 +476,57 @@ public class WifiStateTracker extends NetworkStateTracker {
     }
 
     /**
+     * Record the detailed state of a network, and if it is a
+     * change from the previous state, send a notification to
+     * any listeners.
+     * @param state the new @{code DetailedState}
+     */
+    private void setDetailedState(NetworkInfo.DetailedState state) {
+        setDetailedState(state, null, null);
+    }
+
+    /**
+     * Record the detailed state of a network, and if it is a
+     * change from the previous state, send a notification to
+     * any listeners.
+     * @param state the new @{code DetailedState}
+     * @param reason a {@code String} indicating a reason for the state change,
+     * if one was supplied. May be {@code null}.
+     * @param extraInfo optional {@code String} providing extra information about the state change
+     */
+    private void setDetailedState(NetworkInfo.DetailedState state, String reason, String extraInfo) {
+        if (LOCAL_LOGD) Log.d(TAG, "setDetailed state, old ="
+                + mNetworkInfo.getDetailedState() + " and new state=" + state);
+        if (state != mNetworkInfo.getDetailedState()) {
+            boolean wasConnecting = (mNetworkInfo.getState() == NetworkInfo.State.CONNECTING);
+            String lastReason = mNetworkInfo.getReason();
+            /*
+             * If a reason was supplied when the CONNECTING state was entered, and no
+             * reason was supplied for entering the CONNECTED state, then retain the
+             * reason that was supplied when going to CONNECTING.
+             */
+            if (wasConnecting && state == NetworkInfo.DetailedState.CONNECTED && reason == null
+                    && lastReason != null)
+                reason = lastReason;
+            mNetworkInfo.setDetailedState(state, reason, extraInfo);
+            Message msg = mTarget.obtainMessage(EVENT_STATE_CHANGED, mNetworkInfo);
+            msg.sendToTarget();
+        }
+    }
+
+    private void setDetailedStateInternal(NetworkInfo.DetailedState state) {
+        mNetworkInfo.setDetailedState(state, null, null);
+    }
+
+    public void setTeardownRequested(boolean isRequested) {
+        mTeardownRequested = isRequested;
+    }
+
+    public boolean isTeardownRequested() {
+        return mTeardownRequested;
+    }
+
+    /**
      * Helper method: sets the boolean indicating that the connection
      * manager asked the network to be torn down (and so only the connection
      * manager can set it up again).
@@ -484,8 +543,8 @@ public class WifiStateTracker extends NetworkStateTracker {
      * network interface.
      * @return a list of DNS addresses, with no holes.
      */
-    public String[] getNameServers() {
-        return getNameServerList(sDnsPropNames);
+    public String[] getDnsPropNames() {
+        return sDnsPropNames;
     }
 
     /**
@@ -494,6 +553,30 @@ public class WifiStateTracker extends NetworkStateTracker {
      */
     public String getInterfaceName() {
         return mInterfaceName;
+    }
+
+    public boolean isPrivateDnsRouteSet() {
+        return mPrivateDnsRouteSet;
+    }
+
+    public void privateDnsRouteSet(boolean enabled) {
+        mPrivateDnsRouteSet = enabled;
+    }
+
+    public NetworkInfo getNetworkInfo() {
+        return mNetworkInfo;
+    }
+
+    public int getDefaultGatewayAddr() {
+        return mDefaultGatewayAddr;
+    }
+
+    public boolean isDefaultRouteSet() {
+        return mDefaultRouteSet;
+    }
+
+    public void defaultRouteSet(boolean enabled) {
+        mDefaultRouteSet = enabled;
     }
 
     /**
@@ -836,7 +919,6 @@ public class WifiStateTracker extends NetworkStateTracker {
      * messages in the asynchronous call
      * from ConnectivityService
      */
-    @Override
     public void releaseWakeLock() {
     }
 
@@ -2261,7 +2343,26 @@ public class WifiStateTracker extends NetworkStateTracker {
         return mWM.setWifiEnabled(turnOn);
     }
 
-    @Override
+    /**
+     * {@inheritDoc}
+     * There are currently no Wi-Fi-specific features supported.
+     * @param feature the name of the feature
+     * @return {@code -1} indicating failure, always
+     */
+    public int startUsingNetworkFeature(String feature, int callingPid, int callingUid) {
+        return -1;
+    }
+
+    /**
+     * {@inheritDoc}
+     * There are currently no Wi-Fi-specific features supported.
+     * @param feature the name of the feature
+     * @return {@code -1} indicating failure, always
+     */
+    public int stopUsingNetworkFeature(String feature, int callingPid, int callingUid) {
+        return -1;
+    }
+
     public void interpretScanResultsAvailable() {
 
         // If we shouldn't place a notification on available networks, then
@@ -2304,6 +2405,15 @@ public class WifiStateTracker extends NetworkStateTracker {
         
         // No open networks in range, remove the notification
         setNotificationVisible(false, 0, false, 0);
+    }
+
+    /**
+     * Send a  notification that the results of a scan for network access
+     * points has completed, and results are available.
+     */
+    private void sendScanResultsAvailable() {
+        Message msg = mTarget.obtainMessage(EVENT_SCAN_RESULTS_AVAILABLE, mNetworkInfo);
+        msg.sendToTarget();
     }
 
     /**
