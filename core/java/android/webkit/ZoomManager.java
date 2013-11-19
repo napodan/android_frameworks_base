@@ -19,11 +19,16 @@ package android.webkit;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Canvas;
+import android.graphics.Picture;
 import android.graphics.Point;
+import android.os.Bundle;
 import android.os.SystemClock;
 import android.util.Log;
 import android.view.ScaleGestureDetector;
 import android.view.View;
+
+import java.io.File;
+import java.io.FileOutputStream;
 
 /**
  * The ZoomManager is responsible for maintaining the WebView's current zoom
@@ -50,54 +55,69 @@ class ZoomManager {
     private final WebView mWebView;
     private final CallbackProxy mCallbackProxy;
 
-    // manages the on-screen zoom functions of the WebView
+    // Widgets responsible for the on-screen zoom functions of the WebView.
     private ZoomControlEmbedded mEmbeddedZoomControl;
-
     private ZoomControlExternal mExternalZoomControl;
 
-    /*
-     * TODO: clean up the visibility of the class variables when the zoom
-     * refactoring is complete
-     */
+    // The default scale limits, which are dependent on the display density.
+    private static float DEFAULT_MAX_ZOOM_SCALE;
 
-    // default scale limits, which are dependent on the display density
-    static float DEFAULT_MAX_ZOOM_SCALE;
-    static float DEFAULT_MIN_ZOOM_SCALE;
+    private static float DEFAULT_MIN_ZOOM_SCALE;
 
-    // actual scale limits, which can be set through a webpage viewport meta tag
+    // The actual scale limits, which can be set through a webpage's viewport
+    // meta-tag.
     private float mMaxZoomScale;
     private float mMinZoomScale;
 
-    // locks the minimum ZoomScale to the value currently set in mMinZoomScale
+    // Locks the minimum ZoomScale to the value currently set in mMinZoomScale.
     private boolean mMinZoomScaleFixed = true;
 
-    // while in the zoom overview mode, the page's width is fully fit to the
-    // current window. The page is alive, in another words, you can click to
-    // follow the links. Double tap will toggle between zoom overview mode and
-    // the last zoom scale.
-    boolean mInZoomOverview = false;
+    /*
+     * When in the zoom overview mode, the page's width is fully fit to the
+     * current window. Additionally while the page is in this state it is
+     * active, in other words, you can click to follow the links. We cache a
+     * boolean to enable us to quickly check whether or not we are in overview
+     * mode, but this value should only be modified by changes to the zoom
+     * scale.
+     */
+    private boolean mInZoomOverview = false;
+    private int mZoomOverviewWidth;
+    private float mInvZoomOverviewWidth;
 
-    // These keep track of the center point of the zoom and they are used to
-    // determine the point around which we should zoom. They are stored in view
-    // coordinates.
-    float mZoomCenterX;
-    float mZoomCenterY;
+    /*
+     * These variables track the center point of the zoom and they are used to
+     * determine the point around which we should zoom. They are stored in view
+     * coordinates.
+     */
+    private float mZoomCenterX;
+    private float mZoomCenterY;
 
-    // ideally mZoomOverviewWidth should be mContentWidth. But sites like espn,
-    // engadget always have wider mContentWidth no matter what viewport size is.
-    int mZoomOverviewWidth = WebView.DEFAULT_VIEWPORT_WIDTH;
-    float mTextWrapScale;
+    /*
+     * These values represent the point around which the screen should be
+     * centered after zooming. In other words it is used to determine the center
+     * point of the visible document after the page has finished zooming. This
+     * is important because the zoom may have potentially reflowed the text and
+     * we need to ensure the proper portion of the document remains on the
+     * screen.
+     */
+    private int mAnchorX;
+    private int mAnchorY;
 
-    // the default zoom scale. This value will is initially set based on the
-    // display density, but can be changed at any time via the WebSettings.
+    // The scale factor that is used to determine the column width for text
+    private float mTextWrapScale;
+
+    /*
+     * The default zoom scale is the scale factor used when the user triggers a
+     * zoom in by double tapping on the WebView. The value is initially set
+     * based on the display density, but can be changed at any time via the
+     * WebSettings.
+     */
     private float mDefaultScale;
     private float mInvDefaultScale;
 
-    private static float MINIMUM_SCALE_INCREMENT = 0.01f;
-
     // the current computed zoom scale and its inverse.
-    float mActualScale;
-    float mInvActualScale;
+    private float mActualScale;
+    private float mInvActualScale;
     
     /*
      * The initial scale for the WebView. 0 means default. If initial scale is
@@ -108,6 +128,8 @@ class ZoomManager {
      * multiplying the value by 100.
      */
     private float mInitialScale;
+
+    private static float MINIMUM_SCALE_INCREMENT = 0.01f;
 
     /*
      * The following member variables are only to be used for animating zoom. If
@@ -121,7 +143,8 @@ class ZoomManager {
     private int mInitialScrollX;
     private int mInitialScrollY;
     private long mZoomStart;
-    static final int ZOOM_ANIMATION_LENGTH = 500;
+
+    private static final int ZOOM_ANIMATION_LENGTH = 500;
 
     // whether support multi-touch
     private boolean mSupportMultiTouch;
@@ -138,6 +161,13 @@ class ZoomManager {
     public ZoomManager(WebView webView, CallbackProxy callbackProxy) {
         mWebView = webView;
         mCallbackProxy = callbackProxy;
+
+        /*
+         * Ideally mZoomOverviewWidth should be mContentWidth. But sites like
+         * ESPN and Engadget always have wider mContentWidth no matter what the
+         * viewport size is.
+         */
+        setZoomOverviewWidth(WebView.DEFAULT_VIEWPORT_WIDTH);
     }
 
     public void init(float density) {
@@ -168,20 +198,48 @@ class ZoomManager {
         DEFAULT_MIN_ZOOM_SCALE = 0.25f * defaultScale;
     }
 
-    public float getDefaultScale() {
+    public final float getScale() {
+        return mActualScale;
+    }
+
+    public final float getInvScale() {
+        return mInvActualScale;
+    }
+
+    public final float getTextWrapScale() {
+        return mTextWrapScale;
+    }
+
+    public final float getDefaultScale() {
         return mDefaultScale;
     }
 
-    public void setZoomCenter(float x, float y) {
+    public final int getDocumentAnchorX() {
+        return mAnchorX;
+    }
+
+    public final int getDocumentAnchorY() {
+        return mAnchorY;
+    }
+
+    public final void clearDocumentAnchor() {
+        mAnchorX = mAnchorY = 0;
+    }
+
+    public final void setZoomCenter(float x, float y) {
         mZoomCenterX = x;
         mZoomCenterY = y;
     }
 
-    public void setInitialScaleInPercent(int scaleInPercent) {
+    public final void setInitialScaleInPercent(int scaleInPercent) {
         mInitialScale = scaleInPercent * 0.01f;
     }
 
-    public float computeScaleWithLimits(float scale) {
+    public static final float getDefaultMinZoomScale() {
+        return DEFAULT_MIN_ZOOM_SCALE;
+    }
+
+    public final float computeScaleWithLimits(float scale) {
         if (scale < mMinZoomScale) {
             scale = mMinZoomScale;
         } else if (scale > mMaxZoomScale) {
@@ -190,7 +248,7 @@ class ZoomManager {
         return scale;
     }
 
-    public boolean isZoomScaleFixed() {
+    public final boolean isZoomScaleFixed() {
         return mMinZoomScale >= mMaxZoomScale;
     }
 
@@ -202,16 +260,15 @@ class ZoomManager {
         return exceedsMinScaleIncrement(scale, mActualScale);
     }
 
-    public boolean canZoomIn() {
+    public final boolean canZoomIn() {
         return mMaxZoomScale - mActualScale > MINIMUM_SCALE_INCREMENT;
     }
 
-    public boolean canZoomOut() {
+    public final boolean canZoomOut() {
         return mActualScale - mMinZoomScale > MINIMUM_SCALE_INCREMENT;
     }
 
     public boolean zoomIn() {
-        mInZoomOverview = false;
         return zoom(1.25f);
     }
 
@@ -226,25 +283,9 @@ class ZoomManager {
         // Center zooming to the center of the screen.
         mZoomCenterX = mWebView.getViewWidth() * .5f;
         mZoomCenterY = mWebView.getViewHeight() * .5f;
-        int anchorX = mWebView.viewToContentX((int) mZoomCenterX + mWebView.getScrollX());
-        int anchorY = mWebView.viewToContentY((int) mZoomCenterY + mWebView.getScrollY());
-        mWebView.setViewSizeAnchor(anchorX, anchorY);
+        mAnchorX = mWebView.viewToContentX((int) mZoomCenterX + mWebView.getScrollX());
+        mAnchorY = mWebView.viewToContentY((int) mZoomCenterY + mWebView.getScrollY());
         return startZoomAnimation(mActualScale * zoomMultiplier, true);
-    }
-
-    public void zoomToOverview() {
-        mInZoomOverview = true;
-        // Force the titlebar fully reveal in overview mode
-        int scrollY = mWebView.getScrollY();
-        if (scrollY < mWebView.getTitleHeight()) {
-            mWebView.updateScrollCoordinates(mWebView.getScrollX(), 0);
-        }
-        startZoomAnimation((float) mWebView.getViewWidth() / mZoomOverviewWidth, true);
-    }
-
-    public void zoomToDefaultLevel(boolean reflowText) {
-        mInZoomOverview = false;
-        startZoomAnimation(mDefaultScale, reflowText);
     }
 
     /**
@@ -346,14 +387,14 @@ class ZoomManager {
     }
 
     private void setZoomScale(float scale, boolean reflowText, boolean force) {
-        if (scale < mMinZoomScale) {
-            scale = mMinZoomScale;
-            // set mInZoomOverview for non mobile sites
-            if (scale < mDefaultScale) {
-                mInZoomOverview = true;
-            }
-        } else if (scale > mMaxZoomScale) {
-            scale = mMaxZoomScale;
+        final boolean isScaleLessThanMinZoom = scale < mMinZoomScale;
+        scale = computeScaleWithLimits(scale);
+
+        // determine whether or not we are in the zoom overview mode
+        if (isScaleLessThanMinZoom && mMinZoomScale < mDefaultScale) {
+            mInZoomOverview = true;
+        } else {
+            mInZoomOverview = !exceedsMinScaleIncrement(scale, getZoomOverviewScale());
         }
 
         if (reflowText) {
@@ -405,6 +446,102 @@ class ZoomManager {
         }
     }
 
+    /**
+     * The double tap gesture can result in different behaviors depending on the
+     * content that is tapped.
+     *
+     * (1) PLUGINS: If the taps occur on a plugin then we maximize the plugin on
+     * the screen. If the plugin is already maximized then zoom the user into
+     * overview mode.
+     *
+     * (2) HTML/OTHER: If the taps occur outside a plugin then the following
+     * heuristic is used.
+     *   A. If the current scale is not the same as the text wrap scale and the
+     *      layout algorithm specifies the use of NARROW_COLUMNS, then fit to
+     *      column by reflowing the text.
+     *   B. If the page is not in overview mode then change to overview mode.
+     *   C. If the page is in overmode then change to the default scale.
+     */
+    public void handleDoubleTap(float lastTouchX, float lastTouchY) {
+        WebSettings settings = mWebView.getSettings();
+        if (settings == null || settings.getUseWideViewPort() == false) {
+            return;
+        }
+
+        setZoomCenter(lastTouchX, lastTouchY);
+        mAnchorX = mWebView.viewToContentX((int) lastTouchX + mWebView.getScrollX());
+        mAnchorY = mWebView.viewToContentY((int) lastTouchY + mWebView.getScrollY());
+        settings.setDoubleTapToastCount(0);
+
+        // remove the zoom control after double tap
+        dismissZoomPicker();
+
+        /*
+         * If the double tap was on a plugin then either zoom to maximize the
+         * plugin on the screen or scale to overview mode.
+         */
+        ViewManager.ChildView plugin = mWebView.mViewManager.hitTest(mAnchorX, mAnchorY);
+        if (plugin != null) {
+            if (mWebView.isPluginFitOnScreen(plugin)) {
+                zoomToOverview();
+            } else {
+                mWebView.centerFitRect(plugin.x, plugin.y, plugin.width, plugin.height);
+            }
+            return;
+        }
+
+        if (settings.getLayoutAlgorithm() == WebSettings.LayoutAlgorithm.NARROW_COLUMNS
+                && willScaleTriggerZoom(mTextWrapScale)) {
+            refreshZoomScale(true);
+        } else if (!mInZoomOverview) {
+            zoomToOverview();
+        } else {
+            zoomToDefaultLevel();
+        }
+    }
+
+    private void setZoomOverviewWidth(int width) {
+        mZoomOverviewWidth = width;
+        mInvZoomOverviewWidth = 1.0f / width;
+    }
+
+    private float getZoomOverviewScale() {
+        return mWebView.getViewWidth() * mInvZoomOverviewWidth;
+    }
+
+    public boolean isInZoomOverview() {
+        return mInZoomOverview;
+    }
+
+    private void zoomToOverview() {
+        if (!willScaleTriggerZoom(getZoomOverviewScale())) return;
+
+        // Force the titlebar fully reveal in overview mode
+        int scrollY = mWebView.getScrollY();
+        if (scrollY < mWebView.getTitleHeight()) {
+            mWebView.updateScrollCoordinates(mWebView.getScrollX(), 0);
+        }
+        startZoomAnimation(getZoomOverviewScale(), true);
+    }
+
+    private void zoomToDefaultLevel() {
+        int left = mWebView.nativeGetBlockLeftEdge(mAnchorX, mAnchorY, mActualScale);
+        if (left != WebView.NO_LEFTEDGE) {
+            // add a 5pt padding to the left edge.
+            int viewLeft = mWebView.contentToViewX(left < 5 ? 0 : (left - 5))
+                    - mWebView.getScrollX();
+            // Re-calculate the zoom center so that the new scroll x will be
+            // on the left edge.
+            if (viewLeft > 0) {
+                mZoomCenterX = viewLeft * mDefaultScale / (mDefaultScale - mActualScale);
+            } else {
+                mWebView.scrollBy(viewLeft, 0);
+                mZoomCenterX = 0;
+            }
+        }
+        startZoomAnimation(mDefaultScale, true);
+    }
+
     public void updateMultiTouchSupport(Context context) {
         // check the preconditions
         assert mWebView.getSettings() != null;
@@ -453,8 +590,6 @@ class ZoomManager {
 
         public boolean onScaleBegin(ScaleGestureDetector detector) {
             dismissZoomPicker();
-            // reset the zoom overview mode so that the page won't auto grow
-            mInZoomOverview = false;
             mWebView.mViewManager.startZoom();
             mWebView.onPinchToZoomAnimationStart();
             return true;
@@ -481,9 +616,8 @@ class ZoomManager {
         public void onScaleEnd(ScaleGestureDetector detector) {
             if (mPinchToZoomAnimating) {
                 mPinchToZoomAnimating = false;
-                mWebView.setViewSizeAnchor(mWebView.viewToContentX((int) mZoomCenterX
-                        + mWebView.getScrollX()), mWebView.viewToContentY((int) mZoomCenterY
-                        + mWebView.getScrollY()));
+                mAnchorX = mWebView.viewToContentX((int) mZoomCenterX + mWebView.getScrollX());
+                mAnchorY = mWebView.viewToContentY((int) mZoomCenterY + mWebView.getScrollY());
                 // don't reflow when zoom in; when zoom out, do reflow if the
                 // new scale is almost minimum scale;
                 boolean reflowNow = !canZoomOut() || (mActualScale <= 0.8 * mTextWrapScale);
@@ -506,10 +640,8 @@ class ZoomManager {
             int visibleTitleHeight = mWebView.getVisibleTitleHeight();
             mZoomCenterX = 0;
             mZoomCenterY = visibleTitleHeight;
-            int anchorX = mWebView.viewToContentX(mWebView.getScrollX());
-            int anchorY = mWebView.viewToContentY(visibleTitleHeight + mWebView.getScrollY());
-            mWebView.setViewSizeAnchor(anchorX, anchorY);
-
+            mAnchorX = mWebView.viewToContentX(mWebView.getScrollX());
+            mAnchorY = mWebView.viewToContentY(visibleTitleHeight + mWebView.getScrollY());
         }
 
         // update mMinZoomScale if the minimum zoom scale is not fixed
@@ -556,17 +688,12 @@ class ZoomManager {
     }
 
     public void updateZoomRange(WebViewCore.RestoreState restoreState,
-            int viewWidth, int minPrefWidth, boolean updateZoomOverview) {
+            int viewWidth, int minPrefWidth) {
         if (restoreState.mMinScale == 0) {
             if (restoreState.mMobileSite) {
                 if (minPrefWidth > Math.max(0, viewWidth)) {
                     mMinZoomScale = (float) viewWidth / minPrefWidth;
                     mMinZoomScaleFixed = false;
-                    if (updateZoomOverview) {
-                        WebSettings settings = mWebView.getSettings();
-                        mInZoomOverview = settings.getUseWideViewPort() &&
-                                settings.getLoadWithOverviewMode();
-                    }
                 } else {
                     mMinZoomScale = restoreState.mDefaultScale;
                     mMinZoomScaleFixed = true;
@@ -591,7 +718,6 @@ class ZoomManager {
      * should only be called from the UI thread's message handler.
      */
     public void onNewPicture(WebViewCore.DrawData drawData) {
-
         final int viewWidth = mWebView.getViewWidth();
 
         if (mWebView.getSettings().getUseWideViewPort()) {
@@ -599,21 +725,19 @@ class ZoomManager {
             // sMaxViewportWidth so that if the page doesn't behave
             // well, the WebView won't go insane. limit the lower
             // bound to match the default scale for mobile sites.
-            mZoomOverviewWidth = Math.min(WebView.sMaxViewportWidth,
+            setZoomOverviewWidth(Math.min(WebView.sMaxViewportWidth,
                     Math.max((int) (viewWidth * mInvDefaultScale),
-                            Math.max(drawData.mMinPrefWidth,
-                                    drawData.mViewPoint.x)));
+                            Math.max(drawData.mMinPrefWidth, drawData.mViewPoint.x))));
         }
+
+        final float zoomOverviewScale = getZoomOverviewScale();
         if (!mMinZoomScaleFixed) {
-            mMinZoomScale = (float) viewWidth / mZoomOverviewWidth;
+            mMinZoomScale = zoomOverviewScale;
         }
-        if (!mWebView.drawHistory() && mInZoomOverview) {
-            // fit the content width to the current view. Ignore
-            // the rounding error case.
-            if (Math.abs((viewWidth * mInvActualScale) - mZoomOverviewWidth) > 1) {
-                setZoomScale((float) viewWidth / mZoomOverviewWidth,
-                        !willScaleTriggerZoom(mTextWrapScale));
-            }
+        // fit the content width to the current view. Ignore the rounding error case.
+        if (!mWebView.drawHistory() && mInZoomOverview
+                && Math.abs((viewWidth * mInvActualScale) - mZoomOverviewWidth) > 1) {
+            setZoomScale(zoomOverviewScale, !willScaleTriggerZoom(mTextWrapScale));
         }
     }
 
@@ -629,11 +753,9 @@ class ZoomManager {
 
         WebViewCore.RestoreState restoreState = drawData.mRestoreState;
         final Point viewSize = drawData.mViewPoint;
-        updateZoomRange(restoreState, viewSize.x, drawData.mMinPrefWidth, true);
+        updateZoomRange(restoreState, viewSize.x, drawData.mMinPrefWidth);
 
         if (!mWebView.drawHistory()) {
-            mInZoomOverview = false;
-
             final float scale;
             final boolean reflowText;
 
@@ -646,9 +768,7 @@ class ZoomManager {
                 reflowText = false;
             } else {
                 WebSettings settings = mWebView.getSettings();
-                mInZoomOverview = settings.getUseWideViewPort() &&
-                        settings.getLoadWithOverviewMode();
-                if (mInZoomOverview) {
+                if (settings.getUseWideViewPort() && settings.getLoadWithOverviewMode()) {
                     scale = (float) mWebView.getViewWidth() / WebView.DEFAULT_VIEWPORT_WIDTH;
                 } else {
                     scale = restoreState.mTextWrapScale;
@@ -660,6 +780,22 @@ class ZoomManager {
             // update the zoom buttons as the scale can be changed
             updateZoomPicker();
         }
+    }
+
+    public void saveZoomState(Bundle b) {
+        b.putFloat("scale", mActualScale);
+        b.putFloat("textwrapScale", mTextWrapScale);
+        b.putBoolean("overview", mInZoomOverview);
+    }
+
+    public void restoreZoomState(Bundle b) {
+        // as getWidth() / getHeight() of the view are not available yet, set up
+        // mActualScale, so that when onSizeChanged() is called, the rest will
+        // be set correctly
+        mActualScale = b.getFloat("scale", 1.0f);
+        mInvActualScale = 1 / mActualScale;
+        mTextWrapScale = b.getFloat("textwrapScale", mActualScale);
+        mInZoomOverview = b.getBoolean("overview");
     }
 
     private ZoomControlBase getCurrentZoomControl() {
