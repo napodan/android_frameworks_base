@@ -109,7 +109,7 @@ status_t MediaScanner::doProcessDirectory(
     if (pathRemaining >= 8 /* strlen(".nomedia") */ ) {
         strcpy(fileSpot, ".nomedia");
         if (access(path, F_OK) == 0) {
-            LOGD("found .nomedia, skipping directory\n");
+            ALOGD("found .nomedia, skipping directory\n");
             fileSpot[0] = 0;
             client.addNoMediaFolder(path);
             return OK;
@@ -121,7 +121,7 @@ status_t MediaScanner::doProcessDirectory(
 
     DIR* dir = opendir(path);
     if (!dir) {
-        LOGD("opendir %s failed, errno: %d", path, errno);
+        ALOGD("opendir %s failed, errno: %d", path, errno);
         return UNKNOWN_ERROR;
     }
 
@@ -153,7 +153,7 @@ status_t MediaScanner::doProcessDirectory(
                     type = DT_DIR;
                 }
             } else {
-                LOGD("stat() failed for %s: %s", path, strerror(errno) );
+                ALOGD("stat() failed for %s: %s", path, strerror(errno) );
             }
         }
         if (type == DT_REG || type == DT_DIR) {
@@ -167,7 +167,7 @@ status_t MediaScanner::doProcessDirectory(
                 if (err) {
                     // pass exceptions up - ignore other errors
                     if (exceptionCheck && exceptionCheck(exceptionEnv)) goto failure;
-                    LOGE("Error processing '%s' - skipping\n", path);
+                    ALOGE("Error processing '%s' - skipping\n", path);
                     continue;
                 }
             } else if (fileMatchesExtension(path, extensions)) {

@@ -62,7 +62,7 @@ public:
         int fd = open("/dev/mtp_usb", O_RDWR);
         printf("open returned %d\n", fd);
         if (fd < 0) {
-            LOGE("could not open MTP driver\n");
+            ALOGE("could not open MTP driver\n");
             return false;
         }
 
@@ -70,9 +70,9 @@ public:
         server->addStorage(mStoragePath);
 
         // temporary
-        LOGD("MtpThread server->scanStorage");
+        ALOGD("MtpThread server->scanStorage");
         server->scanStorage();
-        LOGD("MtpThread server->run");
+        ALOGD("MtpThread server->run");
         server->run();
         close(fd);
         delete server;
@@ -80,7 +80,7 @@ public:
         bool done = mDone;
         if (done)
             delete this;
-        LOGD("threadLoop returning %s", (done ? "false" : "true"));
+        ALOGD("threadLoop returning %s", (done ? "false" : "true"));
         return !done;
     }
 
@@ -90,7 +90,7 @@ public:
 static void
 android_media_MtpServer_setup(JNIEnv *env, jobject thiz, jstring storagePath, jstring databasePath)
 {
-    LOGD("setup\n");
+    ALOGD("setup\n");
 
     const char *storagePathStr = env->GetStringUTFChars(storagePath, NULL);
     const char *databasePathStr = env->GetStringUTFChars(databasePath, NULL);
@@ -105,14 +105,14 @@ android_media_MtpServer_setup(JNIEnv *env, jobject thiz, jstring storagePath, js
 static void
 android_media_MtpServer_finalize(JNIEnv *env, jobject thiz)
 {
-    LOGD("finalize\n");
+    ALOGD("finalize\n");
 }
 
 
 static void
 android_media_MtpServer_start(JNIEnv *env, jobject thiz)
 {
-    LOGD("start\n");
+    ALOGD("start\n");
     MtpThread *thread = (MtpThread *)env->GetIntField(thiz, field_context);
     thread->run("MtpThread");
 }
@@ -120,7 +120,7 @@ android_media_MtpServer_start(JNIEnv *env, jobject thiz)
 static void
 android_media_MtpServer_stop(JNIEnv *env, jobject thiz)
 {
-    LOGD("stop\n");
+    ALOGD("stop\n");
     MtpThread *thread = (MtpThread *)env->GetIntField(thiz, field_context);
     if (thread) {
         thread->setDone();
@@ -143,16 +143,16 @@ int register_android_media_MtpServer(JNIEnv *env)
 {
     jclass clazz;
 
-    LOGD("register_android_media_MtpServer\n");
+    ALOGD("register_android_media_MtpServer\n");
 
     clazz = env->FindClass("android/media/MtpServer");
     if (clazz == NULL) {
-        LOGE("Can't find android/media/MtpServer");
+        ALOGE("Can't find android/media/MtpServer");
         return -1;
     }
     field_context = env->GetFieldID(clazz, "mNativeContext", "I");
     if (field_context == NULL) {
-        LOGE("Can't find MtpServer.mNativeContext");
+        ALOGE("Can't find MtpServer.mNativeContext");
         return -1;
     }
 

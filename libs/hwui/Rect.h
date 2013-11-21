@@ -130,7 +130,7 @@ struct Rect {
     }
 
     void dump() const {
-        LOGD("Rect[l=%f t=%f r=%f b=%f]", left, top, right, bottom);
+        ALOGD("Rect[l=%f t=%f r=%f b=%f]", left, top, right, bottom);
     }
 
 }; // struct Rect

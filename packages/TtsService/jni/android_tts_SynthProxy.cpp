@@ -182,16 +182,16 @@ class SynthProxyJniStorage {
         }
 
         ~SynthProxyJniStorage() {
-            //LOGV("entering ~SynthProxyJniStorage()");
+            //ALOGV("entering ~SynthProxyJniStorage()");
             killAudio();
             if (mEngine) {
                 mEngine->funcs->shutdown(mEngine);
                 mEngine = NULL;
             }
             if (mEngineLibHandle) {
-                //LOGE("~SynthProxyJniStorage(): before close library");
+                //ALOGE("~SynthProxyJniStorage(): before close library");
                 int res = dlclose(mEngineLibHandle);
-                LOGE_IF( res != 0, "~SynthProxyJniStorage(): dlclose returned %d", res);
+                ALOGE_IF( res != 0, "~SynthProxyJniStorage(): dlclose returned %d", res);
             }
             delete mBuffer;
         }
@@ -236,13 +236,13 @@ class SynthProxyJniStorage {
                     0, 0, 0, 0); // not using an AudioTrack callback
 
             if (mAudioOut->initCheck() != NO_ERROR) {
-              LOGE("createAudioOut(): AudioTrack error");
+              ALOGE("createAudioOut(): AudioTrack error");
               delete mAudioOut;
               mAudioOut = NULL;
             } else {
-              //LOGI("AudioTrack OK");
+              //ALOGI("AudioTrack OK");
               mAudioOut->setVolume(1.0f, 1.0f);
-              LOGV("AudioTrack ready");
+              ALOGV("AudioTrack ready");
             }
             mPlayLock.unlock();
         }
@@ -283,7 +283,7 @@ __ttsSynthDoneCB(void ** pUserdata, uint32_t rate,
     AudioSystem::audio_format  encoding;
 
     if (*pUserdata == NULL){
-        LOGE("userdata == NULL");
+        ALOGE("userdata == NULL");
         return ANDROID_TTS_CALLBACK_HALT;
     }
     switch (format) {
@@ -294,19 +294,19 @@ __ttsSynthDoneCB(void ** pUserdata, uint32_t rate,
         encoding = AudioSystem::PCM_16_BIT;
         break;
     default:
-        LOGE("Can't play, bad format");
+        ALOGE("Can't play, bad format");
         return ANDROID_TTS_CALLBACK_HALT;
     }
     afterSynthData_t* pForAfter = (afterSynthData_t*) *pUserdata;
     SynthProxyJniStorage* pJniData = (SynthProxyJniStorage*)(pForAfter->jniStorage);
 
     if (pForAfter->usageMode == USAGEMODE_PLAY_IMMEDIATELY){
-        //LOGV("Direct speech");
+        //ALOGV("Direct speech");
 
         if (*pWav == NULL) {
             delete pForAfter;
             pForAfter = NULL;
-            LOGV("Null: speech has completed");
+            ALOGV("Null: speech has completed");
             return ANDROID_TTS_CALLBACK_HALT;
         }
 
@@ -326,7 +326,7 @@ __ttsSynthDoneCB(void ** pUserdata, uint32_t rate,
                 memset(*pWav, 0, *pBufferSize);
                 //LOGV("AudioTrack wrote: %d bytes", bufferSize);
             } else {
-                LOGE("Can't play, null audiotrack");
+                ALOGE("Can't play, null audiotrack");
                 delete pForAfter;
                 pForAfter = NULL;
                 return ANDROID_TTS_CALLBACK_HALT;
@@ -336,7 +336,7 @@ __ttsSynthDoneCB(void ** pUserdata, uint32_t rate,
         //LOGV("Save to file");
         if (*pWav == NULL) {
             delete pForAfter;
-            LOGV("Null: speech has completed");
+            ALOGV("Null: speech has completed");
             return ANDROID_TTS_CALLBACK_HALT;
         }
         if (*pBufferSize > 0){
@@ -355,7 +355,7 @@ __ttsSynthDoneCB(void ** pUserdata, uint32_t rate,
     if (status == ANDROID_TTS_SYNTH_DONE) {
         // this struct was allocated in the original android_tts_SynthProxy_speak call,
         // all processing matching this call is now done.
-        LOGV("Speech synthesis done.");
+        ALOGV("Speech synthesis done.");
         if (pForAfter->usageMode == USAGEMODE_PLAY_IMMEDIATELY) {
             // only delete for direct playback. When writing to a file, we still have work to do
             // in android_tts_SynthProxy_synthesizeToFile. The struct will be deleted there.
@@ -392,7 +392,7 @@ android_tts_SynthProxy_setLowShelf(JNIEnv *env, jobject thiz, jboolean applyFilt
         if (fFilterShelfSlope != 0.0f) {
             initializeEQ();
         } else {
-            LOGE("Invalid slope, can't be null");
+            ALOGE("Invalid slope, can't be null");
             result = ANDROID_TTS_FAILURE;
         }
     }
@@ -420,7 +420,7 @@ android_tts_SynthProxy_native_setup(JNIEnv *env, jobject thiz,
     void *engine_lib_handle = dlopen(nativeSoLibNativeString,
             RTLD_NOW | RTLD_LOCAL);
     if (engine_lib_handle == NULL) {
-       LOGE("android_tts_SynthProxy_native_setup(): engine_lib_handle == NULL");
+       ALOGE("android_tts_SynthProxy_native_setup(): engine_lib_handle == NULL");
     } else {
         android_tts_engine_t * (*get_TtsEngine)() =
             reinterpret_cast<android_tts_engine_t* (*)()>(dlsym(engine_lib_handle, "android_getTtsEngine"));
@@ -462,9 +462,9 @@ android_tts_SynthProxy_native_setup(JNIEnv *env, jobject thiz,
 static void
 android_tts_SynthProxy_native_finalize(JNIEnv *env, jobject thiz, jint jniData)
 {
-    //LOGV("entering android_tts_SynthProxy_finalize()");
+    //ALOGV("entering android_tts_SynthProxy_finalize()");
     if (jniData == 0) {
-        //LOGE("android_tts_SynthProxy_native_finalize(): invalid JNI data");
+        //ALOGE("android_tts_SynthProxy_native_finalize(): invalid JNI data");
         return;
     }
 
@@ -481,7 +481,7 @@ android_tts_SynthProxy_native_finalize(JNIEnv *env, jobject thiz, jint jniData)
 static void
 android_tts_SynthProxy_shutdown(JNIEnv *env, jobject thiz, jint jniData)
 {
-    //LOGV("entering android_tts_SynthProxy_shutdown()");
+    //ALOGV("entering android_tts_SynthProxy_shutdown()");
 
     // do everything a call to finalize would
     android_tts_SynthProxy_native_finalize(env, thiz, jniData);
@@ -495,7 +495,7 @@ android_tts_SynthProxy_isLanguageAvailable(JNIEnv *env, jobject thiz, jint jniDa
     int result = ANDROID_TTS_LANG_NOT_SUPPORTED;
 
     if (jniData == 0) {
-        LOGE("android_tts_SynthProxy_isLanguageAvailable(): invalid JNI data");
+        ALOGE("android_tts_SynthProxy_isLanguageAvailable(): invalid JNI data");
         return result;
     }
 
@@ -522,7 +522,7 @@ android_tts_SynthProxy_setConfig(JNIEnv *env, jobject thiz, jint jniData, jstrin
     int result = ANDROID_TTS_FAILURE;
 
     if (jniData == 0) {
-        LOGE("android_tts_SynthProxy_setConfig(): invalid JNI data");
+        ALOGE("android_tts_SynthProxy_setConfig(): invalid JNI data");
         return result;
     }
 
@@ -548,7 +548,7 @@ android_tts_SynthProxy_setLanguage(JNIEnv *env, jobject thiz, jint jniData,
     int result = ANDROID_TTS_LANG_NOT_SUPPORTED;
 
     if (jniData == 0) {
-        LOGE("android_tts_SynthProxy_setLanguage(): invalid JNI data");
+        ALOGE("android_tts_SynthProxy_setLanguage(): invalid JNI data");
         return result;
     }
 
@@ -578,7 +578,7 @@ android_tts_SynthProxy_loadLanguage(JNIEnv *env, jobject thiz, jint jniData,
     int result = ANDROID_TTS_LANG_NOT_SUPPORTED;
 
     if (jniData == 0) {
-        LOGE("android_tts_SynthProxy_loadLanguage(): invalid JNI data");
+        ALOGE("android_tts_SynthProxy_loadLanguage(): invalid JNI data");
         return result;
     }
 
@@ -607,7 +607,7 @@ android_tts_SynthProxy_setSpeechRate(JNIEnv *env, jobject thiz, jint jniData,
     int result = ANDROID_TTS_FAILURE;
 
     if (jniData == 0) {
-        LOGE("android_tts_SynthProxy_setSpeechRate(): invalid JNI data");
+        ALOGE("android_tts_SynthProxy_setSpeechRate(): invalid JNI data");
         return result;
     }
 
@@ -618,7 +618,7 @@ android_tts_SynthProxy_setSpeechRate(JNIEnv *env, jobject thiz, jint jniData,
     Mutex::Autolock l(engineMutex);
 
     SynthProxyJniStorage* pSynthData = (SynthProxyJniStorage*)jniData;
-    LOGI("setting speech rate to %d", speechRate);
+    ALOGI("setting speech rate to %d", speechRate);
     android_tts_engine_t *engine = pSynthData->mEngine;
 
     if (engine) {
@@ -636,7 +636,7 @@ android_tts_SynthProxy_setPitch(JNIEnv *env, jobject thiz, jint jniData,
     int result = ANDROID_TTS_FAILURE;
 
     if (jniData == 0) {
-        LOGE("android_tts_SynthProxy_setPitch(): invalid JNI data");
+        ALOGE("android_tts_SynthProxy_setPitch(): invalid JNI data");
         return result;
     }
 
@@ -647,7 +647,7 @@ android_tts_SynthProxy_setPitch(JNIEnv *env, jobject thiz, jint jniData,
     sprintf(buffer, "%d", pitch);
 
     SynthProxyJniStorage* pSynthData = (SynthProxyJniStorage*)jniData;
-    LOGI("setting pitch to %d", pitch);
+    ALOGI("setting pitch to %d", pitch);
     android_tts_engine_t *engine = pSynthData->mEngine;
 
     if (engine) {
@@ -665,13 +665,13 @@ android_tts_SynthProxy_synthesizeToFile(JNIEnv *env, jobject thiz, jint jniData,
     int result = ANDROID_TTS_FAILURE;
 
     if (jniData == 0) {
-        LOGE("android_tts_SynthProxy_synthesizeToFile(): invalid JNI data");
+        ALOGE("android_tts_SynthProxy_synthesizeToFile(): invalid JNI data");
         return result;
     }
 
     SynthProxyJniStorage* pSynthData = (SynthProxyJniStorage*)jniData;
     if (!pSynthData->mEngine) {
-        LOGE("android_tts_SynthProxy_synthesizeToFile(): invalid engine handle");
+        ALOGE("android_tts_SynthProxy_synthesizeToFile(): invalid engine handle");
         return result;
     }
 
@@ -696,7 +696,7 @@ android_tts_SynthProxy_synthesizeToFile(JNIEnv *env, jobject thiz, jint jniData,
         encoding = AudioSystem::PCM_8_BIT;
         break;
     default:
-        LOGE("android_tts_SynthProxy_synthesizeToFile(): engine uses invalid format");
+        ALOGE("android_tts_SynthProxy_synthesizeToFile(): engine uses invalid format");
         return result;
     }
 
@@ -711,7 +711,7 @@ android_tts_SynthProxy_synthesizeToFile(JNIEnv *env, jobject thiz, jint jniData,
     pForAfter->outputFile = fopen(filenameNativeString, "wb");
 
     if (pForAfter->outputFile == NULL) {
-        LOGE("android_tts_SynthProxy_synthesizeToFile(): error creating output file");
+        ALOGE("android_tts_SynthProxy_synthesizeToFile(): error creating output file");
         delete pForAfter;
         return result;
     }
@@ -788,7 +788,7 @@ android_tts_SynthProxy_speak(JNIEnv *env, jobject thiz, jint jniData,
     int result = ANDROID_TTS_FAILURE;
 
     if (jniData == 0) {
-        LOGE("android_tts_SynthProxy_speak(): invalid JNI data");
+        ALOGE("android_tts_SynthProxy_speak(): invalid JNI data");
         return result;
     }
 
@@ -827,7 +827,7 @@ android_tts_SynthProxy_stop(JNIEnv *env, jobject thiz, jint jniData)
     int result = ANDROID_TTS_FAILURE;
 
     if (jniData == 0) {
-        LOGE("android_tts_SynthProxy_stop(): invalid JNI data");
+        ALOGE("android_tts_SynthProxy_stop(): invalid JNI data");
         return result;
     }
 
@@ -855,7 +855,7 @@ android_tts_SynthProxy_stopSync(JNIEnv *env, jobject thiz, jint jniData)
     int result = ANDROID_TTS_FAILURE;
 
     if (jniData == 0) {
-        LOGE("android_tts_SynthProxy_stop(): invalid JNI data");
+        ALOGE("android_tts_SynthProxy_stop(): invalid JNI data");
         return result;
     }
 
@@ -874,7 +874,7 @@ static jobjectArray
 android_tts_SynthProxy_getLanguage(JNIEnv *env, jobject thiz, jint jniData)
 {
     if (jniData == 0) {
-        LOGE("android_tts_SynthProxy_getLanguage(): invalid JNI data");
+        ALOGE("android_tts_SynthProxy_getLanguage(): invalid JNI data");
         return NULL;
     }
 
@@ -907,7 +907,7 @@ JNIEXPORT int JNICALL
 android_tts_SynthProxy_getRate(JNIEnv *env, jobject thiz, jint jniData)
 {
     if (jniData == 0) {
-        LOGE("android_tts_SynthProxy_getRate(): invalid JNI data");
+        ALOGE("android_tts_SynthProxy_getRate(): invalid JNI data");
         return 0;
     }
 
@@ -1004,14 +1004,14 @@ jint JNI_OnLoad(JavaVM* vm, void* reserved)
     jclass clazz;
 
     if (vm->GetEnv((void**) &env, JNI_VERSION_1_4) != JNI_OK) {
-        LOGE("ERROR: GetEnv failed\n");
+        ALOGE("ERROR: GetEnv failed\n");
         goto bail;
     }
     assert(env != NULL);
 
     clazz = env->FindClass(kClassPathName);
     if (clazz == NULL) {
-        LOGE("Can't find %s", kClassPathName);
+        ALOGE("Can't find %s", kClassPathName);
         goto bail;
     }
 
@@ -1022,14 +1022,14 @@ jint JNI_OnLoad(JavaVM* vm, void* reserved)
     javaTTSFields.synthProxyFieldJniData = env->GetFieldID(clazz,
             SP_JNIDATA_FIELD_NAME, "I");
     if (javaTTSFields.synthProxyFieldJniData == NULL) {
-        LOGE("Can't find %s.%s field", kClassPathName, SP_JNIDATA_FIELD_NAME);
+        ALOGE("Can't find %s.%s field", kClassPathName, SP_JNIDATA_FIELD_NAME);
         goto bail;
     }
 
     javaTTSFields.synthProxyMethodPost = env->GetStaticMethodID(clazz,
             SP_POSTSPEECHSYNTHESIZED_METHOD_NAME, "(Ljava/lang/Object;II)V");
     if (javaTTSFields.synthProxyMethodPost == NULL) {
-        LOGE("Can't find %s.%s method", kClassPathName, SP_POSTSPEECHSYNTHESIZED_METHOD_NAME);
+        ALOGE("Can't find %s.%s method", kClassPathName, SP_POSTSPEECHSYNTHESIZED_METHOD_NAME);
         goto bail;
     }
 

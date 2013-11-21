@@ -121,7 +121,7 @@ int EffectQueryNumberEffects(uint32_t *pNumEffects)
     *pNumEffects = gNumEffects;
     gCanQueryEffect = 1;
     pthread_mutex_unlock(&gLibLock);
-    LOGV("EffectQueryNumberEffects(): %d", *pNumEffects);
+    ALOGV("EffectQueryNumberEffects(): %d", *pNumEffects);
     return ret;
 }
 
@@ -163,7 +163,7 @@ int EffectQueryEffect(uint32_t index, effect_descriptor_t *pDescriptor)
 #if (LOG_NDEBUG == 0)
     char str[256];
     dumpEffectDescriptor(pDescriptor, str, 256);
-    LOGV("EffectQueryEffect() desc:%s", str);
+    ALOGV("EffectQueryEffect() desc:%s", str);
 #endif
     pthread_mutex_unlock(&gLibLock);
     return ret;
@@ -204,7 +204,7 @@ int EffectCreate(effect_uuid_t *uuid, int32_t sessionId, int32_t ioId, effect_in
         return -EINVAL;
     }
 
-    LOGV("EffectCreate() UUID: %08X-%04X-%04X-%04X-%02X%02X%02X%02X%02X%02X\n",
+    ALOGV("EffectCreate() UUID: %08X-%04X-%04X-%04X-%02X%02X%02X%02X%02X%02X\n",
             uuid->timeLow, uuid->timeMid, uuid->timeHiAndVersion,
             uuid->clockSeq, uuid->node[0], uuid->node[1],uuid->node[2],
             uuid->node[3],uuid->node[4],uuid->node[5]);
@@ -212,7 +212,7 @@ int EffectCreate(effect_uuid_t *uuid, int32_t sessionId, int32_t ioId, effect_in
     ret = init();
 
     if (ret < 0) {
-        LOGW("EffectCreate() init error: %d", ret);
+        ALOGW("EffectCreate() init error: %d", ret);
         return ret;
     }
 
@@ -226,7 +226,7 @@ int EffectCreate(effect_uuid_t *uuid, int32_t sessionId, int32_t ioId, effect_in
     // create effect in library
     ret = l->createFx(uuid, sessionId, ioId, &itfe);
     if (ret != 0) {
-        LOGW("EffectCreate() library %s: could not create fx %s, error %d", l->path, d->name, ret);
+        ALOGW("EffectCreate() library %s: could not create fx %s, error %d", l->path, d->name, ret);
         goto exit;
     }
 
@@ -243,7 +243,7 @@ int EffectCreate(effect_uuid_t *uuid, int32_t sessionId, int32_t ioId, effect_in
 
     *pInterface = (effect_interface_t)fx;
 
-    LOGV("EffectCreate() created entry %p with sub itfe %p in library %s", *pInterface, itfe, l->path);
+    ALOGV("EffectCreate() created entry %p with sub itfe %p in library %s", *pInterface, itfe, l->path);
 
 exit:
     pthread_mutex_unlock(&gLibLock);
@@ -286,7 +286,7 @@ int EffectRelease(effect_interface_t interface)
 
     // release effect in library
     if (fx->lib == NULL) {
-        LOGW("EffectRelease() fx %p library already unloaded", interface);
+        ALOGW("EffectRelease() fx %p library already unloaded", interface);
     } else {
         pthread_mutex_lock(&fx->lib->lock);
         fx->lib->releaseFx(fx->subItfe);
@@ -356,7 +356,7 @@ int init() {
         return -ENODEV;
     }
     while ((ent = readdir(dir)) != NULL) {
-        LOGV("init() reading file %s", ent->d_name);
+        ALOGV("init() reading file %s", ent->d_name);
         if ((strlen(ent->d_name) < 3) ||
             strncmp(ent->d_name, "lib", 3) != 0 ||
             strncmp(ent->d_name + strlen(ent->d_name) - 3, ".so", 3) != 0) {
@@ -366,13 +366,13 @@ int init() {
         strcat(libpath, "/");
         strcat(libpath, ent->d_name);
         if (loadLibrary(libpath, &hdl) < 0) {
-            LOGW("init() failed to load library %s",libpath);
+            ALOGW("init() failed to load library %s",libpath);
         }
     }
     closedir(dir);
     updateNumEffects();
     gInitDone = 1;
-    LOGV("init() done");
+    ALOGV("init() done");
     return 0;
 }
 
@@ -398,32 +398,32 @@ int loadLibrary(const char *libPath, int *handle)
 
     hdl = dlopen(libPath, RTLD_NOW);
     if (hdl == 0) {
-        LOGW("could open lib %s", libPath);
+        ALOGW("could open lib %s", libPath);
         return -ENODEV;
     }
 
     // Check functions availability
     queryNumFx = (effect_QueryNumberEffects_t)dlsym(hdl, "EffectQueryNumberEffects");
     if (queryNumFx == NULL) {
-        LOGW("could not get EffectQueryNumberEffects from lib %s", libPath);
+        ALOGW("could not get EffectQueryNumberEffects from lib %s", libPath);
         ret = -ENODEV;
         goto error;
     }
     queryFx = (effect_QueryEffect_t)dlsym(hdl, "EffectQueryEffect");
     if (queryFx == NULL) {
-        LOGW("could not get EffectQueryEffect from lib %s", libPath);
+        ALOGW("could not get EffectQueryEffect from lib %s", libPath);
         ret = -ENODEV;
         goto error;
     }
     createFx = (effect_CreateEffect_t)dlsym(hdl, "EffectCreate");
     if (createFx == NULL) {
-        LOGW("could not get EffectCreate from lib %s", libPath);
+        ALOGW("could not get EffectCreate from lib %s", libPath);
         ret = -ENODEV;
         goto error;
     }
     releaseFx = (effect_ReleaseEffect_t)dlsym(hdl, "EffectRelease");
     if (releaseFx == NULL) {
-        LOGW("could not get EffectRelease from lib %s", libPath);
+        ALOGW("could not get EffectRelease from lib %s", libPath);
         ret = -ENODEV;
         goto error;
     }
@@ -445,10 +445,10 @@ int loadLibrary(const char *libPath, int *handle)
 #if (LOG_NDEBUG==0)
             char s[256];
             dumpEffectDescriptor(d, s, 256);
-            LOGV("loadLibrary() read descriptor %p:%s",d, s);
+            ALOGV("loadLibrary() read descriptor %p:%s",d, s);
 #endif
             if (d->apiVersion != EFFECT_API_VERSION) {
-                LOGW("Bad API version %04x on lib %s", d->apiVersion, libPath);
+                ALOGW("Bad API version %04x on lib %s", d->apiVersion, libPath);
                 free(d);
                 continue;
             }
@@ -462,7 +462,7 @@ int loadLibrary(const char *libPath, int *handle)
             e->next = descHead;
             descHead = e;
         } else {
-            LOGW("Error querying effect # %d on lib %s", fx, libPath);
+            ALOGW("Error querying effect # %d on lib %s", fx, libPath);
         }
     }
 
@@ -483,14 +483,14 @@ int loadLibrary(const char *libPath, int *handle)
     e->object = l;
     gLibraryList = e;
     pthread_mutex_unlock(&gLibLock);
-    LOGV("loadLibrary() linked library %p", l);
+    ALOGV("loadLibrary() linked library %p", l);
 
     *handle = l->id;
 
     return 0;
 
 error:
-    LOGW("loadLibrary() error: %d on lib: %s", ret, libPath);
+    ALOGW("loadLibrary() error: %d on lib: %s", ret, libPath);
     while (descHead) {
         free(descHead->object);
         e = descHead->next;
@@ -611,10 +611,10 @@ int findEffect(effect_uuid_t *uuid, lib_entry_t **lib, effect_descriptor_t **des
         e = e->next;
     }
     if (!found) {
-        LOGV("findEffect() effect not found");
+        ALOGV("findEffect() effect not found");
         ret = -ENOENT;
     } else {
-        LOGV("findEffect() found effect: %s in lib %s", d->name, l->path);
+        ALOGV("findEffect() found effect: %s in lib %s", d->name, l->path);
         *lib = l;
         *desc = d;
     }

@@ -79,7 +79,7 @@ static inline native_data_t * get_native_data(JNIEnv *env, jobject object) {
     native_data_t *nat =
             (native_data_t *)(env->GetIntField(object, field_mNativeData));
     if (nat == NULL || nat->conn == NULL) {
-        LOGE("Uninitialized native data\n");
+        ALOGE("Uninitialized native data\n");
         return NULL;
     }
     return nat;
@@ -87,7 +87,7 @@ static inline native_data_t * get_native_data(JNIEnv *env, jobject object) {
 #endif
 
 static void classInitNative(JNIEnv* env, jclass clazz) {
-    LOGV(__FUNCTION__);
+    ALOGV(__FUNCTION__);
 #ifdef HAVE_BLUETOOTH
     field_mNativeData = get_field(env, clazz, "mNativeData", "I");
     field_mEventLoop = get_field(env, clazz, "mEventLoop",
@@ -99,11 +99,11 @@ static void classInitNative(JNIEnv* env, jclass clazz) {
  * Return false if dbus is down, or another serious error (out of memory)
 */
 static bool initializeNativeDataNative(JNIEnv* env, jobject object) {
-    LOGV(__FUNCTION__);
+    ALOGV(__FUNCTION__);
 #ifdef HAVE_BLUETOOTH
     native_data_t *nat = (native_data_t *)calloc(1, sizeof(native_data_t));
     if (NULL == nat) {
-        LOGE("%s: out of memory!", __FUNCTION__);
+        ALOGE("%s: out of memory!", __FUNCTION__);
         return false;
     }
     nat->env = env;
@@ -114,7 +114,7 @@ static bool initializeNativeDataNative(JNIEnv* env, jobject object) {
     dbus_threads_init_default();
     nat->conn = dbus_bus_get(DBUS_BUS_SYSTEM, &err);
     if (dbus_error_is_set(&err)) {
-        LOGE("Could not get onto the system bus: %s", err.message);
+        ALOGE("Could not get onto the system bus: %s", err.message);
         dbus_error_free(&err);
         return false;
     }
@@ -138,7 +138,7 @@ static const char *get_adapter_path(JNIEnv* env, jobject object) {
 
 // This function is called when the adapter is enabled.
 static jboolean setupNativeDataNative(JNIEnv* env, jobject object) {
-    LOGV(__FUNCTION__);
+    ALOGV(__FUNCTION__);
 #ifdef HAVE_BLUETOOTH
     native_data_t *nat =
         (native_data_t *)env->GetIntField(object, field_mNativeData);
@@ -152,7 +152,7 @@ static jboolean setupNativeDataNative(JNIEnv* env, jobject object) {
 
     if (!dbus_connection_register_object_path(nat->conn, device_agent_path,
                                               &agent_vtable, event_nat)) {
-        LOGE("%s: Can't register object path %s for remote device agent!",
+        ALOGE("%s: Can't register object path %s for remote device agent!",
                                __FUNCTION__, device_agent_path);
         return JNI_FALSE;
     }
@@ -161,7 +161,7 @@ static jboolean setupNativeDataNative(JNIEnv* env, jobject object) {
 }
 
 static jboolean tearDownNativeDataNative(JNIEnv *env, jobject object) {
-    LOGV(__FUNCTION__);
+    ALOGV(__FUNCTION__);
 #ifdef HAVE_BLUETOOTH
     native_data_t *nat =
                (native_data_t *)env->GetIntField(object, field_mNativeData);
@@ -175,7 +175,7 @@ static jboolean tearDownNativeDataNative(JNIEnv *env, jobject object) {
 }
 
 static void cleanupNativeDataNative(JNIEnv* env, jobject object) {
-    LOGV(__FUNCTION__);
+    ALOGV(__FUNCTION__);
 #ifdef HAVE_BLUETOOTH
     native_data_t *nat =
         (native_data_t *)env->GetIntField(object, field_mNativeData);
@@ -187,7 +187,7 @@ static void cleanupNativeDataNative(JNIEnv* env, jobject object) {
 }
 
 static jstring getAdapterPathNative(JNIEnv *env, jobject object) {
-    LOGV(__FUNCTION__);
+    ALOGV(__FUNCTION__);
 #ifdef HAVE_BLUETOOTH
     native_data_t *nat = get_native_data(env, object);
     if (nat) {
@@ -199,7 +199,7 @@ static jstring getAdapterPathNative(JNIEnv *env, jobject object) {
 
 
 static jboolean startDiscoveryNative(JNIEnv *env, jobject object) {
-    LOGV(__FUNCTION__);
+    ALOGV(__FUNCTION__);
 #ifdef HAVE_BLUETOOTH
     DBusMessage *msg = NULL;
     DBusMessage *reply = NULL;
@@ -245,7 +245,7 @@ done:
 }
 
 static void stopDiscoveryNative(JNIEnv *env, jobject object) {
-    LOGV(__FUNCTION__);
+    ALOGV(__FUNCTION__);
 #ifdef HAVE_BLUETOOTH
     DBusMessage *msg = NULL;
     DBusMessage *reply = NULL;
@@ -277,7 +277,7 @@ static void stopDiscoveryNative(JNIEnv *env, jobject object) {
         if(strncmp(err.name, BLUEZ_DBUS_BASE_IFC ".Error.NotAuthorized",
                    strlen(BLUEZ_DBUS_BASE_IFC ".Error.NotAuthorized")) == 0) {
             // hcid sends this if there is no active discovery to cancel
-            LOGV("%s: There was no active discovery to cancel", __FUNCTION__);
+            ALOGV("%s: There was no active discovery to cancel", __FUNCTION__);
             dbus_error_free(&err);
         } else {
             LOG_AND_FREE_DBUS_ERROR_WITH_MSG(&err, msg);
@@ -291,7 +291,7 @@ done:
 }
 
 static jbyteArray readAdapterOutOfBandDataNative(JNIEnv *env, jobject object) {
-    LOGV(__FUNCTION__);
+    ALOGV(__FUNCTION__);
 #ifdef HAVE_BLUETOOTH
     native_data_t *nat = get_native_data(env, object);
     DBusError err;
@@ -317,7 +317,7 @@ static jbyteArray readAdapterOutOfBandDataNative(JNIEnv *env, jobject object) {
                    env->SetByteArrayRegion(byteArray, 16, 16, randomizer);
                }
            } else {
-               LOGE("readAdapterOutOfBandDataNative: Hash len = %d, R len = %d",
+               ALOGE("readAdapterOutOfBandDataNative: Hash len = %d, R len = %d",
                                                                   hash_len, r_len);
            }
        } else {
@@ -332,7 +332,7 @@ static jbyteArray readAdapterOutOfBandDataNative(JNIEnv *env, jobject object) {
 
 static jboolean createPairedDeviceNative(JNIEnv *env, jobject object,
                                          jstring address, jint timeout_ms) {
-    LOGV(__FUNCTION__);
+    ALOGV(__FUNCTION__);
 #ifdef HAVE_BLUETOOTH
     native_data_t *nat = get_native_data(env, object);
     jobject eventLoop = env->GetObjectField(object, field_mEventLoop);
@@ -341,7 +341,7 @@ static jboolean createPairedDeviceNative(JNIEnv *env, jobject object,
 
     if (nat && eventLoopNat) {
         const char *c_address = env->GetStringUTFChars(address, NULL);
-        LOGV("... address = %s", c_address);
+        ALOGV("... address = %s", c_address);
         char *context_address = (char *)calloc(BTADDR_SIZE, sizeof(char));
         const char *capabilities = "DisplayYesNo";
         const char *agent_path = "/android/bluetooth/remote_device_agent";
@@ -368,7 +368,7 @@ static jboolean createPairedDeviceNative(JNIEnv *env, jobject object,
 
 static jboolean createPairedDeviceOutOfBandNative(JNIEnv *env, jobject object,
                                                 jstring address, jint timeout_ms) {
-    LOGV(__FUNCTION__);
+    ALOGV(__FUNCTION__);
 #ifdef HAVE_BLUETOOTH
     native_data_t *nat = get_native_data(env, object);
     jobject eventLoop = env->GetObjectField(object, field_mEventLoop);
@@ -377,7 +377,7 @@ static jboolean createPairedDeviceOutOfBandNative(JNIEnv *env, jobject object,
 
     if (nat && eventLoopNat) {
         const char *c_address = env->GetStringUTFChars(address, NULL);
-        LOGV("... address = %s", c_address);
+        ALOGV("... address = %s", c_address);
         char *context_address = (char *)calloc(BTADDR_SIZE, sizeof(char));
         const char *capabilities = "DisplayYesNo";
         const char *agent_path = "/android/bluetooth/remote_device_agent";
@@ -405,7 +405,7 @@ static jint getDeviceServiceChannelNative(JNIEnv *env, jobject object,
                                           jstring path,
                                           jstring pattern, jint attr_id) {
 #ifdef HAVE_BLUETOOTH
-    LOGV(__FUNCTION__);
+    ALOGV(__FUNCTION__);
     native_data_t *nat = get_native_data(env, object);
     jobject eventLoop = env->GetObjectField(object, field_mEventLoop);
     struct event_loop_native_data_t *eventLoopNat =
@@ -413,8 +413,8 @@ static jint getDeviceServiceChannelNative(JNIEnv *env, jobject object,
     if (nat && eventLoopNat) {
         const char *c_pattern = env->GetStringUTFChars(pattern, NULL);
         const char *c_path = env->GetStringUTFChars(path, NULL);
-        LOGV("... pattern = %s", c_pattern);
-        LOGV("... attr_id = %#X", attr_id);
+        ALOGV("... pattern = %s", c_pattern);
+        ALOGV("... attr_id = %#X", attr_id);
         DBusMessage *reply =
             dbus_func_args(env, nat->conn, c_path,
                            DBUS_DEVICE_IFACE, "GetServiceAttributeValue",
@@ -431,7 +431,7 @@ static jint getDeviceServiceChannelNative(JNIEnv *env, jobject object,
 
 static jboolean cancelDeviceCreationNative(JNIEnv *env, jobject object,
                                            jstring address) {
-    LOGV(__FUNCTION__);
+    ALOGV(__FUNCTION__);
     jboolean result = JNI_FALSE;
 #ifdef HAVE_BLUETOOTH
     native_data_t *nat = get_native_data(env, object);
@@ -439,7 +439,7 @@ static jboolean cancelDeviceCreationNative(JNIEnv *env, jobject object,
         const char *c_address = env->GetStringUTFChars(address, NULL);
         DBusError err;
         dbus_error_init(&err);
-        LOGV("... address = %s", c_address);
+        ALOGV("... address = %s", c_address);
         DBusMessage *reply =
             dbus_func_args_timeout(env, nat->conn, -1,
                                    get_adapter_path(env, object),
@@ -451,7 +451,7 @@ static jboolean cancelDeviceCreationNative(JNIEnv *env, jobject object,
             if (dbus_error_is_set(&err)) {
                 LOG_AND_FREE_DBUS_ERROR(&err);
             } else
-                LOGE("DBus reply is NULL in function %s", __FUNCTION__);
+                ALOGE("DBus reply is NULL in function %s", __FUNCTION__);
             return JNI_FALSE;
         } else {
             result = JNI_TRUE;
@@ -463,7 +463,7 @@ static jboolean cancelDeviceCreationNative(JNIEnv *env, jobject object,
 }
 
 static jboolean removeDeviceNative(JNIEnv *env, jobject object, jstring object_path) {
-    LOGV(__FUNCTION__);
+    ALOGV(__FUNCTION__);
 #ifdef HAVE_BLUETOOTH
     native_data_t *nat = get_native_data(env, object);
     if (nat) {
@@ -486,7 +486,7 @@ static jboolean removeDeviceNative(JNIEnv *env, jobject object, jstring object_p
 
 static jint enableNative(JNIEnv *env, jobject object) {
 #ifdef HAVE_BLUETOOTH
-    LOGV(__FUNCTION__);
+    ALOGV(__FUNCTION__);
     return bt_enable();
 #endif
     return -1;
@@ -494,7 +494,7 @@ static jint enableNative(JNIEnv *env, jobject object) {
 
 static jint disableNative(JNIEnv *env, jobject object) {
 #ifdef HAVE_BLUETOOTH
-    LOGV(__FUNCTION__);
+    ALOGV(__FUNCTION__);
     return bt_disable();
 #endif
     return -1;
@@ -502,7 +502,7 @@ static jint disableNative(JNIEnv *env, jobject object) {
 
 static jint isEnabledNative(JNIEnv *env, jobject object) {
 #ifdef HAVE_BLUETOOTH
-    LOGV(__FUNCTION__);
+    ALOGV(__FUNCTION__);
     return bt_is_enabled();
 #endif
     return -1;
@@ -512,7 +512,7 @@ static jboolean setPairingConfirmationNative(JNIEnv *env, jobject object,
                                              jstring address, bool confirm,
                                              int nativeData) {
 #ifdef HAVE_BLUETOOTH
-    LOGV(__FUNCTION__);
+    ALOGV(__FUNCTION__);
     native_data_t *nat = get_native_data(env, object);
     if (nat) {
         DBusMessage *msg = (DBusMessage *)nativeData;
@@ -525,7 +525,7 @@ static jboolean setPairingConfirmationNative(JNIEnv *env, jobject object,
         }
 
         if (!reply) {
-            LOGE("%s: Cannot create message reply to RequestPasskeyConfirmation or"
+            ALOGE("%s: Cannot create message reply to RequestPasskeyConfirmation or"
                   "RequestPairingConsent to D-Bus\n", __FUNCTION__);
             dbus_message_unref(msg);
             return JNI_FALSE;
@@ -543,13 +543,13 @@ static jboolean setPairingConfirmationNative(JNIEnv *env, jobject object,
 static jboolean setPasskeyNative(JNIEnv *env, jobject object, jstring address,
                          int passkey, int nativeData) {
 #ifdef HAVE_BLUETOOTH
-    LOGV(__FUNCTION__);
+    ALOGV(__FUNCTION__);
     native_data_t *nat = get_native_data(env, object);
     if (nat) {
         DBusMessage *msg = (DBusMessage *)nativeData;
         DBusMessage *reply = dbus_message_new_method_return(msg);
         if (!reply) {
-            LOGE("%s: Cannot create message reply to return Passkey code to "
+            ALOGE("%s: Cannot create message reply to return Passkey code to "
                  "D-Bus\n", __FUNCTION__);
             dbus_message_unref(msg);
             return JNI_FALSE;
@@ -570,7 +570,7 @@ static jboolean setPasskeyNative(JNIEnv *env, jobject object, jstring address,
 static jboolean setRemoteOutOfBandDataNative(JNIEnv *env, jobject object, jstring address,
                          jbyteArray hash, jbyteArray randomizer, int nativeData) {
 #ifdef HAVE_BLUETOOTH
-    LOGV(__FUNCTION__);
+    ALOGV(__FUNCTION__);
     native_data_t *nat = get_native_data(env, object);
     if (nat) {
         DBusMessage *msg = (DBusMessage *)nativeData;
@@ -578,7 +578,7 @@ static jboolean setRemoteOutOfBandDataNative(JNIEnv *env, jobject object, jstrin
         jbyte *h_ptr = env->GetByteArrayElements(hash, NULL);
         jbyte *r_ptr = env->GetByteArrayElements(randomizer, NULL);
         if (!reply) {
-            LOGE("%s: Cannot create message reply to return remote OOB data to "
+            ALOGE("%s: Cannot create message reply to return remote OOB data to "
                  "D-Bus\n", __FUNCTION__);
             dbus_message_unref(msg);
             return JNI_FALSE;
@@ -604,7 +604,7 @@ static jboolean setRemoteOutOfBandDataNative(JNIEnv *env, jobject object, jstrin
 static jboolean setAuthorizationNative(JNIEnv *env, jobject object, jstring address,
                          jboolean val, int nativeData) {
 #ifdef HAVE_BLUETOOTH
-    LOGV(__FUNCTION__);
+    ALOGV(__FUNCTION__);
     native_data_t *nat = get_native_data(env, object);
     if (nat) {
         DBusMessage *msg = (DBusMessage *)nativeData;
@@ -616,7 +616,7 @@ static jboolean setAuthorizationNative(JNIEnv *env, jobject object, jstring addr
                     "org.bluez.Error.Rejected", "Authorization rejected");
         }
         if (!reply) {
-            LOGE("%s: Cannot create message reply D-Bus\n", __FUNCTION__);
+            ALOGE("%s: Cannot create message reply D-Bus\n", __FUNCTION__);
             dbus_message_unref(msg);
             return JNI_FALSE;
         }
@@ -633,13 +633,13 @@ static jboolean setAuthorizationNative(JNIEnv *env, jobject object, jstring addr
 static jboolean setPinNative(JNIEnv *env, jobject object, jstring address,
                          jstring pin, int nativeData) {
 #ifdef HAVE_BLUETOOTH
-    LOGV(__FUNCTION__);
+    ALOGV(__FUNCTION__);
     native_data_t *nat = get_native_data(env, object);
     if (nat) {
         DBusMessage *msg = (DBusMessage *)nativeData;
         DBusMessage *reply = dbus_message_new_method_return(msg);
         if (!reply) {
-            LOGE("%s: Cannot create message reply to return PIN code to "
+            ALOGE("%s: Cannot create message reply to return PIN code to "
                  "D-Bus\n", __FUNCTION__);
             dbus_message_unref(msg);
             return JNI_FALSE;
@@ -663,14 +663,14 @@ static jboolean setPinNative(JNIEnv *env, jobject object, jstring address,
 static jboolean cancelPairingUserInputNative(JNIEnv *env, jobject object,
                                             jstring address, int nativeData) {
 #ifdef HAVE_BLUETOOTH
-    LOGV(__FUNCTION__);
+    ALOGV(__FUNCTION__);
     native_data_t *nat = get_native_data(env, object);
     if (nat) {
         DBusMessage *msg = (DBusMessage *)nativeData;
         DBusMessage *reply = dbus_message_new_error(msg,
                 "org.bluez.Error.Canceled", "Pairing User Input was canceled");
         if (!reply) {
-            LOGE("%s: Cannot create message reply to return cancelUserInput to"
+            ALOGE("%s: Cannot create message reply to return cancelUserInput to"
                  "D-BUS\n", __FUNCTION__);
             dbus_message_unref(msg);
             return JNI_FALSE;
@@ -689,7 +689,7 @@ static jobjectArray getDevicePropertiesNative(JNIEnv *env, jobject object,
                                                     jstring path)
 {
 #ifdef HAVE_BLUETOOTH
-    LOGV(__FUNCTION__);
+    ALOGV(__FUNCTION__);
     native_data_t *nat = get_native_data(env, object);
     if (nat) {
         DBusMessage *msg, *reply;
@@ -707,7 +707,7 @@ static jobjectArray getDevicePropertiesNative(JNIEnv *env, jobject object,
             if (dbus_error_is_set(&err)) {
                 LOG_AND_FREE_DBUS_ERROR(&err);
             } else
-                LOGE("DBus reply is NULL in function %s", __FUNCTION__);
+                ALOGE("DBus reply is NULL in function %s", __FUNCTION__);
             return NULL;
         }
         env->PushLocalFrame(PROPERTIES_NREFS);
@@ -728,7 +728,7 @@ static jobjectArray getDevicePropertiesNative(JNIEnv *env, jobject object,
 
 static jobjectArray getAdapterPropertiesNative(JNIEnv *env, jobject object) {
 #ifdef HAVE_BLUETOOTH
-    LOGV(__FUNCTION__);
+    ALOGV(__FUNCTION__);
     native_data_t *nat = get_native_data(env, object);
     if (nat) {
         DBusMessage *msg, *reply;
@@ -743,7 +743,7 @@ static jobjectArray getAdapterPropertiesNative(JNIEnv *env, jobject object) {
             if (dbus_error_is_set(&err)) {
                 LOG_AND_FREE_DBUS_ERROR(&err);
             } else
-                LOGE("DBus reply is NULL in function %s", __FUNCTION__);
+                ALOGE("DBus reply is NULL in function %s", __FUNCTION__);
             return NULL;
         }
         env->PushLocalFrame(PROPERTIES_NREFS);
@@ -764,7 +764,7 @@ static jobjectArray getAdapterPropertiesNative(JNIEnv *env, jobject object) {
 static jboolean setAdapterPropertyNative(JNIEnv *env, jobject object, jstring key,
                                          void *value, jint type) {
 #ifdef HAVE_BLUETOOTH
-    LOGV(__FUNCTION__);
+    ALOGV(__FUNCTION__);
     native_data_t *nat = get_native_data(env, object);
     if (nat) {
         DBusMessage *reply, *msg;
@@ -777,7 +777,7 @@ static jboolean setAdapterPropertyNative(JNIEnv *env, jobject object, jstring ke
                                            get_adapter_path(env, object),
                                            DBUS_ADAPTER_IFACE, "SetProperty");
         if (!msg) {
-            LOGE("%s: Can't allocate new method call for GetProperties!",
+            ALOGE("%s: Can't allocate new method call for GetProperties!",
                   __FUNCTION__);
             env->ReleaseStringUTFChars(key, c_key);
             return JNI_FALSE;
@@ -796,7 +796,7 @@ static jboolean setAdapterPropertyNative(JNIEnv *env, jobject object, jstring ke
             if (dbus_error_is_set(&err)) {
                 LOG_AND_FREE_DBUS_ERROR(&err);
             } else
-                LOGE("DBus reply is NULL in function %s", __FUNCTION__);
+                ALOGE("DBus reply is NULL in function %s", __FUNCTION__);
             return JNI_FALSE;
         }
         return JNI_TRUE;
@@ -838,7 +838,7 @@ static jboolean setAdapterPropertyBooleanNative(JNIEnv *env, jobject object, jst
 static jboolean setDevicePropertyNative(JNIEnv *env, jobject object, jstring path,
                                                jstring key, void *value, jint type) {
 #ifdef HAVE_BLUETOOTH
-    LOGV(__FUNCTION__);
+    ALOGV(__FUNCTION__);
     native_data_t *nat = get_native_data(env, object);
     if (nat) {
         DBusMessage *reply, *msg;
@@ -852,7 +852,7 @@ static jboolean setDevicePropertyNative(JNIEnv *env, jobject object, jstring pat
         msg = dbus_message_new_method_call(BLUEZ_DBUS_BASE_IFC,
                                           c_path, DBUS_DEVICE_IFACE, "SetProperty");
         if (!msg) {
-            LOGE("%s: Can't allocate new method call for device SetProperty!", __FUNCTION__);
+            ALOGE("%s: Can't allocate new method call for device SetProperty!", __FUNCTION__);
             env->ReleaseStringUTFChars(key, c_key);
             env->ReleaseStringUTFChars(path, c_path);
             return JNI_FALSE;
@@ -871,7 +871,7 @@ static jboolean setDevicePropertyNative(JNIEnv *env, jobject object, jstring pat
             if (dbus_error_is_set(&err)) {
                 LOG_AND_FREE_DBUS_ERROR(&err);
             } else
-            LOGE("DBus reply is NULL in function %s", __FUNCTION__);
+            ALOGE("DBus reply is NULL in function %s", __FUNCTION__);
             return JNI_FALSE;
         }
         return JNI_TRUE;
@@ -893,7 +893,7 @@ static jboolean setDevicePropertyBooleanNative(JNIEnv *env, jobject object,
 
 static jboolean createDeviceNative(JNIEnv *env, jobject object,
                                                 jstring address) {
-    LOGV(__FUNCTION__);
+    ALOGV(__FUNCTION__);
 #ifdef HAVE_BLUETOOTH
     native_data_t *nat = get_native_data(env, object);
     jobject eventLoop = env->GetObjectField(object, field_mEventLoop);
@@ -902,7 +902,7 @@ static jboolean createDeviceNative(JNIEnv *env, jobject object,
 
     if (nat && eventLoopNat) {
         const char *c_address = env->GetStringUTFChars(address, NULL);
-        LOGV("... address = %s", c_address);
+        ALOGV("... address = %s", c_address);
         char *context_address = (char *)calloc(BTADDR_SIZE, sizeof(char));
         strlcpy(context_address, c_address, BTADDR_SIZE);  // for callback
 
@@ -924,7 +924,7 @@ static jboolean createDeviceNative(JNIEnv *env, jobject object,
 
 static jboolean discoverServicesNative(JNIEnv *env, jobject object,
                                                jstring path, jstring pattern) {
-    LOGV(__FUNCTION__);
+    ALOGV(__FUNCTION__);
 #ifdef HAVE_BLUETOOTH
     native_data_t *nat = get_native_data(env, object);
     jobject eventLoop = env->GetObjectField(object, field_mEventLoop);
@@ -938,8 +938,8 @@ static jboolean discoverServicesNative(JNIEnv *env, jobject object,
         char *context_path = (char *)calloc(len, sizeof(char));
         strlcpy(context_path, c_path, len);  // for callback
 
-        LOGV("... Object Path = %s", c_path);
-        LOGV("... Pattern = %s, strlen = %d", c_pattern, strlen(c_pattern));
+        ALOGV("... Object Path = %s", c_path);
+        ALOGV("... Pattern = %s, strlen = %d", c_pattern, strlen(c_pattern));
 
         bool ret = dbus_func_args_async(env, nat->conn, -1,
                                         onDiscoverServicesResult,
@@ -960,15 +960,15 @@ static jboolean discoverServicesNative(JNIEnv *env, jobject object,
 
 static jint addRfcommServiceRecordNative(JNIEnv *env, jobject object,
         jstring name, jlong uuidMsb, jlong uuidLsb, jshort channel) {
-    LOGV(__FUNCTION__);
+    ALOGV(__FUNCTION__);
 #ifdef HAVE_BLUETOOTH
     native_data_t *nat = get_native_data(env, object);
     if (nat) {
         const char *c_name = env->GetStringUTFChars(name, NULL);
-        LOGV("... name = %s", c_name);
-        LOGV("... uuid1 = %llX", uuidMsb);
-        LOGV("... uuid2 = %llX", uuidLsb);
-        LOGV("... channel = %d", channel);
+        ALOGV("... name = %s", c_name);
+        ALOGV("... uuid1 = %llX", uuidMsb);
+        ALOGV("... uuid2 = %llX", uuidLsb);
+        ALOGV("... channel = %d", channel);
         DBusMessage *reply = dbus_func_args(env, nat->conn,
                            get_adapter_path(env, object),
                            DBUS_ADAPTER_IFACE, "AddRfcommServiceRecord",
@@ -985,11 +985,11 @@ static jint addRfcommServiceRecordNative(JNIEnv *env, jobject object,
 }
 
 static jboolean removeServiceRecordNative(JNIEnv *env, jobject object, jint handle) {
-    LOGV(__FUNCTION__);
+    ALOGV(__FUNCTION__);
 #ifdef HAVE_BLUETOOTH
     native_data_t *nat = get_native_data(env, object);
     if (nat) {
-        LOGV("... handle = %X", handle);
+        ALOGV("... handle = %X", handle);
         DBusMessage *reply = dbus_func_args(env, nat->conn,
                            get_adapter_path(env, object),
                            DBUS_ADAPTER_IFACE, "RemoveServiceRecord",
@@ -1003,7 +1003,7 @@ static jboolean removeServiceRecordNative(JNIEnv *env, jobject object, jint hand
 
 static jboolean setLinkTimeoutNative(JNIEnv *env, jobject object, jstring object_path,
                                      jint num_slots) {
-    LOGV(__FUNCTION__);
+    ALOGV(__FUNCTION__);
 #ifdef HAVE_BLUETOOTH
     native_data_t *nat = get_native_data(env, object);
     if (nat) {
@@ -1022,7 +1022,7 @@ static jboolean setLinkTimeoutNative(JNIEnv *env, jobject object, jstring object
 }
 
 static jboolean connectInputDeviceNative(JNIEnv *env, jobject object, jstring path) {
-    LOGV(__FUNCTION__);
+    ALOGV(__FUNCTION__);
 #ifdef HAVE_BLUETOOTH
     native_data_t *nat = get_native_data(env, object);
     if (nat) {
@@ -1041,7 +1041,7 @@ static jboolean connectInputDeviceNative(JNIEnv *env, jobject object, jstring pa
 
 static jboolean disconnectInputDeviceNative(JNIEnv *env, jobject object,
                                      jstring path) {
-    LOGV(__FUNCTION__);
+    ALOGV(__FUNCTION__);
 #ifdef HAVE_BLUETOOTH
     native_data_t *nat = get_native_data(env, object);
     if (nat) {

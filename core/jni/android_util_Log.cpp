@@ -153,7 +153,7 @@ int register_android_util_Log(JNIEnv* env)
     jclass clazz = env->FindClass("android/util/Log");
 
     if (clazz == NULL) {
-        LOGE("Can't find android/util/Log");
+        ALOGE("Can't find android/util/Log");
         return -1;
     }
     

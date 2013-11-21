@@ -159,7 +159,7 @@ void printApiCpp(FILE *f)
             fprintf(f, ");\n");
         } else {
             fprintf(f, "    ThreadIO *io = &((Context *)rsc)->mIO;\n");
-            //fprintf(f, "    LOGE(\"add command %s\\n\");\n", api->name);
+            //fprintf(f, "    ALOGE(\"add command %s\\n\");\n", api->name);
             fprintf(f, "    RS_CMD_%s *cmd = static_cast<RS_CMD_%s *>(io->mToCore.reserve(sizeof(RS_CMD_%s)));\n", api->name, api->name, api->name);
             fprintf(f, "    uint32_t size = sizeof(RS_CMD_%s);\n", api->name);
 
@@ -212,7 +212,7 @@ void printPlaybackCpp(FILE *f)
         if (api->handcodePlay) {
             fprintf(f, "    rsHCPLAY_%s(con, vp);\n", api->name);
         } else {
-            //fprintf(f, "    LOGE(\"play command %s\\n\");\n", api->name);
+            //fprintf(f, "    ALOGE(\"play command %s\\n\");\n", api->name);
             fprintf(f, "    const RS_CMD_%s *cmd = static_cast<const RS_CMD_%s *>(vp);\n", api->name, api->name);
             fprintf(f, "    ");
             if (api->ret.typeName[0]) {

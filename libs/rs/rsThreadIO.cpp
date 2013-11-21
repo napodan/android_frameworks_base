@@ -55,7 +55,7 @@ bool ThreadIO::playCoreCommands(Context *con, bool waitForCommand)
             con->timerSet(Context::RS_TIMER_INTERNAL);
         }
         waitForCommand = false;
-        //LOGV("playCoreCommands 3 %i %i", cmdID, cmdSize);
+        //ALOGV("playCoreCommands 3 %i %i", cmdID, cmdSize);
 
         gPlaybackFuncs[cmdID](con, data);
         mToCore.next();

@@ -154,7 +154,7 @@ void ARTSPController::onMessageReceived(const sp<AMessage> &msg) {
 
         case kWhatSeekDone:
         {
-            LOGI("seek done");
+            ALOGI("seek done");
 
             mLastSeekCompletedTimeUs = ALooper::GetNowUs();
 

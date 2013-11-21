@@ -111,7 +111,7 @@ void TextureCache::clear() {
 void TextureCache::generateTexture(SkBitmap* bitmap, Texture* texture, bool regenerate) {
     SkAutoLockPixels alp(*bitmap);
     if (!bitmap->readyToDraw()) {
-        LOGE("Cannot generate texture from bitmap");
+        ALOGE("Cannot generate texture from bitmap");
         return;
     }
 

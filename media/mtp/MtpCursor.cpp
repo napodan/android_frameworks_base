@@ -86,7 +86,7 @@ MtpCursor::~MtpCursor() {
 }
 
 int MtpCursor::fillWindow(CursorWindow* window, int startPos) {
-    LOGD("MtpCursor::fillWindow mQueryType: %d\n", mQueryType);
+    ALOGD("MtpCursor::fillWindow mQueryType: %d\n", mQueryType);
 
     switch (mQueryType) {
         case DEVICE:
@@ -106,7 +106,7 @@ int MtpCursor::fillWindow(CursorWindow* window, int startPos) {
         case OBJECT_CHILDREN:
             return fillObjects(window, mQbjectID, startPos);
         default:
-            LOGE("MtpCursor::fillWindow: unknown query type %d\n", mQueryType);
+            ALOGE("MtpCursor::fillWindow: unknown query type %d\n", mQueryType);
             return 0;
     }
 }
@@ -216,7 +216,7 @@ bool MtpCursor::fillDevice(CursorWindow* window, MtpDevice* device, int row) {
                     return false;
                  break;
             default:
-                LOGE("fillDevice: unknown column %d\n", mColumns[i]);
+                ALOGE("fillDevice: unknown column %d\n", mColumns[i]);
                 return false;
         }
     }
@@ -227,7 +227,7 @@ bool MtpCursor::fillDevice(CursorWindow* window, MtpDevice* device, int row) {
 bool MtpCursor::fillStorage(CursorWindow* window, MtpDevice* device,
         MtpStorageID storageID, int row) {
 
-LOGD("fillStorage %d\n", storageID);
+ALOGD("fillStorage %d\n", storageID);
 
     MtpStorageInfo* storageInfo = device->getStorageInfo(storageID);
     if (!storageInfo)
@@ -259,7 +259,7 @@ LOGD("fillStorage %d\n", storageID);
                     goto fail;
                  break;
             default:
-                LOGE("fillStorage: unknown column %d\n", mColumns[i]);
+                ALOGE("fillStorage: unknown column %d\n", mColumns[i]);
                 goto fail;
         }
     }
@@ -371,7 +371,7 @@ bool MtpCursor::fillObject(CursorWindow* window, MtpDevice* device,
                     goto fail;
                 break;
             default:
-                LOGE("fillStorage: unknown column %d\n", mColumns[i]);
+                ALOGE("fillStorage: unknown column %d\n", mColumns[i]);
                 goto fail;
         }
     }
@@ -386,12 +386,12 @@ fail:
 
 bool MtpCursor::prepareRow(CursorWindow* window) {
     if (!window->setNumColumns(mColumnCount)) {
-        LOGE("Failed to change column count from %d to %d", window->getNumColumns(), mColumnCount);
+        ALOGE("Failed to change column count from %d to %d", window->getNumColumns(), mColumnCount);
         return false;
     }
     field_slot_t * fieldDir = window->allocRow();
     if (!fieldDir) {
-        LOGE("Failed allocating fieldDir");
+        ALOGE("Failed allocating fieldDir");
         return false;
     }
     return true;
@@ -402,7 +402,7 @@ bool MtpCursor::putLong(CursorWindow* window, int value, int row, int column) {
 
     if (!window->putLong(row, column, value)) {
         window->freeLastRow();
-        LOGE("Failed allocating space for a long in column %d", column);
+        ALOGE("Failed allocating space for a long in column %d", column);
         return false;
     }
     return true;
@@ -413,7 +413,7 @@ bool MtpCursor::putString(CursorWindow* window, const char* text, int row, int c
     int offset = window->alloc(size);
     if (!offset) {
         window->freeLastRow();
-        LOGE("Failed allocating %u bytes for text/blob %s", size, text);
+        ALOGE("Failed allocating %u bytes for text/blob %s", size, text);
         return false;
     }
     window->copyIn(offset, (const uint8_t*)text, size);
@@ -432,11 +432,11 @@ bool MtpCursor::putThumbnail(CursorWindow* window, int objectID, int row, int co
     int size;
     void* thumbnail = device->getThumbnail(objectID, size);
 
-    LOGD("putThumbnail: %p, size: %d\n", thumbnail, size);
+    ALOGD("putThumbnail: %p, size: %d\n", thumbnail, size);
     int offset = window->alloc(size);
     if (!offset) {
         window->freeLastRow();
-        LOGE("Failed allocating %u bytes for thumbnail", size);
+        ALOGE("Failed allocating %u bytes for thumbnail", size);
         return false;
     }
     if (size > 0)

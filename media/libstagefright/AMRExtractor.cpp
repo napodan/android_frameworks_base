@@ -229,7 +229,7 @@ status_t AMRSource::read(
     if (header & 0x83) {
         // Padding bits must be 0.
 
-        LOGE("padding bits must be 0, header is 0x%02x", header);
+        ALOGE("padding bits must be 0, header is 0x%02x", header);
 
         return ERROR_MALFORMED;
     }
@@ -238,7 +238,7 @@ status_t AMRSource::read(
 
     if (FT > 8 || (!mIsWide && FT > 7)) {
 
-        LOGE("illegal AMR frame type %d", FT);
+        ALOGE("illegal AMR frame type %d", FT);
 
         return ERROR_MALFORMED;
     }

@@ -45,7 +45,7 @@ Font::Font(Context *rsc) : ObjectBase(rsc), mCachedGlyphs(NULL)
 bool Font::init(const char *name, uint32_t fontSize, uint32_t dpi)
 {
     if(mInitialized) {
-        LOGE("Reinitialization of fonts not supported");
+        ALOGE("Reinitialization of fonts not supported");
         return false;
     }
 
@@ -56,7 +56,7 @@ bool Font::init(const char *name, uint32_t fontSize, uint32_t dpi)
 
     FT_Error error = FT_New_Face(mRSC->mStateFont.getLib(), fullPath.string(), 0, &mFace);
     if(error) {
-        LOGE("Unable to initialize font %s", fullPath.string());
+        ALOGE("Unable to initialize font %s", fullPath.string());
         return false;
     }
 
@@ -66,7 +66,7 @@ bool Font::init(const char *name, uint32_t fontSize, uint32_t dpi)
 
     error = FT_Set_Char_Size(mFace, fontSize * 64, 0, dpi, 0);
     if(error) {
-        LOGE("Unable to set font size on %s", fullPath.string());
+        ALOGE("Unable to set font size on %s", fullPath.string());
         return false;
     }
 
@@ -158,7 +158,7 @@ void Font::updateGlyphCache(CachedGlyphInfo *glyph)
 {
     FT_Error error = FT_Load_Glyph( mFace, glyph->mGlyphIndex, FT_LOAD_RENDER );
     if(error) {
-        LOGE("Couldn't load glyph.");
+        ALOGE("Couldn't load glyph.");
         return;
     }
 
@@ -275,7 +275,7 @@ FT_Library FontState::getLib()
     if(!mLibrary) {
         FT_Error error = FT_Init_FreeType(&mLibrary);
         if(error) {
-            LOGE("Unable to initialize freetype");
+            ALOGE("Unable to initialize freetype");
             return NULL;
         }
     }
@@ -306,7 +306,7 @@ bool FontState::cacheBitmap(FT_Bitmap *bitmap, uint32_t *retOriginX, uint32_t *r
 {
     // If the glyph is too tall, don't cache it
     if((uint32_t)bitmap->rows > mCacheLines[mCacheLines.size()-1]->mMaxHeight) {
-        LOGE("Font size to large to fit in cache. width, height = %i, %i", (int)bitmap->width, (int)bitmap->rows);
+        ALOGE("Font size to large to fit in cache. width, height = %i, %i", (int)bitmap->width, (int)bitmap->rows);
         return false;
     }
 
@@ -336,7 +336,7 @@ bool FontState::cacheBitmap(FT_Bitmap *bitmap, uint32_t *retOriginX, uint32_t *r
 
         // if we still don't fit, something is wrong and we shouldn't draw
         if(!bitmapFit) {
-            LOGE("Bitmap doesn't fit in cache. width, height = %i, %i", (int)bitmap->width, (int)bitmap->rows);
+            ALOGE("Bitmap doesn't fit in cache. width, height = %i, %i", (int)bitmap->width, (int)bitmap->rows);
             return false;
         }
     }
@@ -367,7 +367,7 @@ bool FontState::cacheBitmap(FT_Bitmap *bitmap, uint32_t *retOriginX, uint32_t *r
 
     // Some debug code
     /*for(uint32_t i = 0; i < mCacheLines.size(); i ++) {
-        LOGE("Cache Line: H: %u Empty Space: %f",
+        ALOGE("Cache Line: H: %u Empty Space: %f",
              mCacheLines[i]->mMaxHeight,
               (1.0f - (float)mCacheLines[i]->mCurrentCol/(float)mCacheLines[i]->mMaxWidth)*100.0f);
 
@@ -564,9 +564,9 @@ void FontState::appendMeshQuad(float x1, float y1, float z1,
     }
 
     /*LOGE("V0 x: %f y: %f z: %f", x1, y1, z1);
-    LOGE("V1 x: %f y: %f z: %f", x2, y2, z2);
-    LOGE("V2 x: %f y: %f z: %f", x3, y3, z3);
-    LOGE("V3 x: %f y: %f z: %f", x4, y4, z4);*/
+    ALOGE("V1 x: %f y: %f z: %f", x2, y2, z2);
+    ALOGE("V2 x: %f y: %f z: %f", x3, y3, z3);
+    ALOGE("V3 x: %f y: %f z: %f", x4, y4, z4);*/
 
     (*currentPos++) = x1;
     (*currentPos++) = y1;
@@ -615,7 +615,7 @@ void FontState::renderText(const char *text, uint32_t len, uint32_t startIndex, 
         currentFont = mDefault.get();
     }
     if(!currentFont) {
-        LOGE("Unable to initialize any fonts");
+        ALOGE("Unable to initialize any fonts");
         return;
     }
 

@@ -162,7 +162,7 @@ static char* allocFromUTF8(const char* in, size_t len)
 {
     if (len > 0) {
         SharedBuffer* buf = SharedBuffer::alloc(len+1);
-        LOG_ASSERT(buf, "Unable to allocate shared buffer");
+        ALOG_ASSERT(buf, "Unable to allocate shared buffer");
         if (buf) {
             char* str = (char*)buf->data();
             memcpy(str, in, len);
@@ -190,7 +190,7 @@ static char* allocFromUTF16OrUTF32(const T* in, L len)
     }
 
     SharedBuffer* buf = SharedBuffer::alloc(bytes+1);
-    LOG_ASSERT(buf, "Unable to allocate shared buffer");
+    ALOG_ASSERT(buf, "Unable to allocate shared buffer");
     if (buf) {
         p = in;
         char* str = (char*)buf->data();
@@ -216,7 +216,7 @@ static char* allocFromUTF16(const char16_t* in, size_t len)
     const size_t bytes = utf8_length_from_utf16(in, len);
 
     SharedBuffer* buf = SharedBuffer::alloc(bytes+1);
-    LOG_ASSERT(buf, "Unable to allocate shared buffer");
+    ALOG_ASSERT(buf, "Unable to allocate shared buffer");
     if (buf) {
         char* str = (char*)buf->data();
 

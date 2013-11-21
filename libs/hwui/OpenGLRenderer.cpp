@@ -53,7 +53,7 @@ namespace uirenderer {
 
 // Debug
 #if DEBUG_LAYERS
-    #define LAYER_LOGD(...) LOGD(__VA_ARGS__)
+    #define LAYER_LOGD(...) ALOGD(__VA_ARGS__)
 #else
     #define LAYER_LOGD(...)
 #endif
@@ -106,21 +106,21 @@ static const Blender gBlends[] = {
 OpenGLRenderer::OpenGLRenderer():
         mTextureCache(MB(DEFAULT_TEXTURE_CACHE_SIZE)),
         mLayerCache(MB(DEFAULT_LAYER_CACHE_SIZE)) {
-    LOGD("Create OpenGLRenderer");
+    ALOGD("Create OpenGLRenderer");
 
     char property[PROPERTY_VALUE_MAX];
     if (property_get(PROPERTY_TEXTURE_CACHE_SIZE, property, NULL) > 0) {
-        LOGD("  Setting texture cache size to %sMB", property);
+        ALOGD("  Setting texture cache size to %sMB", property);
         mTextureCache.setMaxSize(MB(atoi(property)));
     } else {
-        LOGD("  Using default texture cache size of %dMB", DEFAULT_TEXTURE_CACHE_SIZE);
+        ALOGD("  Using default texture cache size of %dMB", DEFAULT_TEXTURE_CACHE_SIZE);
     }
 
     if (property_get(PROPERTY_LAYER_CACHE_SIZE, property, NULL) > 0) {
-        LOGD("  Setting layer cache size to %sMB", property);
+        ALOGD("  Setting layer cache size to %sMB", property);
         mLayerCache.setMaxSize(MB(atoi(property)));
     } else {
-        LOGD("  Using default layer cache size of %dMB", DEFAULT_LAYER_CACHE_SIZE);
+        ALOGD("  Using default layer cache size of %dMB", DEFAULT_LAYER_CACHE_SIZE);
     }
 
     mDrawColorShader = new DrawColorProgram;
@@ -130,7 +130,7 @@ OpenGLRenderer::OpenGLRenderer():
 }
 
 OpenGLRenderer::~OpenGLRenderer() {
-    LOGD("Destroy OpenGLRenderer");
+    ALOGD("Destroy OpenGLRenderer");
 
     mTextureCache.clear();
     mLayerCache.clear();
@@ -230,7 +230,7 @@ bool OpenGLRenderer::restoreSnapshot() {
 
 void OpenGLRenderer::composeLayer(sp<Snapshot> current, sp<Snapshot> previous) {
     if (!current->layer) {
-        LOGE("Attempting to compose a layer that does not exist");
+        ALOGE("Attempting to compose a layer that does not exist");
         return;
     }
 
@@ -341,7 +341,7 @@ bool OpenGLRenderer::createLayer(sp<Snapshot> snapshot, float left, float top,
 
         GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
         if (status != GL_FRAMEBUFFER_COMPLETE) {
-            LOGD("Framebuffer incomplete (GL error code 0x%x)", status);
+            ALOGD("Framebuffer incomplete (GL error code 0x%x)", status);
 
             GLuint previousFbo = snapshot->previous.get() ? snapshot->previous->fbo : 0;
             glBindFramebuffer(GL_FRAMEBUFFER, previousFbo);

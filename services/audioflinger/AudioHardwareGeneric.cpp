@@ -271,7 +271,7 @@ status_t AudioStreamOutGeneric::setParameters(const String8& keyValuePairs)
     String8 key = String8(AudioParameter::keyRouting);
     status_t status = NO_ERROR;
     int device;
-    LOGV("setParameters() %s", keyValuePairs.string());
+    ALOGV("setParameters() %s", keyValuePairs.string());
 
     if (param.getInt(key, device) == NO_ERROR) {
         mDevice = device;
@@ -294,7 +294,7 @@ String8 AudioStreamOutGeneric::getParameters(const String8& keys)
         param.addInt(key, (int)mDevice);
     }
 
-    LOGV("getParameters() %s", param.toString().string());
+    ALOGV("getParameters() %s", param.toString().string());
     return param.toString();
 }
 
@@ -316,12 +316,12 @@ status_t AudioStreamInGeneric::set(
         AudioSystem::audio_in_acoustics acoustics)
 {
     if (pFormat == 0 || pChannels == 0 || pRate == 0) return BAD_VALUE;
-    LOGV("AudioStreamInGeneric::set(%p, %d, %d, %d, %u)", hw, fd, *pFormat, *pChannels, *pRate);
+    ALOGV("AudioStreamInGeneric::set(%p, %d, %d, %d, %u)", hw, fd, *pFormat, *pChannels, *pRate);
     // check values
     if ((*pFormat != format()) ||
         (*pChannels != channels()) ||
         (*pRate != sampleRate())) {
-        LOGE("Error opening input channel");
+        ALOGE("Error opening input channel");
         *pFormat = format();
         *pChannels = channels();
         *pRate = sampleRate();
@@ -342,7 +342,7 @@ ssize_t AudioStreamInGeneric::read(void* buffer, ssize_t bytes)
 {
     AutoMutex lock(mLock);
     if (mFd < 0) {
-        LOGE("Attempt to read from unopened device");
+        ALOGE("Attempt to read from unopened device");
         return NO_INIT;
     }
     return ::read(mFd, buffer, bytes);
@@ -379,7 +379,7 @@ status_t AudioStreamInGeneric::setParameters(const String8& keyValuePairs)
     String8 key = String8(AudioParameter::keyRouting);
     status_t status = NO_ERROR;
     int device;
-    LOGV("setParameters() %s", keyValuePairs.string());
+    ALOGV("setParameters() %s", keyValuePairs.string());
 
     if (param.getInt(key, device) == NO_ERROR) {
         mDevice = device;
@@ -402,7 +402,7 @@ String8 AudioStreamInGeneric::getParameters(const String8& keys)
         param.addInt(key, (int)mDevice);
     }
 
-    LOGV("getParameters() %s", param.toString().string());
+    ALOGV("getParameters() %s", param.toString().string());
     return param.toString();
 }
 

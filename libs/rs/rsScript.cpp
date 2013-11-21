@@ -39,7 +39,7 @@ void Script::setVar(uint32_t slot, const void *val, uint32_t len)
         memcpy(destPtr, val, len);
         //LOGE("setVar f2  %f", ((const float *)destPtr)[0]);
     } else {
-        LOGE("Calling setVar on slot = %i which is null", slot);
+        ALOGE("Calling setVar on slot = %i which is null", slot);
     }
 }
 
@@ -67,7 +67,7 @@ void rsi_ScriptSetType(Context * rsc, RsType vt, uint32_t slot, bool writable, c
     const Type *t = static_cast<const Type *>(vt);
     ss->mConstantBufferTypes[slot].set(t);
     ss->mSlotWritable[slot] = writable;
-    LOGE("rsi_ScriptSetType");
+    ALOGE("rsi_ScriptSetType");
 }
 
 void rsi_ScriptInvoke(Context *rsc, RsScript vs, uint32_t slot)

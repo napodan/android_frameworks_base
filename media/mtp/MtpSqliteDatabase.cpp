@@ -152,64 +152,64 @@ bool MtpSqliteDatabase::open(const char* path, bool create) {
 
     // create tables and indices if necessary
     if (!mDatabase->exec(FILE_TABLE_CREATE)) {
-        LOGE("could not create file table");
+        ALOGE("could not create file table");
         goto fail;
     }
     if (!mDatabase->exec(PATH_INDEX_CREATE)) {
-        LOGE("could not path index on file table");
+        ALOGE("could not path index on file table");
         goto fail;
     }
     if (!mDatabase->exec(AUDIO_TABLE_CREATE)) {
-        LOGE("could not create file table");
+        ALOGE("could not create file table");
         goto fail;
     }
 
     if (!mFileIdQuery) {
         mFileIdQuery = new SqliteStatement(mDatabase);
         if (!mFileIdQuery->prepare(FILE_ID_QUERY)) {
-            LOGE("could not compile FILE_ID_QUERY");
+            ALOGE("could not compile FILE_ID_QUERY");
             goto fail;
         }
     }
     if (!mFilePathQuery) {
         mFilePathQuery = new SqliteStatement(mDatabase);
         if (!mFilePathQuery->prepare(FILE_PATH_QUERY)) {
-            LOGE("could not compile FILE_PATH_QUERY");
+            ALOGE("could not compile FILE_PATH_QUERY");
             goto fail;
         }
     }
     if (!mObjectInfoQuery) {
         mObjectInfoQuery = new SqliteStatement(mDatabase);
         if (!mObjectInfoQuery->prepare(GET_OBJECT_INFO_QUERY)) {
-            LOGE("could not compile GET_OBJECT_INFO_QUERY");
+            ALOGE("could not compile GET_OBJECT_INFO_QUERY");
             goto fail;
         }
     }
     if (!mFileInserter) {
         mFileInserter = new SqliteStatement(mDatabase);
         if (!mFileInserter->prepare(FILE_INSERT)) {
-            LOGE("could not compile FILE_INSERT\n");
+            ALOGE("could not compile FILE_INSERT\n");
             goto fail;
         }
     }
     if (!mFileDeleter) {
         mFileDeleter = new SqliteStatement(mDatabase);
         if (!mFileDeleter->prepare(FILE_DELETE)) {
-            LOGE("could not compile FILE_DELETE\n");
+            ALOGE("could not compile FILE_DELETE\n");
             goto fail;
         }
     }
     if (!mAudioInserter) {
         mAudioInserter = new SqliteStatement(mDatabase);
         if (!mAudioInserter->prepare(AUDIO_INSERT)) {
-            LOGE("could not compile AUDIO_INSERT\n");
+            ALOGE("could not compile AUDIO_INSERT\n");
             goto fail;
         }
     }
     if (!mAudioDeleter) {
         mAudioDeleter = new SqliteStatement(mDatabase);
         if (!mAudioDeleter->prepare(AUDIO_DELETE)) {
-            LOGE("could not compile AUDIO_DELETE\n");
+            ALOGE("could not compile AUDIO_DELETE\n");
             goto fail;
         }
     }
@@ -350,14 +350,14 @@ MtpObjectHandleList* MtpSqliteDatabase::getObjectList(MtpStorageID storageID,
     query += ";";
 
     SqliteStatement stmt(mDatabase);
-    LOGV("%s", (const char *)query);
+    ALOGV("%s", (const char *)query);
     stmt.prepare(query);
 
     MtpObjectHandleList* list = new MtpObjectHandleList();
     while (!stmt.isDone()) {
         if (stmt.step()) {
             int index = stmt.getColumnInt(0);
-            LOGV("stmt.getColumnInt returned %d", index);
+            ALOGV("stmt.getColumnInt returned %d", index);
             if (index > 0) {
                 MtpObjectFormat format = stmt.getColumnInt(1);
                 index |= getTableForFile(format);
@@ -365,7 +365,7 @@ MtpObjectHandleList* MtpSqliteDatabase::getObjectList(MtpStorageID storageID,
             }
         }
     }
-    LOGV("list size: %d", list->size());
+    ALOGV("list size: %d", list->size());
     return list;
 }
 
@@ -391,7 +391,7 @@ MtpResponseCode MtpSqliteDatabase::getObjectProperty(MtpObjectHandle handle,
     query += ";";
 
     SqliteStatement stmt(mDatabase);
-    LOGV("%s", (const char *)query);
+    ALOGV("%s", (const char *)query);
     stmt.prepare(query);
 
     if (!stmt.step())
@@ -426,7 +426,7 @@ MtpResponseCode MtpSqliteDatabase::getObjectProperty(MtpObjectHandle handle,
             packet.putString(stmt.getColumnString(0));
             break;
         default:
-            LOGE("unsupported object type\n");
+            ALOGE("unsupported object type\n");
             return MTP_RESPONSE_INVALID_OBJECT_HANDLE;
     }
     return MTP_RESPONSE_OK;
@@ -458,7 +458,7 @@ MtpResponseCode MtpSqliteDatabase::getObjectInfo(MtpObjectHandle handle,
                             MTP_ASSOCIATION_TYPE_GENERIC_FOLDER :
                             MTP_ASSOCIATION_TYPE_UNDEFINED);
 
-    LOGV("storageID: %d, format: %d, parent: %d", storageID, format, parent);
+    ALOGV("storageID: %d, format: %d, parent: %d", storageID, format, parent);
 
     packet.putUInt32(storageID);
     packet.putUInt16(format);
@@ -535,7 +535,7 @@ MtpObjectHandle* MtpSqliteDatabase::getFileList(int& outCount) {
 
         for (int i = 0; i < count; i++) {
             if (!stmt2.step()) {
-                LOGW("getFileList ended early");
+                ALOGW("getFileList ended early");
                 count = i;
                 break;
             }

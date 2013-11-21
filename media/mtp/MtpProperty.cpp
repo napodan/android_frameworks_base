@@ -88,7 +88,7 @@ MtpProperty::MtpProperty(MtpPropertyCode propCode,
                 mDefaultValue.u64 = defaultValue;
                 break;
             default:
-                LOGE("unknown type %d in MtpProperty::MtpProperty", type);
+                ALOGE("unknown type %d in MtpProperty::MtpProperty", type);
         }
     }
 }
@@ -192,9 +192,9 @@ void MtpProperty::write(MtpDataPacket& packet) {
 }
 
 void MtpProperty::print() {
-    LOGD("MtpProperty %04X\n", mCode);
-    LOGD("    type %04X\n", mType);
-    LOGD("    writeable %s\n", (mWriteable ? "true" : "false"));
+    ALOGD("MtpProperty %04X\n", mCode);
+    ALOGD("    type %04X\n", mType);
+    ALOGD("    writeable %s\n", (mWriteable ? "true" : "false"));
 }
 
 void MtpProperty::readValue(MtpDataPacket& packet, MtpPropertyValue& value) {
@@ -230,7 +230,7 @@ void MtpProperty::readValue(MtpDataPacket& packet, MtpPropertyValue& value) {
             packet.getUInt128(value.u128);
             break;
         default:
-            LOGE("unknown type %d in MtpProperty::readValue", mType);
+            ALOGE("unknown type %d in MtpProperty::readValue", mType);
     }
 }
 
@@ -267,7 +267,7 @@ void MtpProperty::writeValue(MtpDataPacket& packet, MtpPropertyValue& value) {
             packet.putUInt128(value.u128);
             break;
         default:
-            LOGE("unknown type %d in MtpProperty::readValue", mType);
+            ALOGE("unknown type %d in MtpProperty::readValue", mType);
     }
 }
 

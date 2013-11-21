@@ -161,12 +161,12 @@ void MtpServer::scanStorage() {
 void MtpServer::run() {
     int fd = mFD;
 
-    LOGV("MtpServer::run fd: %d\n", fd);
+    ALOGV("MtpServer::run fd: %d\n", fd);
 
     while (1) {
         int ret = mRequest.read(fd);
         if (ret < 0) {
-            LOGE("request read returned %d, errno: %d", ret, errno);
+            ALOGE("request read returned %d, errno: %d", ret, errno);
             if (errno == ECANCELED) {
                 // return to top of loop and wait for next command
                 continue;
@@ -176,7 +176,7 @@ void MtpServer::run() {
         MtpOperationCode operation = mRequest.getOperationCode();
         MtpTransactionID transaction = mRequest.getTransactionID();
 
-        LOGV("operation: %s", MtpDebug::getOperationCodeName(operation));
+        ALOGV("operation: %s", MtpDebug::getOperationCodeName(operation));
         mRequest.dump();
 
         // FIXME need to generalize this
@@ -184,14 +184,14 @@ void MtpServer::run() {
         if (dataIn) {
             int ret = mData.read(fd);
             if (ret < 0) {
-                LOGE("data read returned %d, errno: %d", ret, errno);
+                ALOGE("data read returned %d, errno: %d", ret, errno);
                 if (errno == ECANCELED) {
                     // return to top of loop and wait for next command
                     continue;
                 }
                 break;
             }
-            LOGV("received data:");
+            ALOGV("received data:");
             mData.dump();
         } else {
             mData.reset();
@@ -201,11 +201,11 @@ void MtpServer::run() {
             if (!dataIn && mData.hasData()) {
                 mData.setOperationCode(operation);
                 mData.setTransactionID(transaction);
-                LOGV("sending data:");
+                ALOGV("sending data:");
                 mData.dump();
                 ret = mData.write(fd);
                 if (ret < 0) {
-                    LOGE("request write returned %d, errno: %d", ret, errno);
+                    ALOGE("request write returned %d, errno: %d", ret, errno);
                     if (errno == ECANCELED) {
                         // return to top of loop and wait for next command
                         continue;
@@ -215,10 +215,10 @@ void MtpServer::run() {
             }
 
             mResponse.setTransactionID(transaction);
-            LOGV("sending response %04X", mResponse.getResponseCode());
+            ALOGV("sending response %04X", mResponse.getResponseCode());
             ret = mResponse.write(fd);
             if (ret < 0) {
-                LOGE("request write returned %d, errno: %d", ret, errno);
+                ALOGE("request write returned %d, errno: %d", ret, errno);
                 if (errno == ECANCELED) {
                     // return to top of loop and wait for next command
                     continue;
@@ -226,7 +226,7 @@ void MtpServer::run() {
                 break;
             }
         } else {
-            LOGV("skipping response\n");
+            ALOGV("skipping response\n");
         }
     }
 }
@@ -265,7 +265,7 @@ bool MtpServer::handleRequest() {
 
     if (mSendObjectHandle != kInvalidObjectHandle && operation != MTP_OPERATION_SEND_OBJECT) {
         // FIXME - need to delete mSendObjectHandle from the database
-        LOGE("expected SendObject after SendObjectInfo");
+        ALOGE("expected SendObject after SendObjectInfo");
         mSendObjectHandle = kInvalidObjectHandle;
     }
 
@@ -560,7 +560,7 @@ MtpResponseCode MtpServer::doSendObjectInfo() {
 
 MtpResponseCode MtpServer::doSendObject() {
     if (mSendObjectHandle == kInvalidObjectHandle) {
-        LOGE("Expected SendObjectInfo before SendObject");
+        ALOGE("Expected SendObjectInfo before SendObject");
         return MTP_RESPONSE_NO_VALID_OBJECT_INFO;
     }
 
@@ -590,7 +590,7 @@ MtpResponseCode MtpServer::doSendObject() {
     close(mfr.fd);
 
     // FIXME - we need to delete mSendObjectHandle from the database if this fails.
-    LOGV("MTP_RECEIVE_FILE returned %d", ret);
+    ALOGV("MTP_RECEIVE_FILE returned %d", ret);
     mSendObjectHandle = kInvalidObjectHandle;
 
     if (ret < 0) {
@@ -615,7 +615,7 @@ MtpResponseCode MtpServer::doDeleteObject() {
     if (!mDatabase->getObjectFilePath(handle, filePath, fileLength))
         return MTP_RESPONSE_INVALID_OBJECT_HANDLE;
 
-    LOGV("deleting %s", (const char *)filePath);
+    ALOGV("deleting %s", (const char *)filePath);
     // one of these should work
     rmdir((const char *)filePath);
     unlink((const char *)filePath);

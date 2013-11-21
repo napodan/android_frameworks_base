@@ -78,7 +78,7 @@ status_t ElementaryStreamQueue::appendData(
     if (mBuffer == NULL || neededSize > mBuffer->capacity()) {
         neededSize = (neededSize + 65535) & ~65535;
 
-        LOGV("resizing buffer to size %d", neededSize);
+        ALOGV("resizing buffer to size %d", neededSize);
 
         sp<ABuffer> buffer = new ABuffer(neededSize);
         if (mBuffer != NULL) {
@@ -322,7 +322,7 @@ sp<ABuffer> ElementaryStreamQueue::dequeueAccessUnitH264() {
                 dstOffset += pos.nalSize + 4;
             }
 
-            LOGV("accessUnit contains nal types %s", out.c_str());
+            ALOGV("accessUnit contains nal types %s", out.c_str());
 
             const NALPosition &pos = nals.itemAt(nals.size() - 1);
             size_t nextScan = pos.nalOffset + pos.nalSize;

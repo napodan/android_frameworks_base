@@ -63,7 +63,7 @@ ssize_t FileSource::readAt(off_t offset, void *data, size_t size) {
 
     int err = fseeko(mFile, offset + mOffset, SEEK_SET);
     if (err < 0) {
-        LOGE("seek to %lld failed", offset + mOffset);
+        ALOGE("seek to %lld failed", offset + mOffset);
         return UNKNOWN_ERROR;
     }
 

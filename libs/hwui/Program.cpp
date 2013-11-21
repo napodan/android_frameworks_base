@@ -54,7 +54,7 @@ Program::Program(const char* vertex, const char* fragment) {
         if (infoLen > 1) {
             char* log = (char*) malloc(sizeof(char) * infoLen);
             glGetProgramInfoLog(id, infoLen, 0, log);
-            LOGE("Error while linking shaders: %s", log);
+            ALOGE("Error while linking shaders: %s", log);
             delete log;
         }
         glDeleteProgram(id);
@@ -103,7 +103,7 @@ GLuint Program::buildShader(const char* source, GLenum type) {
         // use a fixed size instead
         GLchar log[512];
         glGetShaderInfoLog(shader, sizeof(log), 0, &log[0]);
-        LOGE("Error while compiling shader: %s", log);
+        ALOGE("Error while compiling shader: %s", log);
         glDeleteShader(shader);
     }
 

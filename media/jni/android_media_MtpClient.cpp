@@ -40,7 +40,7 @@ static jfieldID field_context;
 
 static void checkAndClearExceptionFromCallback(JNIEnv* env, const char* methodName) {
     if (env->ExceptionCheck()) {
-        LOGE("An exception was thrown by callback '%s'.", methodName);
+        ALOGE("An exception was thrown by callback '%s'.", methodName);
         LOGE_EX(env);
         env->ExceptionClear();
     }
@@ -77,7 +77,7 @@ void MyClient::cleanup(JNIEnv *env) {
 void MyClient::deviceAdded(MtpDevice *device) {
     JNIEnv* env = AndroidRuntime::getJNIEnv();
     const char* name = device->getDeviceName();
-    LOGD("MyClient::deviceAdded %s\n", name);
+    ALOGD("MyClient::deviceAdded %s\n", name);
 
     env->CallVoidMethod(mClient, method_deviceAdded, device->getID());
 
@@ -87,7 +87,7 @@ void MyClient::deviceAdded(MtpDevice *device) {
 void MyClient::deviceRemoved(MtpDevice *device) {
     JNIEnv* env = AndroidRuntime::getJNIEnv();
     const char* name = device->getDeviceName();
-    LOGD("MyClient::deviceRemoved %s\n", name);
+    ALOGD("MyClient::deviceRemoved %s\n", name);
 
     env->CallVoidMethod(mClient, method_deviceRemoved, device->getID());
 
@@ -99,7 +99,7 @@ void MyClient::deviceRemoved(MtpDevice *device) {
 static void
 android_media_MtpClient_setup(JNIEnv *env, jobject thiz)
 {
-    LOGD("setup\n");
+    ALOGD("setup\n");
     MyClient* client = new MyClient(env, thiz);
     client->start();
     env->SetIntField(thiz, field_context, (int)client);
@@ -108,7 +108,7 @@ android_media_MtpClient_setup(JNIEnv *env, jobject thiz)
 static void
 android_media_MtpClient_finalize(JNIEnv *env, jobject thiz)
 {
-    LOGD("finalize\n");
+    ALOGD("finalize\n");
     MyClient *client = (MyClient *)env->GetIntField(thiz, field_context);
     client->cleanup(env);
     delete client;
@@ -118,7 +118,7 @@ android_media_MtpClient_finalize(JNIEnv *env, jobject thiz)
 static jboolean
 android_media_MtpClient_start(JNIEnv *env, jobject thiz)
 {
-    LOGD("start\n");
+    ALOGD("start\n");
     MyClient *client = (MyClient *)env->GetIntField(thiz, field_context);
     return client->start();
 }
@@ -126,7 +126,7 @@ android_media_MtpClient_start(JNIEnv *env, jobject thiz)
 static void
 android_media_MtpClient_stop(JNIEnv *env, jobject thiz)
 {
-    LOGD("stop\n");
+    ALOGD("stop\n");
     MyClient *client = (MyClient *)env->GetIntField(thiz, field_context);
     client->stop();
 }
@@ -185,26 +185,26 @@ int register_android_media_MtpClient(JNIEnv *env)
 {
     jclass clazz;
 
-    LOGD("register_android_media_MtpClient\n");
+    ALOGD("register_android_media_MtpClient\n");
 
     clazz = env->FindClass("android/media/MtpClient");
     if (clazz == NULL) {
-        LOGE("Can't find android/media/MtpClient");
+        ALOGE("Can't find android/media/MtpClient");
         return -1;
     }
     method_deviceAdded = env->GetMethodID(clazz, "deviceAdded", "(I)V");
     if (method_deviceAdded == NULL) {
-        LOGE("Can't find deviceAdded");
+        ALOGE("Can't find deviceAdded");
         return -1;
     }
     method_deviceRemoved = env->GetMethodID(clazz, "deviceRemoved", "(I)V");
     if (method_deviceRemoved == NULL) {
-        LOGE("Can't find deviceRemoved");
+        ALOGE("Can't find deviceRemoved");
         return -1;
     }
     field_context = env->GetFieldID(clazz, "mNativeContext", "I");
     if (field_context == NULL) {
-        LOGE("Can't find MtpClient.mNativeContext");
+        ALOGE("Can't find MtpClient.mNativeContext");
         return -1;
     }
 

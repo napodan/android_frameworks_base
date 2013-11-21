@@ -331,7 +331,7 @@ void ARTPConnection::onPollStreams() {
             }
 
             if (buffer->size() > 0) {
-                LOGV("Sending RR...");
+                ALOGV("Sending RR...");
 
                 ssize_t n = sendto(
                         s->mRTCPSocket, buffer->data(), buffer->size(), 0,
@@ -346,7 +346,7 @@ void ARTPConnection::onPollStreams() {
 }
 
 status_t ARTPConnection::receive(StreamInfo *s, bool receiveRTP) {
-    LOGV("receiving %s", receiveRTP ? "RTP" : "RTCP");
+    ALOGV("receiving %s", receiveRTP ? "RTP" : "RTCP");
 
     CHECK(!s->mIsInjected);
 
@@ -370,7 +370,7 @@ status_t ARTPConnection::receive(StreamInfo *s, bool receiveRTP) {
 
     buffer->setRange(0, nbytes);
 
-    // LOGI("received %d bytes.", buffer->size());
+    // ALOGI("received %d bytes.", buffer->size());
 
     status_t err;
     if (receiveRTP) {
@@ -541,7 +541,7 @@ status_t ARTPConnection::parseRTCP(StreamInfo *s, const sp<ABuffer> &buffer) {
 
             default:
             {
-                LOGW("Unknown RTCP packet type %u of size %d",
+                ALOGW("Unknown RTCP packet type %u of size %d",
                      (unsigned)data[1], headerLength);
                 break;
             }
@@ -586,7 +586,7 @@ status_t ARTPConnection::parseSR(
     uint32_t rtpTime = u32at(&data[16]);
 
 #if 0
-    LOGI("XXX timeUpdate: ssrc=0x%08x, rtpTime %u == ntpTime %.3f",
+    ALOGI("XXX timeUpdate: ssrc=0x%08x, rtpTime %u == ntpTime %.3f",
          id,
          rtpTime,
          (ntpTime >> 32) + (double)(ntpTime & 0xffffffff) / (1ll << 32));

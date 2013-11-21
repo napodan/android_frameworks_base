@@ -47,7 +47,7 @@ static void dumpOneStack(int tid, int outFd) {
         write(outFd, "\n", 1);
         close(stackFd);
     } else {
-        LOGE("Unable to open stack of tid %d : %d (%s)", tid, errno, strerror(errno));
+        ALOGE("Unable to open stack of tid %d : %d (%s)", tid, errno, strerror(errno));
     }
 }
 
@@ -55,7 +55,7 @@ static void dumpKernelStacks(JNIEnv* env, jobject clazz, jstring pathStr) {
     char buf[128];
     DIR* taskdir;
 
-    LOGI("dumpKernelStacks");
+    ALOGI("dumpKernelStacks");
     if (!pathStr) {
         jniThrowException(env, "java/lang/IllegalArgumentException", "Null path");
         return;
@@ -65,7 +65,7 @@ static void dumpKernelStacks(JNIEnv* env, jobject clazz, jstring pathStr) {
 
     int outFd = open(path, O_WRONLY | O_APPEND | O_CREAT);
     if (outFd < 0) {
-        LOGE("Unable to open stack dump file: %d (%s)", errno, strerror(errno));
+        ALOGE("Unable to open stack dump file: %d (%s)", errno, strerror(errno));
         goto done;
     }
 

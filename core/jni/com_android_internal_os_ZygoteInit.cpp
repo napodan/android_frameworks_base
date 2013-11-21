@@ -50,7 +50,7 @@ static jint com_android_internal_os_ZygoteInit_setreuid(
     errno = 0;
     err = setreuid(ruid, euid);
 
-    //LOGI("setreuid(%d,%d) err %d errno %d", ruid, euid, err, errno);
+    //ALOGI("setreuid(%d,%d) err %d errno %d", ruid, euid, err, errno);
 
     return errno;
 }
@@ -67,7 +67,7 @@ static jint com_android_internal_os_ZygoteInit_setregid(
     errno = 0;
     err = setregid(rgid, egid);
 
-    //LOGI("setregid(%d,%d) err %d errno %d", rgid, egid, err, errno);
+    //ALOGI("setregid(%d,%d) err %d errno %d", rgid, egid, err, errno);
 
     return errno;
 }

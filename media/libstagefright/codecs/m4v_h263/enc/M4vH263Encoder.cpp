@@ -75,7 +75,7 @@ M4vH263Encoder::M4vH263Encoder(
       mInputFrameData(NULL),
       mGroup(NULL) {
 
-    LOGV("Construct software M4vH263Encoder");
+    ALOGV("Construct software M4vH263Encoder");
 
     mHandle = new tagvideoEncControls;
     memset(mHandle, 0, sizeof(tagvideoEncControls));
@@ -84,7 +84,7 @@ M4vH263Encoder::M4vH263Encoder(
 }
 
 M4vH263Encoder::~M4vH263Encoder() {
-    LOGV("Destruct software M4vH263Encoder");
+    ALOGV("Destruct software M4vH263Encoder");
     if (mStarted) {
         stop();
     }
@@ -94,7 +94,7 @@ M4vH263Encoder::~M4vH263Encoder() {
 }
 
 status_t M4vH263Encoder::initCheck(const sp<MetaData>& meta) {
-    LOGV("initCheck");
+    ALOGV("initCheck");
     CHECK(meta->findInt32(kKeyWidth, &mVideoWidth));
     CHECK(meta->findInt32(kKeyHeight, &mVideoHeight));
     CHECK(meta->findInt32(kKeySampleRate, &mVideoFrameRate));
@@ -104,7 +104,7 @@ status_t M4vH263Encoder::initCheck(const sp<MetaData>& meta) {
     CHECK(meta->findInt32(kKeyColorFormat, &mVideoColorFormat));
     if (mVideoColorFormat != OMX_COLOR_FormatYUV420Planar) {
         if (mVideoColorFormat != OMX_COLOR_FormatYUV420SemiPlanar) {
-            LOGE("Color format %d is not supported", mVideoColorFormat);
+            ALOGE("Color format %d is not supported", mVideoColorFormat);
             return BAD_VALUE;
         }
         // Allocate spare buffer only when color conversion is needed.
@@ -116,7 +116,7 @@ status_t M4vH263Encoder::initCheck(const sp<MetaData>& meta) {
 
     // XXX: Remove this restriction
     if (mVideoWidth % 16 != 0 || mVideoHeight % 16 != 0) {
-        LOGE("Video frame size %dx%d must be a multiple of 16",
+        ALOGE("Video frame size %dx%d must be a multiple of 16",
             mVideoWidth, mVideoHeight);
         return BAD_VALUE;
     }
@@ -124,7 +124,7 @@ status_t M4vH263Encoder::initCheck(const sp<MetaData>& meta) {
     mEncParams = new tagvideoEncOptions;
     memset(mEncParams, 0, sizeof(tagvideoEncOptions));
     if (!PVGetDefaultEncOption(mEncParams, 0)) {
-        LOGE("Failed to get default encoding parameters");
+        ALOGE("Failed to get default encoding parameters");
         return BAD_VALUE;
     }
 
@@ -200,18 +200,18 @@ status_t M4vH263Encoder::initCheck(const sp<MetaData>& meta) {
 }
 
 status_t M4vH263Encoder::start(MetaData *params) {
-    LOGV("start");
+    ALOGV("start");
     if (mInitCheck != OK) {
         return mInitCheck;
     }
 
     if (mStarted) {
-        LOGW("Call start() when encoder already started");
+        ALOGW("Call start() when encoder already started");
         return OK;
     }
 
     if (!PVInitVideoEncoder(mHandle, mEncParams)) {
-        LOGE("Failed to initialize the encoder");
+        ALOGE("Failed to initialize the encoder");
         return UNKNOWN_ERROR;
     }
 
@@ -220,7 +220,7 @@ status_t M4vH263Encoder::start(MetaData *params) {
     if (!PVGetMaxVideoFrameSize(mHandle, &maxSize)) {
         maxSize = 256 * 1024;  // Magic #
     }
-    LOGV("Max output buffer size: %d", maxSize);
+    ALOGV("Max output buffer size: %d", maxSize);
     mGroup->add_buffer(new MediaBuffer(maxSize));
 
     mSource->start(params);
@@ -231,9 +231,9 @@ status_t M4vH263Encoder::start(MetaData *params) {
 }
 
 status_t M4vH263Encoder::stop() {
-    LOGV("stop");
+    ALOGV("stop");
     if (!mStarted) {
-        LOGW("Call stop() when encoder has not started");
+        ALOGW("Call stop() when encoder has not started");
         return OK;
     }
 
@@ -261,7 +261,7 @@ status_t M4vH263Encoder::stop() {
 }
 
 sp<MetaData> M4vH263Encoder::getFormat() {
-    LOGV("getFormat");
+    ALOGV("getFormat");
     return mFormat;
 }
 
@@ -278,10 +278,10 @@ status_t M4vH263Encoder::read(
     // Output codec specific data
     if (mNumInputFrames < 0) {
         if (!PVGetVolHeader(mHandle, outPtr, &dataLength, 0)) {
-            LOGE("Failed to get VOL header");
+            ALOGE("Failed to get VOL header");
             return UNKNOWN_ERROR;
         }
-        LOGV("Output VOL header: %d bytes", dataLength);
+        ALOGV("Output VOL header: %d bytes", dataLength);
         outputBuffer->meta_data()->setInt32(kKeyIsCodecConfig, 1);
         outputBuffer->set_range(0, dataLength);
         *out = outputBuffer;
@@ -291,7 +291,7 @@ status_t M4vH263Encoder::read(
 
     // Ready for accepting an input video frame
     if (OK != mSource->read(&mInputBuffer, options)) {
-        LOGE("Failed to read from data source");
+        ALOGE("Failed to read from data source");
         outputBuffer->release();
         return UNKNOWN_ERROR;
     }
@@ -349,7 +349,7 @@ status_t M4vH263Encoder::read(
     if (!PVEncodeVideoFrame(mHandle, &vin, &vout,
             &modTimeMs, outPtr, &dataLength, &nLayer) ||
         !PVGetHintTrack(mHandle, &hintTrack)) {
-        LOGE("Failed to encode frame or get hink track at frame %lld",
+        ALOGE("Failed to encode frame or get hink track at frame %lld",
             mNumInputFrames);
         outputBuffer->release();
         mInputBuffer->release();

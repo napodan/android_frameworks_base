@@ -36,7 +36,7 @@ MtpPacket::MtpPacket(int bufferSize)
 {
     mBuffer = (uint8_t *)malloc(bufferSize);
     if (!mBuffer) {
-        LOGE("out of memory!");
+        ALOGE("out of memory!");
         abort();
     }
 }
@@ -57,7 +57,7 @@ void MtpPacket::allocate(int length) {
         int newLength = length + mAllocationIncrement;
         mBuffer = (uint8_t *)realloc(mBuffer, newLength);
         if (!mBuffer) {
-            LOGE("out of memory!");
+            ALOGE("out of memory!");
             abort();
         }
         mBufferSize = newLength;
@@ -73,15 +73,15 @@ void MtpPacket::dump() {
         sprintf(bufptr, "%02X ", mBuffer[i]);
         bufptr += strlen(bufptr);
         if (i % DUMP_BYTES_PER_ROW == (DUMP_BYTES_PER_ROW - 1)) {
-            LOGV("%s", buffer);
+            ALOGV("%s", buffer);
             bufptr = buffer;
         }
     }
     if (bufptr != buffer) {
         // print last line
-        LOGV("%s", buffer);
+        ALOGV("%s", buffer);
     }
-    LOGV("\n");
+    ALOGV("\n");
 }
 
 uint16_t MtpPacket::getUInt16(int offset) const {
@@ -123,7 +123,7 @@ void MtpPacket::setTransactionID(MtpTransactionID id) {
 
 uint32_t MtpPacket::getParameter(int index) const {
     if (index < 1 || index > 5) {
-        LOGE("index %d out of range in MtpRequestPacket::getParameter", index);
+        ALOGE("index %d out of range in MtpRequestPacket::getParameter", index);
         return 0;
     }
     return getUInt32(MTP_CONTAINER_PARAMETER_OFFSET + (index - 1) * sizeof(uint32_t));
@@ -131,7 +131,7 @@ uint32_t MtpPacket::getParameter(int index) const {
 
 void MtpPacket::setParameter(int index, uint32_t value) {
     if (index < 1 || index > 5) {
-        LOGE("index %d out of range in MtpResponsePacket::setParameter", index);
+        ALOGE("index %d out of range in MtpResponsePacket::setParameter", index);
         return;
     }
     int offset = MTP_CONTAINER_PARAMETER_OFFSET + (index - 1) * sizeof(uint32_t);
@@ -143,7 +143,7 @@ void MtpPacket::setParameter(int index, uint32_t value) {
 #ifdef MTP_HOST
 int MtpPacket::transfer(struct usb_endpoint *ep, void* buffer, int length) {
     if (usb_endpoint_queue(ep, buffer, length)) {
-        LOGE("usb_endpoint_queue failed, errno: %d", errno);
+        ALOGE("usb_endpoint_queue failed, errno: %d", errno);
         return -1;
     }
     int ep_num;

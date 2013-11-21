@@ -39,7 +39,7 @@ MtpStorage::MtpStorage(MtpStorageID id, const char* filePath, MtpDatabase* db)
         mDatabase(db),
         mMaxCapacity(0)
 {
-    LOGD("MtpStorage id: %d path: %s\n", id, filePath);
+    ALOGD("MtpStorage id: %d path: %s\n", id, filePath);
 }
 
 MtpStorage::~MtpStorage() {

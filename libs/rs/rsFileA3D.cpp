@@ -68,13 +68,13 @@ void FileA3D::parseHeader(IStream *headerStream)
     uint32_t flags = headerStream->loadU32();
     mUse64BitOffsets = (flags & 1) != 0;
 
-    LOGE("file open 64bit = %i", mUse64BitOffsets);
+    ALOGE("file open 64bit = %i", mUse64BitOffsets);
 
     uint32_t numIndexEntries = headerStream->loadU32();
     for(uint32_t i = 0; i < numIndexEntries; i ++) {
         A3DIndexEntry *entry = new A3DIndexEntry();
         headerStream->loadString(&entry->mObjectName);
-        LOGE("Header data, entry name = %s", entry->mObjectName.string());
+        ALOGE("Header data, entry name = %s", entry->mObjectName.string());
         entry->mType = (RsA3DClassID)headerStream->loadU32();
         if(mUse64BitOffsets){
             entry->mOffset = headerStream->loadOffset();
@@ -91,7 +91,7 @@ void FileA3D::parseHeader(IStream *headerStream)
 
 bool FileA3D::load(const void *data, size_t length)
 {
-    LOGE("Loading data. Size: %u", length);
+    ALOGE("Loading data. Size: %u", length);
     const uint8_t *localData = (const uint8_t *)data;
 
     size_t lengthRemaining = length;
@@ -114,7 +114,7 @@ bool FileA3D::load(const void *data, size_t length)
     localData += sizeof(headerSize);
     lengthRemaining -= sizeof(headerSize);
 
-    LOGE("Loading data, headerSize = %lli", headerSize);
+    ALOGE("Loading data, headerSize = %lli", headerSize);
 
     if(lengthRemaining < headerSize) {
         return false;
@@ -145,7 +145,7 @@ bool FileA3D::load(const void *data, size_t length)
     localData += sizeof(mDataSize);
     lengthRemaining -= sizeof(mDataSize);
 
-    LOGE("Loading data, mDataSize = %lli", mDataSize);
+    ALOGE("Loading data, mDataSize = %lli", mDataSize);
 
     if(lengthRemaining < mDataSize) {
         return false;
@@ -169,7 +169,7 @@ bool FileA3D::load(FILE *f)
     char magicString[12];
     size_t len;
 
-    LOGE("file open 1");
+    ALOGE("file open 1");
     len = fread(magicString, 1, 12, f);
     if ((len != 12) ||
         memcmp(magicString, "Android3D_ff", 12)) {
@@ -205,7 +205,7 @@ bool FileA3D::load(FILE *f)
         return false;
     }
 
-    LOGE("file open size = %lli", mDataSize);
+    ALOGE("file open size = %lli", mDataSize);
 
     // We should know enough to read the file in at this point.
     mAlloc = malloc(mDataSize);
@@ -220,7 +220,7 @@ bool FileA3D::load(FILE *f)
 
     mReadStream = new IStream(mData, mUse64BitOffsets);
 
-    LOGE("Header is read an stream initialized");
+    ALOGE("Header is read an stream initialized");
     return true;
 }
 
@@ -306,17 +306,17 @@ ObjectBase *FileA3D::initializeFromEntry(size_t index) {
 bool FileA3D::writeFile(const char *filename)
 {
     if(!mWriteStream) {
-        LOGE("No objects to write\n");
+        ALOGE("No objects to write\n");
         return false;
     }
     if(mWriteStream->getPos() == 0) {
-        LOGE("No objects to write\n");
+        ALOGE("No objects to write\n");
         return false;
     }
 
     FILE *writeHandle = fopen(filename, "wb");
     if(!writeHandle) {
-        LOGE("Couldn't open the file for writing\n");
+        ALOGE("Couldn't open the file for writing\n");
         return false;
     }
 
@@ -364,7 +364,7 @@ bool FileA3D::writeFile(const char *filename)
     int status = fclose(writeHandle);
 
     if(status != 0) {
-        LOGE("Couldn't close file\n");
+        ALOGE("Couldn't close file\n");
         return false;
     }
 
@@ -410,13 +410,13 @@ void rsi_FileA3DGetIndexEntries(Context *rsc, RsFileIndexEntry *fileEntries, uin
     FileA3D *fa3d = static_cast<FileA3D *>(file);
 
     if(!fa3d) {
-        LOGE("Can't load index entries. No valid file");
+        ALOGE("Can't load index entries. No valid file");
         return;
     }
 
     uint32_t numFileEntries = fa3d->getNumIndexEntries();
     if(numFileEntries != numEntries || numEntries == 0 || fileEntries == NULL) {
-        LOGE("Can't load index entries. Invalid number requested");
+        ALOGE("Can't load index entries. Invalid number requested");
         return;
     }
 
@@ -432,12 +432,12 @@ RsObjectBase rsi_FileA3DGetEntryByIndex(Context *rsc, uint32_t index, RsFile fil
 {
     FileA3D *fa3d = static_cast<FileA3D *>(file);
     if(!fa3d) {
-        LOGE("Can't load entry. No valid file");
+        ALOGE("Can't load entry. No valid file");
         return NULL;
     }
 
     ObjectBase *obj = fa3d->initializeFromEntry(index);
-    LOGE("Returning object with name %s", obj->getName());
+    ALOGE("Returning object with name %s", obj->getName());
 
     return obj;
 }
@@ -445,7 +445,7 @@ RsObjectBase rsi_FileA3DGetEntryByIndex(Context *rsc, uint32_t index, RsFile fil
 RsFile rsi_FileA3DCreateFromAssetStream(Context *rsc, const void *data, uint32_t len)
 {
     if (data == NULL) {
-        LOGE("File load failed. Asset stream is NULL");
+        ALOGE("File load failed. Asset stream is NULL");
         return NULL;
     }
 

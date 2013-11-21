@@ -342,7 +342,7 @@ LayerBuffer::BufferSource::BufferSource(LayerBuffer& layer,
 
     status_t err = (buffers.heap->heapID() >= 0) ? NO_ERROR : NO_INIT;
     if (err != NO_ERROR) {
-        LOGE("LayerBuffer::BufferSource: invalid heap (%s)", strerror(err));
+        ALOGE("LayerBuffer::BufferSource: invalid heap (%s)", strerror(err));
         mStatus = err;
         return;
     }
@@ -350,14 +350,14 @@ LayerBuffer::BufferSource::BufferSource(LayerBuffer& layer,
     PixelFormatInfo info;
     err = getPixelFormatInfo(buffers.format, &info);
     if (err != NO_ERROR) {
-        LOGE("LayerBuffer::BufferSource: invalid format %d (%s)",
+        ALOGE("LayerBuffer::BufferSource: invalid format %d (%s)",
                 buffers.format, strerror(err));
         mStatus = err;
         return;
     }
 
     if (buffers.hor_stride<0 || buffers.ver_stride<0) {
-        LOGE("LayerBuffer::BufferSource: invalid parameters "
+        ALOGE("LayerBuffer::BufferSource: invalid parameters "
              "(w=%d, h=%d, xs=%d, ys=%d)", 
              buffers.w, buffers.h, buffers.hor_stride, buffers.ver_stride);
         mStatus = BAD_VALUE;
@@ -405,7 +405,7 @@ void LayerBuffer::BufferSource::postBuffer(ssize_t offset)
         if (buffers.heap != 0) {
             const size_t memorySize = buffers.heap->getSize();
             if ((size_t(offset) + mBufferSize) > memorySize) {
-                LOGE("LayerBuffer::BufferSource::postBuffer() "
+                ALOGE("LayerBuffer::BufferSource::postBuffer() "
                      "invalid buffer (offset=%d, size=%d, heap-size=%d",
                      int(offset), int(mBufferSize), int(memorySize));
                 return;

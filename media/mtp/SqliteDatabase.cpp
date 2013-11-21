@@ -40,7 +40,7 @@ bool SqliteDatabase::open(const char* path, bool create) {
     // SQLITE_OPEN_NOMUTEX?
     int ret = sqlite3_open_v2(path, &mDatabaseHandle, flags, NULL);
     if (ret) {
-        LOGE("could not open database\n");
+        ALOGE("could not open database\n");
         return false;
     }
     return true;

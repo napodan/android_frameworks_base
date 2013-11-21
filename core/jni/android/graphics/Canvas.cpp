@@ -482,7 +482,7 @@ public:
 #endif
         canvas->drawPicture(*picture);
 #ifdef TIME_DRAW
-        LOGD("---- picture playback %d ms\n", get_thread_msec() - now);
+        ALOGD("---- picture playback %d ms\n", get_thread_msec() - now);
 #endif
     }
 
@@ -798,7 +798,7 @@ public:
                 }
             }
             count = end;
-            // LOG(LOG_INFO, "CSRTL", "start %d count %d ccount %d\n", start, count, contextCount);
+            // ALOG(LOG_INFO, "CSRTL", "start %d count %d ccount %d\n", start, count, contextCount);
             ubidi_writeReverse(buffer, count, shaped, count, UBIDI_DO_MIRRORING | UBIDI_OUTPUT_REVERSE
                                | UBIDI_KEEP_BASE_COMBINING, &status);
             if (U_SUCCESS(status)) {
@@ -846,14 +846,14 @@ public:
 
                 int rc = ubidi_countRuns(bidi, &status);
                 if (U_SUCCESS(status)) {
-                    // LOG(LOG_INFO, "LAYOUT", "para bidiReq=%d dir=%d rc=%d\n", bidiReq, dir, rc);
+                    // ALOG(LOG_INFO, "LAYOUT", "para bidiReq=%d dir=%d rc=%d\n", bidiReq, dir, rc);
 
                     int32_t slen = 0;
                     for (int i = 0; i < rc; ++i) {
                         int32_t start;
                         int32_t length;
                         UBiDiDirection runDir = ubidi_getVisualRun(bidi, i, &start, &length);
-                        // LOG(LOG_INFO, "LAYOUT", "  [%2d] runDir=%d start=%3d len=%3d\n", i, runDir, start, length);
+                        // ALOG(LOG_INFO, "LAYOUT", "  [%2d] runDir=%d start=%3d len=%3d\n", i, runDir, start, length);
                         if (runDir == UBIDI_RTL) {
                             slen += shapeRtlText(text + start, 0, length, length, buffer + slen, status);
                         } else {
@@ -912,7 +912,7 @@ public:
             UErrorCode status = U_ZERO_ERROR;
             len = layoutLine(text, len, bidiFlags, dir, buffer, status); // might change len, dir
             if (!U_SUCCESS(status)) {
-                LOG(LOG_WARN, "LAYOUT", "drawText error %d\n", status);
+                ALOG(LOG_WARN, "LAYOUT", "drawText error %d\n", status);
                 free(buffer);
                 return; // can't render
             }
@@ -981,7 +981,7 @@ public:
             if (U_SUCCESS(status)) {
                 canvas->drawText(buffer.get(), count << 1, x_, y_, *paint);
             } else {
-                LOG(LOG_WARN, "LAYOUT", "drawTextRun error %d\n", status);
+                ALOG(LOG_WARN, "LAYOUT", "drawTextRun error %d\n", status);
             }
         } else {
             canvas->drawText(chars + start, count << 1, x_, y_, *paint);

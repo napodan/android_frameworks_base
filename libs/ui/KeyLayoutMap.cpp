@@ -82,7 +82,7 @@ KeyLayoutMap::load(const char* filename)
 {
     int fd = open(filename, O_RDONLY);
     if (fd < 0) {
-        LOGE("error opening file=%s err=%s\n", filename, strerror(errno));
+        ALOGE("error opening file=%s err=%s\n", filename, strerror(errno));
         m_status = errno;
         return errno;
     }
@@ -91,14 +91,14 @@ KeyLayoutMap::load(const char* filename)
     off_t errlen = lseek(fd, 0, SEEK_SET);
     if (len < 0 || errlen < 0) {
         close(fd);
-        LOGE("error seeking file=%s err=%s\n", filename, strerror(errno));
+        ALOGE("error seeking file=%s err=%s\n", filename, strerror(errno));
         m_status = errno;
         return errno;
     }
 
     char* buf = (char*)malloc(len+1);
     if (read(fd, buf, len) != len) {
-        LOGE("error reading file=%s err=%s\n", filename, strerror(errno));
+        ALOGE("error reading file=%s err=%s\n", filename, strerror(errno));
         m_status = errno != 0 ? errno : ((int)NOT_ENOUGH_DATA);
         return errno != 0 ? errno : ((int)NOT_ENOUGH_DATA);
     }
@@ -125,7 +125,7 @@ KeyLayoutMap::load(const char* filename)
                 if (token == "key") {
                     state = SCANCODE;
                 } else {
-                    LOGE("%s:%d: expected key, got '%s'\n", filename, line,
+                    ALOGE("%s:%d: expected key, got '%s'\n", filename, line,
                             token.string());
                     err = BAD_VALUE;
                     goto done;
@@ -134,18 +134,18 @@ KeyLayoutMap::load(const char* filename)
             case SCANCODE:
                 scancode = strtol(token.string(), &end, 0);
                 if (*end != '\0') {
-                    LOGE("%s:%d: expected scancode (a number), got '%s'\n",
+                    ALOGE("%s:%d: expected scancode (a number), got '%s'\n",
                             filename, line, token.string());
                     goto done;
                 }
-                //LOGI("%s:%d: got scancode %d\n", filename, line, scancode );
+                //ALOGI("%s:%d: got scancode %d\n", filename, line, scancode );
                 state = KEYCODE;
                 break;
             case KEYCODE:
                 keycode = token_to_value(token.string(), KEYCODES);
-                //LOGI("%s:%d: got keycode %d for %s\n", filename, line, keycode, token.string() );
+                //ALOGI("%s:%d: got keycode %d for %s\n", filename, line, keycode, token.string() );
                 if (keycode == 0) {
-                    LOGE("%s:%d: expected keycode, got '%s'\n",
+                    ALOGE("%s:%d: expected keycode, got '%s'\n",
                             filename, line, token.string());
                     goto done;
                 }
@@ -154,7 +154,7 @@ KeyLayoutMap::load(const char* filename)
             case FLAG:
                 if (token == "key") {
                     if (scancode != -1) {
-                        //LOGI("got key decl scancode=%d keycode=%d"
+                        //ALOGI("got key decl scancode=%d keycode=%d"
                         //       " flags=0x%08x\n", scancode, keycode, flags);
                         Key k = { keycode, flags };
                         m_keys.add(scancode, k);
@@ -166,9 +166,9 @@ KeyLayoutMap::load(const char* filename)
                     }
                 }
                 tmp = token_to_value(token.string(), FLAGS);
-                //LOGI("%s:%d: got flags %x for %s\n", filename, line, tmp, token.string() );
+                //ALOGI("%s:%d: got flags %x for %s\n", filename, line, tmp, token.string() );
                 if (tmp == 0) {
-                    LOGE("%s:%d: expected flag, got '%s'\n",
+                    ALOGE("%s:%d: expected flag, got '%s'\n",
                             filename, line, token.string());
                     goto done;
                 }
@@ -177,7 +177,7 @@ KeyLayoutMap::load(const char* filename)
         }
     }
     if (state == FLAG && scancode != -1 ) {
-        //LOGI("got key decl scancode=%d keycode=%d"
+        //ALOGI("got key decl scancode=%d keycode=%d"
         //       " flags=0x%08x\n", scancode, keycode, flags);
         Key k = { keycode, flags };
         m_keys.add(scancode, k);
@@ -200,7 +200,7 @@ KeyLayoutMap::map(int32_t scancode, int32_t *keycode, uint32_t *flags) const
 
     ssize_t index = m_keys.indexOfKey(scancode);
     if (index < 0) {
-        //LOGW("couldn't map scancode=%d\n", scancode);
+        //ALOGW("couldn't map scancode=%d\n", scancode);
         return NAME_NOT_FOUND;
     }
 
@@ -209,7 +209,7 @@ KeyLayoutMap::map(int32_t scancode, int32_t *keycode, uint32_t *flags) const
     *keycode = k.keycode;
     *flags = k.flags;
 
-    //LOGD("mapped scancode=%d to keycode=%d flags=0x%08x\n", scancode,
+    //ALOGD("mapped scancode=%d to keycode=%d flags=0x%08x\n", scancode,
     //        keycode, flags);
 
     return NO_ERROR;

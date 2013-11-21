@@ -253,7 +253,7 @@ MtpProperty* MtpDevice::getDevicePropDesc(MtpDeviceProperty code) {
 
 
 bool MtpDevice::sendRequest(MtpOperationCode operation) {
-    LOGD("sendRequest: %s\n", MtpDebug::getOperationCodeName(operation));
+    ALOGD("sendRequest: %s\n", MtpDebug::getOperationCodeName(operation));
     mRequest.setOperationCode(operation);
     if (mTransactionID > 0)
         mRequest.setTransactionID(mTransactionID++);
@@ -263,7 +263,7 @@ bool MtpDevice::sendRequest(MtpOperationCode operation) {
 }
 
 bool MtpDevice::sendData(MtpOperationCode operation) {
-    LOGD("sendData\n");
+    ALOGD("sendData\n");
     mData.setOperationCode(mRequest.getOperationCode());
     mData.setTransactionID(mRequest.getTransactionID());
     int ret = mData.write(mEndpointOut);
@@ -274,26 +274,26 @@ bool MtpDevice::sendData(MtpOperationCode operation) {
 bool MtpDevice::readData() {
     mData.reset();
     int ret = mData.read(mEndpointIn);
-    LOGD("readData returned %d\n", ret);
+    ALOGD("readData returned %d\n", ret);
     if (ret >= MTP_CONTAINER_HEADER_SIZE) {
         mData.dump();
         return true;
     }
     else {
-        LOGD("readResponse failed\n");
+        ALOGD("readResponse failed\n");
         return false;
     }
 }
 
 MtpResponseCode MtpDevice::readResponse() {
-    LOGD("readResponse\n");
+    ALOGD("readResponse\n");
     int ret = mResponse.read(mEndpointIn);
     if (ret >= MTP_CONTAINER_HEADER_SIZE) {
         mResponse.dump();
         return mResponse.getResponseCode();
     }
     else {
-        LOGD("readResponse failed\n");
+        ALOGD("readResponse failed\n");
         return -1;
     }
 }

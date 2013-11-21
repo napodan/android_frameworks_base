@@ -13,13 +13,13 @@ namespace android {
 
 StagefrightPlayer::StagefrightPlayer()
     : mPlayer(new AwesomePlayer) {
-    LOGV("StagefrightPlayer");
+    ALOGV("StagefrightPlayer");
 
     mPlayer->setListener(this);
 }
 
 StagefrightPlayer::~StagefrightPlayer() {
-    LOGV("~StagefrightPlayer");
+    ALOGV("~StagefrightPlayer");
     reset();
 
     delete mPlayer;
@@ -27,25 +27,25 @@ StagefrightPlayer::~StagefrightPlayer() {
 }
 
 status_t StagefrightPlayer::initCheck() {
-    LOGV("initCheck");
+    ALOGV("initCheck");
     return OK;
 }
 
 status_t StagefrightPlayer::setDataSource(
         const char *url, const KeyedVector<String8, String8> *headers) {
-    LOGI("setDataSource('%s')", url);
+    ALOGI("setDataSource('%s')", url);
     return mPlayer->setDataSource(url, headers);
 }
 
 // Warning: The filedescriptor passed into this method will only be valid until
 // the method returns, if you want to keep it, dup it!
 status_t StagefrightPlayer::setDataSource(int fd, int64_t offset, int64_t length) {
-    LOGV("setDataSource(%d, %lld, %lld)", fd, offset, length);
+    ALOGV("setDataSource(%d, %lld, %lld)", fd, offset, length);
     return mPlayer->setDataSource(dup(fd), offset, length);
 }
 
 status_t StagefrightPlayer::setVideoSurface(const sp<ISurface> &surface) {
-    LOGV("setVideoSurface");
+    ALOGV("setVideoSurface");
 
     mPlayer->setISurface(surface);
     return OK;
@@ -60,30 +60,30 @@ status_t StagefrightPlayer::prepareAsync() {
 }
 
 status_t StagefrightPlayer::start() {
-    LOGV("start");
+    ALOGV("start");
 
     return mPlayer->play();
 }
 
 status_t StagefrightPlayer::stop() {
-    LOGV("stop");
+    ALOGV("stop");
 
     return pause();  // what's the difference?
 }
 
 status_t StagefrightPlayer::pause() {
-    LOGV("pause");
+    ALOGV("pause");
 
     return mPlayer->pause();
 }
 
 bool StagefrightPlayer::isPlaying() {
-    LOGV("isPlaying");
+    ALOGV("isPlaying");
     return mPlayer->isPlaying();
 }
 
 status_t StagefrightPlayer::seekTo(int msec) {
-    LOGV("seekTo");
+    ALOGV("seekTo");
 
     status_t err = mPlayer->seekTo((int64_t)msec * 1000);
 
@@ -91,7 +91,7 @@ status_t StagefrightPlayer::seekTo(int msec) {
 }
 
 status_t StagefrightPlayer::getCurrentPosition(int *msec) {
-    LOGV("getCurrentPosition");
+    ALOGV("getCurrentPosition");
 
     int64_t positionUs;
     status_t err = mPlayer->getPosition(&positionUs);
@@ -106,7 +106,7 @@ status_t StagefrightPlayer::getCurrentPosition(int *msec) {
 }
 
 status_t StagefrightPlayer::getDuration(int *msec) {
-    LOGV("getDuration");
+    ALOGV("getDuration");
 
     int64_t durationUs;
     status_t err = mPlayer->getDuration(&durationUs);
@@ -122,7 +122,7 @@ status_t StagefrightPlayer::getDuration(int *msec) {
 }
 
 status_t StagefrightPlayer::reset() {
-    LOGV("reset");
+    ALOGV("reset");
 
     mPlayer->reset();
 
@@ -130,23 +130,23 @@ status_t StagefrightPlayer::reset() {
 }
 
 status_t StagefrightPlayer::setLooping(int loop) {
-    LOGV("setLooping");
+    ALOGV("setLooping");
 
     return mPlayer->setLooping(loop);
 }
 
 player_type StagefrightPlayer::playerType() {
-    LOGV("playerType");
+    ALOGV("playerType");
     return STAGEFRIGHT_PLAYER;
 }
 
 status_t StagefrightPlayer::suspend() {
-    LOGV("suspend");
+    ALOGV("suspend");
     return mPlayer->suspend();
 }
 
 status_t StagefrightPlayer::resume() {
-    LOGV("resume");
+    ALOGV("resume");
     return mPlayer->resume();
 }
 

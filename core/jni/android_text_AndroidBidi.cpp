@@ -28,7 +28,7 @@ namespace android {
 static void jniThrowException(JNIEnv* env, const char* exc, const char* msg = NULL)
 {
     jclass excClazz = env->FindClass(exc);
-    LOG_ASSERT(excClazz, "Unable to find class %s", exc);
+    ALOG_ASSERT(excClazz, "Unable to find class %s", exc);
 
     env->ThrowNew(excClazz, msg);
 }
@@ -72,7 +72,7 @@ static JNINativeMethod gMethods[] = {
 int register_android_text_AndroidBidi(JNIEnv* env)
 {
     jclass clazz = env->FindClass("android/text/AndroidBidi");
-    LOG_ASSERT(clazz, "Cannot find android/text/AndroidBidi");
+    ALOG_ASSERT(clazz, "Cannot find android/text/AndroidBidi");
     
     return AndroidRuntime::registerNativeMethods(env, "android/text/AndroidBidi",
             gMethods, NELEM(gMethods));

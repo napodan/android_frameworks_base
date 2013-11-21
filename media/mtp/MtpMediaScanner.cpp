@@ -51,7 +51,7 @@ public:
     // returns true if it succeeded, false if an exception occured in the Java code
     virtual bool scanFile(const char* path, long long lastModified, long long fileSize)
     {
-        LOGV("scanFile %s", path);
+        ALOGV("scanFile %s", path);
         return true;
     }
 
@@ -91,7 +91,7 @@ public:
             if (sscanf(value, "%d", &temp) == 1)
                 mDuration = temp;
         } else {
-            LOGV("handleStringTag %s : %s", name, value);
+            ALOGV("handleStringTag %s : %s", name, value);
         }
         return true;
     }
@@ -107,7 +107,7 @@ public:
     // returns true if it succeeded, false if an exception occured in the Java code
     virtual bool addNoMediaFolder(const char* path)
     {
-        LOGV("addNoMediaFolder %s", path);
+        ALOGV("addNoMediaFolder %s", path);
         return true;
     }
 
@@ -183,7 +183,7 @@ bool MtpMediaScanner::scanFiles() {
     for (int i = 0; i < mFileCount; i++) {
         MtpObjectHandle test = mFileList[i];
         if (! (test & kObjectHandleMarkBit)) {
-            LOGV("delete missing file %08X", test);
+            ALOGV("delete missing file %08X", test);
             mDatabase->deleteFile(test);
         }
     }
@@ -263,12 +263,12 @@ int MtpMediaScanner::scanDirectory(const char* path, MtpObjectHandle parent)
 
     unsigned length = strlen(path);
     if (length > sizeof(buffer) + 2) {
-        LOGE("path too long: %s", path);
+        ALOGE("path too long: %s", path);
     }
 
     DIR* dir = opendir(path);
     if (!dir) {
-        LOGE("opendir %s failed, errno: %d", path, errno);
+        ALOGE("opendir %s failed, errno: %d", path, errno);
         return -1;
     }
 
@@ -288,7 +288,7 @@ int MtpMediaScanner::scanDirectory(const char* path, MtpObjectHandle parent)
             continue;
         }
         if (strlen(name) + 1 > fileNameLength) {
-            LOGE("path too long for %s", name);
+            ALOGE("path too long for %s", name);
             continue;
         }
         strcpy(fileStart, name);
@@ -330,7 +330,7 @@ void MtpMediaScanner::scanFile(const char* path, MtpObjectHandle parent, struct 
         handle = mDatabase->addFile(path, format, parent, mStorageID,
                 statbuf.st_size, statbuf.st_mtime);
         if (handle <= 0) {
-            LOGE("addFile failed in MtpMediaScanner::scanFile()");
+            ALOGE("addFile failed in MtpMediaScanner::scanFile()");
             mDatabase->rollbackTransaction();
             return;
         }
@@ -374,7 +374,7 @@ void MtpMediaScanner::markFile(MtpObjectHandle handle) {
                 return;
             }
         }
-        LOGE("file %d not found in mFileList", handle);
+        ALOGE("file %d not found in mFileList", handle);
     }
 }
 
