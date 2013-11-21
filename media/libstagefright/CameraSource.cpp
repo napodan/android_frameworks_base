@@ -59,11 +59,11 @@ CameraSourceListener::~CameraSourceListener() {
 }
 
 void CameraSourceListener::notify(int32_t msgType, int32_t ext1, int32_t ext2) {
-    LOGV("notify(%d, %d, %d)", msgType, ext1, ext2);
+    ALOGV("notify(%d, %d, %d)", msgType, ext1, ext2);
 }
 
 void CameraSourceListener::postData(int32_t msgType, const sp<IMemory> &dataPtr) {
-    LOGV("postData(%d, ptr:%p, size:%d)",
+    ALOGV("postData(%d, ptr:%p, size:%d)",
          msgType, dataPtr->pointer(), dataPtr->size());
 }
 
@@ -93,7 +93,7 @@ static int32_t getColorFormat(const char* colorFormat) {
        return OMX_COLOR_Format16bitRGB565;
     }
 
-    LOGE("Uknown color format (%s), please add it to "
+    ALOGE("Uknown color format (%s), please add it to "
          "CameraSource::getColorFormat", colorFormat);
 
     CHECK_EQ(0, "Unknown color format");
@@ -198,7 +198,7 @@ status_t CameraSource::start(MetaData *meta) {
 }
 
 status_t CameraSource::stop() {
-    LOGV("stop");
+    ALOGV("stop");
     Mutex::Autolock autoLock(mLock);
     mStarted = false;
     mFrameAvailableCondition.signal();
@@ -208,7 +208,7 @@ status_t CameraSource::stop() {
     mCamera->stopRecording();
     releaseQueuedFrames();
     while (!mFramesBeingEncoded.empty()) {
-        LOGI("Waiting for outstanding frames being encoded: %d",
+        ALOGI("Waiting for outstanding frames being encoded: %d",
                 mFramesBeingEncoded.size());
         mFrameCompleteCondition.wait(mLock);
     }
@@ -216,7 +216,7 @@ status_t CameraSource::stop() {
     IPCThreadState::self()->restoreCallingIdentity(token);
 
     if (mCollectStats) {
-        LOGI("Frames received/encoded/dropped: %d/%d/%d in %lld us",
+        ALOGI("Frames received/encoded/dropped: %d/%d/%d in %lld us",
                 mNumFramesReceived, mNumFramesEncoded, mNumFramesDropped,
                 mLastFrameTimestampUs - mFirstFrameTimeUs);
     }
@@ -246,7 +246,7 @@ void CameraSource::releaseOneRecordingFrame(const sp<IMemory>& frame) {
 }
 
 void CameraSource::signalBufferReturned(MediaBuffer *buffer) {
-    LOGV("signalBufferReturned: %p", buffer->data());
+    ALOGV("signalBufferReturned: %p", buffer->data());
     Mutex::Autolock autoLock(mLock);
     for (List<sp<IMemory> >::iterator it = mFramesBeingEncoded.begin();
          it != mFramesBeingEncoded.end(); ++it) {
@@ -266,7 +266,7 @@ void CameraSource::signalBufferReturned(MediaBuffer *buffer) {
 
 status_t CameraSource::read(
         MediaBuffer **buffer, const ReadOptions *options) {
-    LOGV("read");
+    ALOGV("read");
 
     *buffer = NULL;
 
@@ -300,13 +300,13 @@ status_t CameraSource::read(
                 skipTimeUs = frameTime;
             }
             if (skipTimeUs > frameTime) {
-                LOGV("skipTimeUs: %lld us > frameTime: %lld us",
+                ALOGV("skipTimeUs: %lld us > frameTime: %lld us",
                     skipTimeUs, frameTime);
                 releaseOneRecordingFrame(frame);
                 ++mNumFramesDropped;
                 // Safeguard against the abuse of the kSkipFrame_Option.
                 if (skipTimeUs - frameTime >= 1E6) {
-                    LOGE("Frame skipping requested is way too long: %lld us",
+                    ALOGE("Frame skipping requested is way too long: %lld us",
                         skipTimeUs - frameTime);
                     return UNKNOWN_ERROR;
                 }
@@ -326,7 +326,7 @@ status_t CameraSource::read(
 
 void CameraSource::dataCallbackTimestamp(int64_t timestampUs,
         int32_t msgType, const sp<IMemory> &data) {
-    LOGV("dataCallbackTimestamp: timestamp %lld us", timestampUs);
+    ALOGV("dataCallbackTimestamp: timestamp %lld us", timestampUs);
     Mutex::Autolock autoLock(mLock);
     if (!mStarted) {
         releaseOneRecordingFrame(data);
@@ -338,7 +338,7 @@ void CameraSource::dataCallbackTimestamp(int64_t timestampUs,
     if (mNumFramesReceived > 0 &&
         timestampUs - mLastFrameTimestampUs > mGlitchDurationThresholdUs) {
         if (mNumGlitches % 10 == 0) {  // Don't spam the log
-            LOGW("Long delay detected in video recording");
+            ALOGW("Long delay detected in video recording");
         }
         ++mNumGlitches;
     }
@@ -362,7 +362,7 @@ void CameraSource::dataCallbackTimestamp(int64_t timestampUs,
     mFramesReceived.push_back(data);
     int64_t timeUs = mStartTimeUs + (timestampUs - mFirstFrameTimeUs);
     mFrameTimes.push_back(timeUs);
-    LOGV("initial delay: %lld, current time stamp: %lld",
+    ALOGV("initial delay: %lld, current time stamp: %lld",
         mStartTimeUs, timeUs);
     mFrameAvailableCondition.signal();
 }

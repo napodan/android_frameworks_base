@@ -52,7 +52,7 @@ static void
 android_media_MtpCursor_setup(JNIEnv *env, jobject thiz, jobject javaClient,
         jint queryType, jint deviceID, jint storageID, jint objectID, jintArray javaColumns)
 {
-    LOGD("android_media_MtpCursor_setup queryType: %d deviceID: %d storageID: %d objectID: %d\n",
+    ALOGD("android_media_MtpCursor_setup queryType: %d deviceID: %d storageID: %d objectID: %d\n",
                 queryType, deviceID, storageID, objectID);
 
     int* columns = NULL;
@@ -74,7 +74,7 @@ android_media_MtpCursor_setup(JNIEnv *env, jobject thiz, jobject javaClient,
 static void
 android_media_MtpCursor_finalize(JNIEnv *env, jobject thiz)
 {
-    LOGD("finalize\n");
+    ALOGD("finalize\n");
     MtpCursor *cursor = (MtpCursor *)env->GetIntField(thiz, field_context);
     delete cursor;
 }
@@ -84,7 +84,7 @@ android_media_MtpCursor_fill_window(JNIEnv *env, jobject thiz, jobject javaWindo
 {
     CursorWindow* window = get_window_from_object(env, javaWindow);
     if (!window) {
-        LOGE("Invalid CursorWindow");
+        ALOGE("Invalid CursorWindow");
         jniThrowException(env, "java/lang/IllegalArgumentException",
                           "Bad CursorWindow");
         return 0;
@@ -111,16 +111,16 @@ int register_android_media_MtpCursor(JNIEnv *env)
 {
     jclass clazz;
 
-    LOGD("register_android_media_MtpCursor\n");
+    ALOGD("register_android_media_MtpCursor\n");
 
     clazz = env->FindClass("android/media/MtpCursor");
     if (clazz == NULL) {
-        LOGE("Can't find android/media/MtpCursor");
+        ALOGE("Can't find android/media/MtpCursor");
         return -1;
     }
     field_context = env->GetFieldID(clazz, "mNativeContext", "I");
     if (field_context == NULL) {
-        LOGE("Can't find MtpCursor.mNativeContext");
+        ALOGE("Can't find MtpCursor.mNativeContext");
         return -1;
     }
 

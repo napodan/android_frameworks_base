@@ -53,7 +53,7 @@ namespace android {
 static void jniThrowException(JNIEnv* env, const char* exc, const char* msg = NULL)
 {
     jclass excClazz = env->FindClass(exc);
-    LOG_ASSERT(excClazz, "Unable to find class %s", exc);
+    ALOG_ASSERT(excClazz, "Unable to find class %s", exc);
 
     env->ThrowNew(excClazz, msg);
 }
@@ -209,7 +209,7 @@ static JNINativeMethod gMethods[] = {
 int register_android_text_AndroidCharacter(JNIEnv* env)
 {
     jclass clazz = env->FindClass("android/text/AndroidCharacter");
-    LOG_ASSERT(clazz, "Cannot find android/text/AndroidCharacter");
+    ALOG_ASSERT(clazz, "Cannot find android/text/AndroidCharacter");
     
     return AndroidRuntime::registerNativeMethods(env, "android/text/AndroidCharacter",
             gMethods, NELEM(gMethods));

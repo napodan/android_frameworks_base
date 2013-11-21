@@ -86,7 +86,7 @@ status_t VPXDecoder::start(MetaData *) {
     vpx_codec_err_t vpx_err;
     if ((vpx_err = vpx_codec_dec_init(
                 (vpx_codec_ctx_t *)mCtx, &vpx_codec_vp8_dx_algo, NULL, 0))) {
-        LOGE("on2 decoder failed to initialize. (%d)", vpx_err);
+        ALOGE("on2 decoder failed to initialize. (%d)", vpx_err);
 
         mSource->stop();
 
@@ -145,7 +145,7 @@ status_t VPXDecoder::read(
         return err;
     }
 
-    LOGV("read %d bytes from source\n", input->range_length());
+    ALOGV("read %d bytes from source\n", input->range_length());
 
     if (seeking) {
         int64_t targetTimeUs;
@@ -163,14 +163,14 @@ status_t VPXDecoder::read(
                 input->range_length(),
                 NULL,
                 0)) {
-        LOGE("on2 decoder failed to decode frame.");
+        ALOGE("on2 decoder failed to decode frame.");
         input->release();
         input = NULL;
 
         return UNKNOWN_ERROR;
     }
 
-    LOGV("successfully decoded 1 or more frames.");
+    ALOGV("successfully decoded 1 or more frames.");
 
     int64_t timeUs;
     CHECK(input->meta_data()->findInt64(kKeyTime, &timeUs));
@@ -188,9 +188,9 @@ status_t VPXDecoder::read(
             // timestamp and we won't return the current one.
             skipFrame = true;
 
-            LOGV("skipping frame at %lld us", timeUs);
+            ALOGV("skipping frame at %lld us", timeUs);
         } else {
-            LOGV("found target frame at %lld us", timeUs);
+            ALOGV("found target frame at %lld us", timeUs);
 
             mTargetTimeUs = -1;
         }
@@ -205,7 +205,7 @@ status_t VPXDecoder::read(
     vpx_image_t *img = vpx_codec_get_frame((vpx_codec_ctx_t *)mCtx, &iter);
 
     if (img == NULL) {
-        LOGI("on2 decoder did not return a frame.");
+        ALOGI("on2 decoder did not return a frame.");
 
         *out = new MediaBuffer(0);
         return OK;
@@ -217,7 +217,7 @@ status_t VPXDecoder::read(
     int32_t height = img->d_h;
 
     if (width != mWidth || height != mHeight) {
-        LOGI("Image dimensions changed, width = %d, height = %d",
+        ALOGI("Image dimensions changed, width = %d, height = %d",
              width, height);
 
         mWidth = width;

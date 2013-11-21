@@ -217,9 +217,9 @@ static const CodecInfo kEncoderInfo[] = {
 
 #undef OPTIONAL
 
-#define CODEC_LOGI(x, ...) LOGI("[%s] "x, mComponentName, ##__VA_ARGS__)
-#define CODEC_LOGV(x, ...) LOGV("[%s] "x, mComponentName, ##__VA_ARGS__)
-#define CODEC_LOGE(x, ...) LOGE("[%s] "x, mComponentName, ##__VA_ARGS__)
+#define CODEC_LOGI(x, ...) ALOGI("[%s] "x, mComponentName, ##__VA_ARGS__)
+#define CODEC_LOGV(x, ...) ALOGV("[%s] "x, mComponentName, ##__VA_ARGS__)
+#define CODEC_LOGE(x, ...) ALOGE("[%s] "x, mComponentName, ##__VA_ARGS__)
 
 struct OMXCodecObserver : public BnOMXObserver {
     OMXCodecObserver() {
@@ -495,12 +495,12 @@ sp<MediaSource> OMXCodec::Create(
             InstantiateSoftwareCodec(componentName, source);
 
         if (softwareCodec != NULL) {
-            LOGV("Successfully allocated software codec '%s'", componentName);
+            ALOGV("Successfully allocated software codec '%s'", componentName);
 
             return softwareCodec;
         }
 
-        LOGV("Attempting to allocate OMX node '%s'", componentName);
+        ALOGV("Attempting to allocate OMX node '%s'", componentName);
 
         uint32_t quirks = getComponentQuirks(componentName, createEncoder);
 
@@ -511,7 +511,7 @@ sp<MediaSource> OMXCodec::Create(
                 // For OMX.SEC.* decoders we can enable a special mode that
                 // gives the client access to the framebuffer contents.
 
-                LOGW("Component '%s' does not give the client access to "
+                ALOGW("Component '%s' does not give the client access to "
                      "the framebuffer contents. Skipping.",
                      componentName);
 
@@ -521,7 +521,7 @@ sp<MediaSource> OMXCodec::Create(
 
         status_t err = omx->allocateNode(componentName, observer, &node);
         if (err == OK) {
-            LOGV("Successfully allocated OMX node '%s'", componentName);
+            ALOGV("Successfully allocated OMX node '%s'", componentName);
 
             sp<OMXCodec> codec = new OMXCodec(
                     omx, node, quirks,
@@ -536,7 +536,7 @@ sp<MediaSource> OMXCodec::Create(
                 return codec;
             }
 
-            LOGV("Failed to configure codec '%s'", componentName);
+            ALOGV("Failed to configure codec '%s'", componentName);
         }
     }
 
@@ -629,7 +629,7 @@ status_t OMXCodec::configureCodec(const sp<MetaData> &meta, uint32_t flags) {
                 // does not handle this gracefully and would clobber the heap
                 // and wreak havoc instead...
 
-                LOGE("Profile and/or level exceed the decoder's capabilities.");
+                ALOGE("Profile and/or level exceed the decoder's capabilities.");
                 return ERROR_UNSUPPORTED;
             }
         }
@@ -853,7 +853,7 @@ static size_t getFrameSize(
 
 status_t OMXCodec::findTargetColorFormat(
         const sp<MetaData>& meta, OMX_COLOR_FORMATTYPE *colorFormat) {
-    LOGV("findTargetColorFormat");
+    ALOGV("findTargetColorFormat");
     CHECK(mIsEncoder);
 
     *colorFormat = OMX_COLOR_FormatYUV420SemiPlanar;
@@ -872,7 +872,7 @@ status_t OMXCodec::findTargetColorFormat(
 
 status_t OMXCodec::isColorFormatSupported(
         OMX_COLOR_FORMATTYPE colorFormat, int portIndex) {
-    LOGV("isColorFormatSupported: %d", static_cast<int>(colorFormat));
+    ALOGV("isColorFormatSupported: %d", static_cast<int>(colorFormat));
 
     // Enumerate all the color formats supported by
     // the omx component to see whether the given
@@ -892,7 +892,7 @@ status_t OMXCodec::isColorFormatSupported(
         // the incremented index (bug 2897413).
         CHECK_EQ(index, portFormat.nIndex);
         if ((portFormat.eColorFormat == colorFormat)) {
-            LOGV("Found supported color format: %d", portFormat.eColorFormat);
+            ALOGV("Found supported color format: %d", portFormat.eColorFormat);
             return OK;  // colorFormat is supported!
         }
         ++index;
@@ -902,12 +902,12 @@ status_t OMXCodec::isColorFormatSupported(
         // 1000 is more than enough for us to tell whether the omx
         // component in question is buggy or not.
         if (index >= 1000) {
-            LOGE("More than %ld color formats are supported???", index);
+            ALOGE("More than %ld color formats are supported???", index);
             break;
         }
     }
 
-    LOGE("color format %d is not supported", colorFormat);
+    ALOGE("color format %d is not supported", colorFormat);
     return UNKNOWN_ERROR;
 }
 
@@ -932,7 +932,7 @@ void OMXCodec::setVideoInputFormat(
     } else if (!strcasecmp(MEDIA_MIMETYPE_VIDEO_H263, mime)) {
         compressionFormat = OMX_VIDEO_CodingH263;
     } else {
-        LOGE("Not a supported video mime type: %s", mime);
+        ALOGE("Not a supported video mime type: %s", mime);
         CHECK(!"Should not be here. Not a supported video mime type.");
     }
 
@@ -1044,7 +1044,7 @@ status_t OMXCodec::setupErrorCorrectionParameters() {
             mNode, OMX_IndexParamVideoErrorCorrection,
             &errorCorrectionType, sizeof(errorCorrectionType));
     if (err != OK) {
-        LOGW("Error correction param query is not supported");
+        ALOGW("Error correction param query is not supported");
         return OK;  // Optional feature. Ignore this failure
     }
 
@@ -1058,7 +1058,7 @@ status_t OMXCodec::setupErrorCorrectionParameters() {
             mNode, OMX_IndexParamVideoErrorCorrection,
             &errorCorrectionType, sizeof(errorCorrectionType));
     if (err != OK) {
-        LOGW("Error correction param configuration is not supported");
+        ALOGW("Error correction param configuration is not supported");
     }
 
     // Optional feature. Ignore the failure.
@@ -1313,7 +1313,7 @@ status_t OMXCodec::setVideoOutputFormat(
     } else if (!strcasecmp(MEDIA_MIMETYPE_VIDEO_H263, mime)) {
         compressionFormat = OMX_VIDEO_CodingH263;
     } else {
-        LOGE("Not a supported video mime type: %s", mime);
+        ALOGE("Not a supported video mime type: %s", mime);
         CHECK(!"Should not be here. Not a supported video mime type.");
     }
 
@@ -1503,7 +1503,7 @@ void OMXCodec::setComponentRole(
                 &roleParams, sizeof(roleParams));
 
         if (err != OK) {
-            LOGW("Failed to set standard component role '%s'.", role);
+            ALOGW("Failed to set standard component role '%s'.", role);
         }
     }
 }
@@ -1637,7 +1637,7 @@ status_t OMXCodec::allocateBuffersOnPort(OMX_U32 portIndex) {
         }
 
         if (err != OK) {
-            LOGE("allocate_buffer_with_backup failed");
+            ALOGE("allocate_buffer_with_backup failed");
             return err;
         }
 
@@ -1698,7 +1698,7 @@ void OMXCodec::on_message(const omx_message &msg) {
 
             CHECK(i < buffers->size());
             if (!(*buffers)[i].mOwnedByComponent) {
-                LOGW("We already own input buffer %p, yet received "
+                ALOGW("We already own input buffer %p, yet received "
                      "an EMPTY_BUFFER_DONE.", buffer);
             }
 
@@ -1750,7 +1750,7 @@ void OMXCodec::on_message(const omx_message &msg) {
             BufferInfo *info = &buffers->editItemAt(i);
 
             if (!info->mOwnedByComponent) {
-                LOGW("We already own output buffer %p, yet received "
+                ALOGW("We already own output buffer %p, yet received "
                      "a FILL_BUFFER_DONE.", buffer);
             }
 
@@ -2498,7 +2498,7 @@ void OMXCodec::drainInputBuffer(BufferInfo *info) {
     }
 
     if (n > 1) {
-        LOGV("coalesced %d frames into one input buffer", n);
+        ALOGV("coalesced %d frames into one input buffer", n);
     }
 
     OMX_U32 flags = OMX_BUFFERFLAG_ENDOFFRAME;
@@ -3511,7 +3511,7 @@ void OMXCodec::initOutputFormat(const sp<MetaData> &inputFormat) {
                 inputFormat->findInt32(kKeySampleRate, &sampleRate);
 
                 if ((OMX_U32)numChannels != params.nChannels) {
-                    LOGW("Codec outputs a different number of channels than "
+                    ALOGW("Codec outputs a different number of channels than "
                          "the input stream contains (contains %d channels, "
                          "codec outputs %ld channels).",
                          numChannels, params.nChannels);

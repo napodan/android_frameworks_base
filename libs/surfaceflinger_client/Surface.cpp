@@ -57,11 +57,11 @@ static status_t copyBlt(
     status_t err;
     uint8_t const * src_bits = NULL;
     err = src->lock(GRALLOC_USAGE_SW_READ_OFTEN, reg.bounds(), (void**)&src_bits);
-    LOGE_IF(err, "error locking src buffer %s", strerror(-err));
+    ALOGE_IF(err, "error locking src buffer %s", strerror(-err));
 
     uint8_t* dst_bits = NULL;
     err = dst->lock(GRALLOC_USAGE_SW_WRITE_OFTEN, reg.bounds(), (void**)&dst_bits);
-    LOGE_IF(err, "error locking dst buffer %s", strerror(-err));
+    ALOGE_IF(err, "error locking dst buffer %s", strerror(-err));
 
     Region::const_iterator head(reg.begin());
     Region::const_iterator tail(reg.end());
@@ -227,7 +227,7 @@ status_t SurfaceControl::setFreezeTint(uint32_t tint) {
 status_t SurfaceControl::validate() const
 {
     if (mToken<0 || mClient==0) {
-        LOGE("invalid token (%d, identity=%u) or client (%p)", 
+        ALOGE("invalid token (%d, identity=%u) or client (%p)", 
                 mToken, mIdentity, mClient.get());
         return NO_INIT;
     }
@@ -469,7 +469,7 @@ status_t Surface::validate() const
 {
     // check that we initialized ourself properly
     if (mInitCheck != NO_ERROR) {
-        LOGE("invalid token (identity=%u)", mIdentity);
+        ALOGE("invalid token (identity=%u)", mIdentity);
         return mInitCheck;
     }
 
@@ -480,12 +480,12 @@ status_t Surface::validate() const
     // no operation are allowed from the client (eg: dequeue/queue), this
     // is used with PUSH_BUFFER surfaces for instance
     if (identity == 0) {
-        LOGE("[Surface] invalid operation (identity=%u)", mIdentity);
+        ALOGE("[Surface] invalid operation (identity=%u)", mIdentity);
         return INVALID_OPERATION;
     }
 
     if (mIdentity != identity) {
-        LOGE("[Surface] using an invalid surface, "
+        ALOGE("[Surface] using an invalid surface, "
                 "identity=%u should be %d",
                 mIdentity, identity);
         return NO_INIT;
@@ -494,7 +494,7 @@ status_t Surface::validate() const
     // check the surface didn't become invalid
     status_t err = mSharedBufferClient->getStatus();
     if (err != NO_ERROR) {
-        LOGE("surface (identity=%u) is invalid, err=%d (%s)",
+        ALOGE("surface (identity=%u) is invalid, err=%d (%s)",
                 mIdentity, err, strerror(-err));
         return err;
     }
@@ -584,7 +584,7 @@ int Surface::dequeueBuffer(android_native_buffer_t** buffer)
     logger.log(GraphicLog::SF_APP_DEQUEUE_AFTER, mIdentity, bufIdx);
 
     if (bufIdx < 0) {
-        LOGE("error dequeuing a buffer (%s)", strerror(bufIdx));
+        ALOGE("error dequeuing a buffer (%s)", strerror(bufIdx));
         return bufIdx;
     }
 
@@ -598,7 +598,7 @@ int Surface::dequeueBuffer(android_native_buffer_t** buffer)
     uint32_t w, h, format, usage;
     if (needNewBuffer(bufIdx, &w, &h, &format, &usage)) {
         err = getBufferLocked(bufIdx, w, h, format, usage);
-        LOGE_IF(err, "getBufferLocked(%ld, %u, %u, %u, %08x) failed (%s)",
+        ALOGE_IF(err, "getBufferLocked(%ld, %u, %u, %u, %08x) failed (%s)",
                 bufIdx, w, h, format, usage, strerror(-err));
         if (err == NO_ERROR) {
             // reset the width/height with the what we get from the buffer
@@ -646,7 +646,7 @@ int Surface::cancelBuffer(android_native_buffer_t* buffer)
 
     err = mSharedBufferClient->cancel(bufIdx);
 
-    LOGE_IF(err, "error canceling buffer %d (%s)", bufIdx, strerror(-err));
+    ALOGE_IF(err, "error canceling buffer %d (%s)", bufIdx, strerror(-err));
     return err;
 }
 
@@ -666,7 +666,7 @@ int Surface::lockBuffer(android_native_buffer_t* buffer)
 
     logger.log(GraphicLog::SF_APP_LOCK_AFTER, mIdentity, bufIdx);
 
-    LOGE_IF(err, "error locking buffer %d (%s)", bufIdx, strerror(-err));
+    ALOGE_IF(err, "error locking buffer %d (%s)", bufIdx, strerror(-err));
     return err;
 }
 
@@ -688,7 +688,7 @@ int Surface::queueBuffer(android_native_buffer_t* buffer)
     mSharedBufferClient->setCrop(bufIdx, mNextBufferCrop);
     mSharedBufferClient->setDirtyRegion(bufIdx, mDirtyRegion);
     err = mSharedBufferClient->queue(bufIdx);
-    LOGE_IF(err, "error queuing buffer %d (%s)", bufIdx, strerror(-err));
+    ALOGE_IF(err, "error queuing buffer %d (%s)", bufIdx, strerror(-err));
 
     if (err == NO_ERROR) {
         // TODO: can we avoid this IPC if we know there is one pending?
@@ -852,7 +852,7 @@ int Surface::setBufferCount(int bufferCount)
     } ipc(s);
 
     status_t err = mSharedBufferClient->setBufferCount(bufferCount, ipc);
-    LOGE_IF(err, "ISurface::setBufferCount(%d) returned %s",
+    ALOGE_IF(err, "ISurface::setBufferCount(%d) returned %s",
             bufferCount, strerror(-err));
     return err;
 }
@@ -905,7 +905,7 @@ status_t Surface::lock(SurfaceInfo* info, bool blocking) {
 status_t Surface::lock(SurfaceInfo* other, Region* dirtyIn, bool blocking) 
 {
     if (getConnectedApi()) {
-        LOGE("Surface::lock(%p) failed. Already connected to another API",
+        ALOGE("Surface::lock(%p) failed. Already connected to another API",
                 (ANativeWindow*)this);
         CallStack stack;
         stack.update();
@@ -914,7 +914,7 @@ status_t Surface::lock(SurfaceInfo* other, Region* dirtyIn, bool blocking)
     }
 
     if (mApiLock.tryLock() != NO_ERROR) {
-        LOGE("calling Surface::lock from different threads!");
+        ALOGE("calling Surface::lock from different threads!");
         CallStack stack;
         stack.update();
         stack.dump("");
@@ -924,7 +924,7 @@ status_t Surface::lock(SurfaceInfo* other, Region* dirtyIn, bool blocking)
     /* Here we're holding mApiLock */
     
     if (mLockedBuffer != 0) {
-        LOGE("Surface::lock failed, already locked");
+        ALOGE("Surface::lock failed, already locked");
         mApiLock.unlock();
         return INVALID_OPERATION;
     }
@@ -934,11 +934,11 @@ status_t Surface::lock(SurfaceInfo* other, Region* dirtyIn, bool blocking)
 
     android_native_buffer_t* out;
     status_t err = dequeueBuffer(&out);
-    LOGE_IF(err, "dequeueBuffer failed (%s)", strerror(-err));
+    ALOGE_IF(err, "dequeueBuffer failed (%s)", strerror(-err));
     if (err == NO_ERROR) {
         sp<GraphicBuffer> backBuffer(GraphicBuffer::getSelf(out));
         err = lockBuffer(backBuffer.get());
-        LOGE_IF(err, "lockBuffer (idx=%d) failed (%s)",
+        ALOGE_IF(err, "lockBuffer (idx=%d) failed (%s)",
                 getBufferIndex(backBuffer), strerror(-err));
         if (err == NO_ERROR) {
             const Rect bounds(backBuffer->width, backBuffer->height);
@@ -980,7 +980,7 @@ status_t Surface::lock(SurfaceInfo* other, Region* dirtyIn, bool blocking)
                     GRALLOC_USAGE_SW_READ_OFTEN | GRALLOC_USAGE_SW_WRITE_OFTEN,
                     newDirtyRegion.bounds(), &vaddr);
             
-            LOGW_IF(res, "failed locking buffer (handle = %p)", 
+            ALOGW_IF(res, "failed locking buffer (handle = %p)", 
                     backBuffer->handle);
 
             mLockedBuffer = backBuffer;
@@ -999,15 +999,15 @@ status_t Surface::lock(SurfaceInfo* other, Region* dirtyIn, bool blocking)
 status_t Surface::unlockAndPost() 
 {
     if (mLockedBuffer == 0) {
-        LOGE("Surface::unlockAndPost failed, no locked buffer");
+        ALOGE("Surface::unlockAndPost failed, no locked buffer");
         return INVALID_OPERATION;
     }
 
     status_t err = mLockedBuffer->unlock();
-    LOGE_IF(err, "failed unlocking buffer (%p)", mLockedBuffer->handle);
+    ALOGE_IF(err, "failed unlocking buffer (%p)", mLockedBuffer->handle);
     
     err = queueBuffer(mLockedBuffer.get());
-    LOGE_IF(err, "queueBuffer (idx=%d) failed (%s)",
+    ALOGE_IF(err, "queueBuffer (idx=%d) failed (%s)",
             getBufferIndex(mLockedBuffer), strerror(-err));
 
     mPostedBuffer = mLockedBuffer;
@@ -1041,19 +1041,19 @@ status_t Surface::getBufferLocked(int index,
     }
 
     sp<GraphicBuffer> buffer = s->requestBuffer(index, w, h, format, usage);
-    LOGE_IF(buffer==0,
+    ALOGE_IF(buffer==0,
             "ISurface::getBuffer(%d, %08x) returned NULL",
             index, usage);
     if (buffer != 0) { // this should never happen by construction
-        LOGE_IF(buffer->handle == NULL, 
+        ALOGE_IF(buffer->handle == NULL, 
                 "Surface (identity=%d) requestBuffer(%d, %u, %u, %u, %08x) "
                 "returned a buffer with a null handle",
                 mIdentity, index, w, h, format, usage);
         err = mSharedBufferClient->getStatus();
-        LOGE_IF(err,  "Surface (identity=%d) state = %d", mIdentity, err);
+        ALOGE_IF(err,  "Surface (identity=%d) state = %d", mIdentity, err);
         if (!err && buffer->handle != NULL) {
             err = getBufferMapper().registerBuffer(buffer->handle);
-            LOGW_IF(err, "registerBuffer(...) failed %d (%s)",
+            ALOGW_IF(err, "registerBuffer(...) failed %d (%s)",
                     err, strerror(-err));
             if (err == NO_ERROR) {
                 currentBuffer = buffer;

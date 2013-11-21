@@ -82,7 +82,7 @@ static const Blender gBlends[] = {
 ///////////////////////////////////////////////////////////////////////////////
 
 OpenGLRenderer::OpenGLRenderer() {
-    LOGD("Create OpenGLRenderer");
+    ALOGD("Create OpenGLRenderer");
 
     mDrawColorShader = new DrawColorProgram;
     mDrawTextureShader = new DrawTextureProgram;
@@ -91,7 +91,7 @@ OpenGLRenderer::OpenGLRenderer() {
 }
 
 OpenGLRenderer::~OpenGLRenderer() {
-    LOGD("Destroy OpenGLRenderer");
+    ALOGD("Destroy OpenGLRenderer");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -281,7 +281,7 @@ bool OpenGLRenderer::createLayer(sp<Snapshot> snapshot, float left, float top,
 
     GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
     if (status != GL_FRAMEBUFFER_COMPLETE) {
-        LOGD("Framebuffer incomplete %d", status);
+        ALOGD("Framebuffer incomplete %d", status);
 
         glDeleteFramebuffers(1, &snapshot->fbo);
         glDeleteTextures(1, &snapshot->texture);

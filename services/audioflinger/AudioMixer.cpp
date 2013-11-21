@@ -94,7 +94,7 @@ AudioMixer::AudioMixer(size_t frameCount, uint32_t sampleRate)
         n++;
     }
     if (mask) {
-        LOGV("add track (%d)", n);
+        ALOGV("add track (%d)", n);
         mTrackNames |= mask;
         return TRACK0 + n;
     }
@@ -113,7 +113,7 @@ AudioMixer::AudioMixer(size_t frameCount, uint32_t sampleRate)
  {
     name -= TRACK0;
     if (uint32_t(name) < MAX_NUM_TRACKS) {
-        LOGV("deleteTrackName(%d)", name);
+        ALOGV("deleteTrackName(%d)", name);
         track_t& track(mState.tracks[ name ]);
         if (track.enabled != 0) {
             track.enabled = 0;
@@ -138,7 +138,7 @@ status_t AudioMixer::enable(int name)
         case MIXING: {
             if (mState.tracks[ mActiveTrack ].enabled != 1) {
                 mState.tracks[ mActiveTrack ].enabled = 1;
-                LOGV("enable(%d)", mActiveTrack);
+                ALOGV("enable(%d)", mActiveTrack);
                 invalidateState(1<<mActiveTrack);
             }
         } break;
@@ -154,7 +154,7 @@ status_t AudioMixer::disable(int name)
         case MIXING: {
             if (mState.tracks[ mActiveTrack ].enabled != 0) {
                 mState.tracks[ mActiveTrack ].enabled = 0;
-                LOGV("disable(%d)", mActiveTrack);
+                ALOGV("disable(%d)", mActiveTrack);
                 invalidateState(1<<mActiveTrack);
             }
         } break;
@@ -184,7 +184,7 @@ status_t AudioMixer::setParameter(int target, int name, void *value)
             if ((uint32_t(valueInt) <= MAX_NUM_CHANNELS) && (valueInt)) {
                 if (mState.tracks[ mActiveTrack ].channelCount != valueInt) {
                     mState.tracks[ mActiveTrack ].channelCount = valueInt;
-                    LOGV("setParameter(TRACK, CHANNEL_COUNT, %d)", valueInt);
+                    ALOGV("setParameter(TRACK, CHANNEL_COUNT, %d)", valueInt);
                     invalidateState(1<<mActiveTrack);
                 }
                 return NO_ERROR;
@@ -193,7 +193,7 @@ status_t AudioMixer::setParameter(int target, int name, void *value)
         if (name == MAIN_BUFFER) {
             if (mState.tracks[ mActiveTrack ].mainBuffer != valueBuf) {
                 mState.tracks[ mActiveTrack ].mainBuffer = valueBuf;
-                LOGV("setParameter(TRACK, MAIN_BUFFER, %p)", valueBuf);
+                ALOGV("setParameter(TRACK, MAIN_BUFFER, %p)", valueBuf);
                 invalidateState(1<<mActiveTrack);
             }
             return NO_ERROR;
@@ -201,7 +201,7 @@ status_t AudioMixer::setParameter(int target, int name, void *value)
         if (name == AUX_BUFFER) {
             if (mState.tracks[ mActiveTrack ].auxBuffer != valueBuf) {
                 mState.tracks[ mActiveTrack ].auxBuffer = valueBuf;
-                LOGV("setParameter(TRACK, AUX_BUFFER, %p)", valueBuf);
+                ALOGV("setParameter(TRACK, AUX_BUFFER, %p)", valueBuf);
                 invalidateState(1<<mActiveTrack);
             }
             return NO_ERROR;
@@ -213,7 +213,7 @@ status_t AudioMixer::setParameter(int target, int name, void *value)
             if (valueInt > 0) {
                 track_t& track = mState.tracks[ mActiveTrack ];
                 if (track.setResampler(uint32_t(valueInt), mSampleRate)) {
-                    LOGV("setParameter(RESAMPLE, SAMPLE_RATE, %u)",
+                    ALOGV("setParameter(RESAMPLE, SAMPLE_RATE, %u)",
                             uint32_t(valueInt));
                     invalidateState(1<<mActiveTrack);
                 }
@@ -226,7 +226,7 @@ status_t AudioMixer::setParameter(int target, int name, void *value)
         if ((uint32_t(name-VOLUME0) < MAX_NUM_CHANNELS)) {
             track_t& track = mState.tracks[ mActiveTrack ];
             if (track.volume[name-VOLUME0] != valueInt) {
-                LOGV("setParameter(VOLUME, VOLUME0/1: %04x)", valueInt);
+                ALOGV("setParameter(VOLUME, VOLUME0/1: %04x)", valueInt);
                 track.prevVolume[name-VOLUME0] = track.volume[name-VOLUME0] << 16;
                 track.volume[name-VOLUME0] = valueInt;
                 if (target == VOLUME) {
@@ -246,7 +246,7 @@ status_t AudioMixer::setParameter(int target, int name, void *value)
         } else if (name == AUXLEVEL) {
             track_t& track = mState.tracks[ mActiveTrack ];
             if (track.auxLevel != valueInt) {
-                LOGV("setParameter(VOLUME, AUXLEVEL: %04x)", valueInt);
+                ALOGV("setParameter(VOLUME, AUXLEVEL: %04x)", valueInt);
                 track.prevAuxLevel = track.auxLevel << 16;
                 track.auxLevel = valueInt;
                 if (target == VOLUME) {
@@ -325,7 +325,7 @@ void AudioMixer::process()
 
 void AudioMixer::process__validate(state_t* state)
 {
-    LOGW_IF(!state->needsChanged,
+    ALOGW_IF(!state->needsChanged,
         "in process__validate() but nothing's invalid");
 
     uint32_t changed = state->needsChanged;
@@ -422,7 +422,7 @@ void AudioMixer::process__validate(state_t* state)
         }
     }
 
-    LOGV("mixer configuration change: %d activeTracks (%08x) "
+    ALOGV("mixer configuration change: %d activeTracks (%08x) "
         "all16BitsStereoNoResample=%d, resampling=%d, volumeRamp=%d",
         countActiveTracks, state->enabledTracks,
         all16BitsStereoNoResample, resampling, volumeRamp);
@@ -583,7 +583,7 @@ void AudioMixer::volumeRampStereo(track_t* t, int32_t* out, size_t frameCount, i
     const int32_t vlInc = t->volumeInc[0];
     const int32_t vrInc = t->volumeInc[1];
 
-    //LOGD("[0] %p: inc=%f, v0=%f, v1=%d, final=%f, count=%d",
+    //ALOGD("[0] %p: inc=%f, v0=%f, v1=%d, final=%f, count=%d",
     //        t, vlInc/65536.0f, vl/65536.0f, t->volume[0],
     //       (vl + vlInc*frameCount)/65536.0f, frameCount);
 
@@ -661,7 +661,7 @@ void AudioMixer::track__16BitsStereo(track_t* t, int32_t* out, size_t frameCount
             const int32_t vlInc = t->volumeInc[0];
             const int32_t vrInc = t->volumeInc[1];
             const int32_t vaInc = t->auxInc;
-            // LOGD("[1] %p: inc=%f, v0=%f, v1=%d, final=%f, count=%d",
+            // ALOGD("[1] %p: inc=%f, v0=%f, v1=%d, final=%f, count=%d",
             //        t, vlInc/65536.0f, vl/65536.0f, t->volume[0],
             //        (vl + vlInc*frameCount)/65536.0f, frameCount);
 
@@ -705,7 +705,7 @@ void AudioMixer::track__16BitsStereo(track_t* t, int32_t* out, size_t frameCount
             const int32_t vlInc = t->volumeInc[0];
             const int32_t vrInc = t->volumeInc[1];
 
-            // LOGD("[1] %p: inc=%f, v0=%f, v1=%d, final=%f, count=%d",
+            // ALOGD("[1] %p: inc=%f, v0=%f, v1=%d, final=%f, count=%d",
             //        t, vlInc/65536.0f, vl/65536.0f, t->volume[0],
             //        (vl + vlInc*frameCount)/65536.0f, frameCount);
 
@@ -750,7 +750,7 @@ void AudioMixer::track__16BitsMono(track_t* t, int32_t* out, size_t frameCount, 
             const int32_t vrInc = t->volumeInc[1];
             const int32_t vaInc = t->auxInc;
 
-            // LOGD("[2] %p: inc=%f, v0=%f, v1=%d, final=%f, count=%d",
+            // ALOGD("[2] %p: inc=%f, v0=%f, v1=%d, final=%f, count=%d",
             //         t, vlInc/65536.0f, vl/65536.0f, t->volume[0],
             //         (vl + vlInc*frameCount)/65536.0f, frameCount);
 
@@ -791,7 +791,7 @@ void AudioMixer::track__16BitsMono(track_t* t, int32_t* out, size_t frameCount, 
             const int32_t vlInc = t->volumeInc[0];
             const int32_t vrInc = t->volumeInc[1];
 
-            // LOGD("[2] %p: inc=%f, v0=%f, v1=%d, final=%f, count=%d",
+            // ALOGD("[2] %p: inc=%f, v0=%f, v1=%d, final=%f, count=%d",
             //         t, vlInc/65536.0f, vl/65536.0f, t->volume[0],
             //         (vl + vlInc*frameCount)/65536.0f, frameCount);
 
@@ -1059,7 +1059,7 @@ void AudioMixer::process__OneTrack16BitsStereoNoResampling(state_t* state)
         // been enabled for mixing.
         if (in == NULL || ((unsigned long)in & 3)) {
             memset(out, 0, numFrames*MAX_NUM_CHANNELS*sizeof(int16_t));
-            LOGE_IF(((unsigned long)in & 3), "process stereo track: input buffer alignment pb: buffer %p track %d, channels %d, needs %08x",
+            ALOGE_IF(((unsigned long)in & 3), "process stereo track: input buffer alignment pb: buffer %p track %d, channels %d, needs %08x",
                     in, i, t.channelCount, t.needs);
             return;
         }

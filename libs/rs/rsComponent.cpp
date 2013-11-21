@@ -263,7 +263,7 @@ static const char * gKindStrings[] = {
 
 void Component::dumpLOGV(const char *prefix) const
 {
-    LOGV("%s   Component: %s, %s, vectorSize=%i, bits=%i",
+    ALOGV("%s   Component: %s, %s, vectorSize=%i, bits=%i",
          prefix, gTypeStrings[mType], gKindStrings[mKind], mVectorSize, mBits);
 }
 

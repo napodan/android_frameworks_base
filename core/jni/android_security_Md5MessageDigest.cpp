@@ -59,7 +59,7 @@ static void native_update(JNIEnv *env, jobject clazz, jbyteArray dataArray)
     
     data = env->GetByteArrayElements(dataArray, NULL);
     if (data == NULL) {
-        LOGE("Unable to get byte array elements");
+        ALOGE("Unable to get byte array elements");
         jniThrowException(env, "java/lang/IllegalArgumentException",
                           "Invalid data array when calling MessageDigest.update()");
         return;
@@ -80,7 +80,7 @@ static jbyteArray native_digest(JNIEnv *env, jobject clazz)
     MD5_Final((uint8_t*)md, context);  
     
     array = env->NewByteArray(MD5_DIGEST_LENGTH);
-    LOG_ASSERT(array, "Native could not create new byte[]");
+    ALOG_ASSERT(array, "Native could not create new byte[]");
     
     env->SetByteArrayRegion(array, 0, MD5_DIGEST_LENGTH, md);
     
@@ -109,13 +109,13 @@ int register_android_security_Md5MessageDigest(JNIEnv *env)
 
     clazz = env->FindClass("android/security/Md5MessageDigest");
     if (clazz == NULL) {
-        LOGE("Can't find android/security/Md5MessageDigest");
+        ALOGE("Can't find android/security/Md5MessageDigest");
         return -1;
     }
     
     fields.context = env->GetFieldID(clazz, "mNativeMd5Context", "I");
     if (fields.context == NULL) {
-        LOGE("Can't find Md5MessageDigest.mNativeMd5Context");
+        ALOGE("Can't find Md5MessageDigest.mNativeMd5Context");
         return -1;
     }
 

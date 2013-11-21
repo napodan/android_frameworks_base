@@ -48,7 +48,7 @@ GraphicBufferMapper::GraphicBufferMapper()
 {
     hw_module_t const* module;
     int err = hw_get_module(GRALLOC_HARDWARE_MODULE_ID, &module);
-    LOGE_IF(err, "FATAL: can't find the %s module", GRALLOC_HARDWARE_MODULE_ID);
+    ALOGE_IF(err, "FATAL: can't find the %s module", GRALLOC_HARDWARE_MODULE_ID);
     if (err == 0) {
         mAllocMod = (gralloc_module_t const *)module;
     }
@@ -62,7 +62,7 @@ status_t GraphicBufferMapper::registerBuffer(buffer_handle_t handle)
     } else {
         err = sw_gralloc_handle_t::registerBuffer((sw_gralloc_handle_t*)handle);
     }
-    LOGW_IF(err, "registerBuffer(%p) failed %d (%s)",
+    ALOGW_IF(err, "registerBuffer(%p) failed %d (%s)",
             handle, err, strerror(-err));
     return err;
 }
@@ -75,7 +75,7 @@ status_t GraphicBufferMapper::unregisterBuffer(buffer_handle_t handle)
     } else {
         err = sw_gralloc_handle_t::unregisterBuffer((sw_gralloc_handle_t*)handle);
     }
-    LOGW_IF(err, "unregisterBuffer(%p) failed %d (%s)",
+    ALOGW_IF(err, "unregisterBuffer(%p) failed %d (%s)",
             handle, err, strerror(-err));
     return err;
 }
@@ -93,7 +93,7 @@ status_t GraphicBufferMapper::lock(buffer_handle_t handle,
                 bounds.left, bounds.top, bounds.width(), bounds.height(),
                 vaddr);
     }
-    LOGW_IF(err, "lock(...) failed %d (%s)", err, strerror(-err));
+    ALOGW_IF(err, "lock(...) failed %d (%s)", err, strerror(-err));
     return err;
 }
 
@@ -105,7 +105,7 @@ status_t GraphicBufferMapper::unlock(buffer_handle_t handle)
     } else {
         err = sw_gralloc_handle_t::unlock((sw_gralloc_handle_t*)handle);
     }
-    LOGW_IF(err, "unlock(...) failed %d (%s)", err, strerror(-err));
+    ALOGW_IF(err, "unlock(...) failed %d (%s)", err, strerror(-err));
     return err;
 }
 
@@ -140,7 +140,7 @@ status_t sw_gralloc_handle_t::alloc(uint32_t w, uint32_t h, int format,
     
     int fd = ashmem_create_region("sw-gralloc-buffer", size);
     if (fd < 0) {
-        LOGE("ashmem_create_region(size=%d) failed (%s)",
+        ALOGE("ashmem_create_region(size=%d) failed (%s)",
                 size, strerror(-errno));
         return -errno;
     }
@@ -150,7 +150,7 @@ status_t sw_gralloc_handle_t::alloc(uint32_t w, uint32_t h, int format,
         prot |= PROT_WRITE;
     
     if (ashmem_set_prot_region(fd, prot) < 0) {
-        LOGE("ashmem_set_prot_region(fd=%d, prot=%x) failed (%s)",
+        ALOGE("ashmem_set_prot_region(fd=%d, prot=%x) failed (%s)",
                 fd, prot, strerror(-errno));
         close(fd);
         return -errno;
@@ -158,7 +158,7 @@ status_t sw_gralloc_handle_t::alloc(uint32_t w, uint32_t h, int format,
 
     void* base = mmap(0, size, prot, MAP_SHARED, fd, 0);
     if (base == MAP_FAILED) {
-        LOGE("alloc mmap(fd=%d, size=%d, prot=%x) failed (%s)",
+        ALOGE("alloc mmap(fd=%d, size=%d, prot=%x) failed (%s)",
                 fd, size, prot, strerror(-errno));
         close(fd);
         return -errno;
@@ -192,7 +192,7 @@ status_t sw_gralloc_handle_t::registerBuffer(sw_gralloc_handle_t* hnd)
     if (hnd->pid != getpid()) {
         void* base = mmap(0, hnd->size, hnd->prot, MAP_SHARED, hnd->fd, 0);
         if (base == MAP_FAILED) {
-            LOGE("registerBuffer mmap(fd=%d, size=%d, prot=%x) failed (%s)",
+            ALOGE("registerBuffer mmap(fd=%d, size=%d, prot=%x) failed (%s)",
                     hnd->fd, hnd->size, hnd->prot, strerror(-errno));
             return -errno;
         }

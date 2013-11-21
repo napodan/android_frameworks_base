@@ -192,7 +192,7 @@ static sp<ABuffer> MakeAVCCodecSpecificData(
 
         if (i == 0) {
             FindAVCDimensions(nal, width, height);
-            LOGI("dimensions %dx%d", *width, *height);
+            ALOGI("dimensions %dx%d", *width, *height);
         }
     }
 
@@ -416,7 +416,7 @@ static bool ExtractDimensionsFromVOLHeader(
     *width = video_object_layer_width;
     *height = video_object_layer_height;
 
-    LOGI("VOL dimensions = %dx%d", *width, *height);
+    ALOGI("VOL dimensions = %dx%d", *width, *height);
 
     return true;
 }
@@ -719,7 +719,7 @@ void APacketSource::updateNormalPlayTime_l(const sp<ABuffer> &buffer) {
 void APacketSource::queueAccessUnit(const sp<ABuffer> &buffer) {
     int32_t damaged;
     if (buffer->meta()->findInt32("damaged", &damaged) && damaged) {
-        LOGV("discarding damaged AU");
+        ALOGV("discarding damaged AU");
         return;
     }
 
@@ -730,7 +730,7 @@ void APacketSource::queueAccessUnit(const sp<ABuffer> &buffer) {
         // hardware h.264 decoder that requires this to be the case.
 
         if (!IsIDR(buffer)) {
-            LOGV("skipping AU while scanning for next IDR frame.");
+            ALOGV("skipping AU while scanning for next IDR frame.");
             return;
         }
 
@@ -789,7 +789,7 @@ int64_t APacketSource::getQueueDurationUs(bool *eos) {
     CHECK(last->meta()->findInt64("timeUs", &lastTimeUs));
 
     if (lastTimeUs < firstTimeUs) {
-        LOGE("Huh? Time moving backwards? %lld > %lld",
+        ALOGE("Huh? Time moving backwards? %lld > %lld",
              firstTimeUs, lastTimeUs);
 
         return 0;

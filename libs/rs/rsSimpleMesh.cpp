@@ -156,7 +156,7 @@ SimpleMesh *SimpleMesh::createFromStream(Context *rsc, IStream *stream)
     // First make sure we are reading the correct object
     RsA3DClassID classID = (RsA3DClassID)stream->loadU32();
     if(classID != RS_A3D_CLASS_ID_SIMPLE_MESH) {
-        LOGE("simple mesh loading skipped due to invalid class id");
+        ALOGE("simple mesh loading skipped due to invalid class id");
         return NULL;
     }
 

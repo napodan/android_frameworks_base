@@ -133,7 +133,7 @@ size_t PageCache::releaseFromStart(size_t maxBytes) {
 }
 
 void PageCache::copy(size_t from, void *data, size_t size) {
-    LOGV("copy from %d size %d", from, size);
+    ALOGV("copy from %d size %d", from, size);
 
     CHECK_LE(from + size, mTotalSize);
 
@@ -236,7 +236,7 @@ void NuCachedSource2::onMessageReceived(const sp<AMessage> &msg) {
 }
 
 void NuCachedSource2::fetchInternal() {
-    LOGV("fetchInternal");
+    ALOGV("fetchInternal");
 
     CHECK_EQ(mFinalStatus, (status_t)OK);
 
@@ -248,11 +248,11 @@ void NuCachedSource2::fetchInternal() {
     Mutex::Autolock autoLock(mLock);
 
     if (n < 0) {
-        LOGE("source returned error %ld", n);
+        ALOGE("source returned error %ld", n);
         mFinalStatus = n;
         mCache->releasePage(page);
     } else if (n == 0) {
-        LOGI("ERROR_END_OF_STREAM");
+        ALOGI("ERROR_END_OF_STREAM");
         mFinalStatus = ERROR_END_OF_STREAM;
         mCache->releasePage(page);
     } else {
@@ -262,10 +262,10 @@ void NuCachedSource2::fetchInternal() {
 }
 
 void NuCachedSource2::onFetch() {
-    LOGV("onFetch");
+    ALOGV("onFetch");
 
     if (mFinalStatus != OK) {
-        LOGV("EOS reached, done prefetching for now");
+        ALOGV("EOS reached, done prefetching for now");
         mFetching = false;
     }
 
@@ -277,7 +277,7 @@ void NuCachedSource2::onFetch() {
 
     if (mFetching || keepAlive) {
         if (keepAlive) {
-            LOGI("Keep alive");
+            ALOGI("Keep alive");
         }
 
         fetchInternal();
@@ -285,7 +285,7 @@ void NuCachedSource2::onFetch() {
         mLastFetchTimeUs = ALooper::GetNowUs();
 
         if (mFetching && mCache->totalSize() >= kHighWaterThreshold) {
-            LOGI("Cache full, done prefetching for now");
+            ALOGI("Cache full, done prefetching for now");
             mFetching = false;
         }
     } else if (!mSuspended) {
@@ -298,7 +298,7 @@ void NuCachedSource2::onFetch() {
 }
 
 void NuCachedSource2::onRead(const sp<AMessage> &msg) {
-    LOGV("onRead");
+    ALOGV("onRead");
 
     int64_t offset;
     CHECK(msg->findInt64("offset", &offset));
@@ -355,14 +355,14 @@ void NuCachedSource2::restartPrefetcherIfNecessary_l(bool force) {
     size_t actualBytes = mCache->releaseFromStart(maxBytes);
     mCacheOffset += actualBytes;
 
-    LOGI("restarting prefetcher, totalSize = %d", mCache->totalSize());
+    ALOGI("restarting prefetcher, totalSize = %d", mCache->totalSize());
     mFetching = true;
 }
 
 ssize_t NuCachedSource2::readAt(off_t offset, void *data, size_t size) {
     Mutex::Autolock autoSerializer(mSerializer);
 
-    LOGV("readAt offset %ld, size %d", offset, size);
+    ALOGV("readAt offset %ld, size %d", offset, size);
 
     Mutex::Autolock autoLock(mLock);
 
@@ -424,7 +424,7 @@ size_t NuCachedSource2::approxDataRemaining_l(bool *eos) {
 ssize_t NuCachedSource2::readInternal(off_t offset, void *data, size_t size) {
     CHECK(size <= kHighWaterThreshold);
 
-    LOGV("readInternal offset %ld size %d", offset, size);
+    ALOGV("readInternal offset %ld size %d", offset, size);
 
     Mutex::Autolock autoLock(mLock);
 
@@ -465,7 +465,7 @@ ssize_t NuCachedSource2::readInternal(off_t offset, void *data, size_t size) {
         return size;
     }
 
-    LOGV("deferring read");
+    ALOGV("deferring read");
 
     return -EAGAIN;
 }
@@ -478,7 +478,7 @@ status_t NuCachedSource2::seekInternal_l(off_t offset) {
         return OK;
     }
 
-    LOGI("new range: offset= %ld", offset);
+    ALOGI("new range: offset= %ld", offset);
 
     mCacheOffset = offset;
 
@@ -492,7 +492,7 @@ status_t NuCachedSource2::seekInternal_l(off_t offset) {
 }
 
 void NuCachedSource2::clearCacheAndResume() {
-    LOGV("clearCacheAndResume");
+    ALOGV("clearCacheAndResume");
 
     Mutex::Autolock autoLock(mLock);
 

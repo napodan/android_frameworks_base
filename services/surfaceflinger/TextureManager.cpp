@@ -164,7 +164,7 @@ status_t TextureManager::initEglImage(Image* pImage,
         glEGLImageTargetTexture2DOES(target, (GLeglImageOES)pImage->image);
         GLint error = glGetError();
         if (error != GL_NO_ERROR) {
-            LOGE("glEGLImageTargetTexture2DOES(%p) failed err=0x%04x",
+            ALOGE("glEGLImageTargetTexture2DOES(%p) failed err=0x%04x",
                     pImage->image, error);
             err = INVALID_OPERATION;
         } else {
@@ -174,7 +174,7 @@ status_t TextureManager::initEglImage(Image* pImage,
             pImage->height = clientBuf->height;
         }
     } else {
-        LOGE("eglCreateImageKHR() failed. err=0x%4x", eglGetError());
+        ALOGE("eglCreateImageKHR() failed. err=0x%4x", eglGetError());
         err = INVALID_OPERATION;
     }
     return err;
@@ -185,7 +185,7 @@ status_t TextureManager::loadTexture(Texture* texture,
 {
     if (texture->name == -1UL) {
         status_t err = initTexture(texture);
-        LOGE_IF(err, "loadTexture failed in initTexture (%s)", strerror(err));
+        ALOGE_IF(err, "loadTexture failed in initTexture (%s)", strerror(err));
         return err;
     }
 
@@ -268,7 +268,7 @@ status_t TextureManager::loadTexture(Texture* texture,
                     GL_LUMINANCE, GL_UNSIGNED_BYTE, data);
         } else {
             // oops, we don't handle this format!
-            LOGE("texture=%d, using format %d, which is not "
+            ALOGE("texture=%d, using format %d, which is not "
                  "supported by the GL", texture->name, t.format);
         }
     }

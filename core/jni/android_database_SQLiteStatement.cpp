@@ -59,7 +59,7 @@ static void native_execute(JNIEnv* env, jobject object)
 
     // Throw an exception if an error occured
     if (err == SQLITE_ROW) {
-        LOGV("Queries cannot be performed using execute(). use SQLiteDatabase.query() instead.");
+        ALOGV("Queries cannot be performed using execute(). use SQLiteDatabase.query() instead.");
     } else if (err != SQLITE_DONE) {
         throw_sqlite3_exception_errcode(env, err, sqlite3_errmsg(handle));
     }
@@ -132,7 +132,7 @@ int register_android_database_SQLiteStatement(JNIEnv * env)
 
     clazz = env->FindClass("android/database/sqlite/SQLiteStatement");
     if (clazz == NULL) {
-        LOGE("Can't find android/database/sqlite/SQLiteStatement");
+        ALOGE("Can't find android/database/sqlite/SQLiteStatement");
         return -1;
     }
 
@@ -140,7 +140,7 @@ int register_android_database_SQLiteStatement(JNIEnv * env)
     gStatementField = env->GetFieldID(clazz, "nStatement", "I");
 
     if (gHandleField == NULL || gStatementField == NULL) {
-        LOGE("Error locating fields");
+        ALOGE("Error locating fields");
         return -1;
     }
 

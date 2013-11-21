@@ -109,7 +109,7 @@ Mesh *Mesh::createFromStream(Context *rsc, IStream *stream)
     // First make sure we are reading the correct object
     RsA3DClassID classID = (RsA3DClassID)stream->loadU32();
     if(classID != RS_A3D_CLASS_ID_MESH) {
-        LOGE("mesh loading skipped due to invalid class id");
+        ALOGE("mesh loading skipped due to invalid class id");
         return NULL;
     }
 
@@ -135,7 +135,7 @@ Mesh *Mesh::createFromStream(Context *rsc, IStream *stream)
         verts->mAllocationCount = stream->loadU32();
         verts->mAllocations = new Allocation *[verts->mAllocationCount];
 
-        LOGE("processChunk_Verticies count %i", verts->mAllocationCount);
+        ALOGE("processChunk_Verticies count %i", verts->mAllocationCount);
         for (uint32_t aCount = 0; aCount < verts->mAllocationCount; aCount++) {
             verts->mAllocations[aCount] = Allocation::createFromStream(rsc, stream);
         }

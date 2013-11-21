@@ -104,7 +104,7 @@ AVCEncoder::AVCEncoder(
       mInputFrameData(NULL),
       mGroup(NULL) {
 
-    LOGV("Construct software AVCEncoder");
+    ALOGV("Construct software AVCEncoder");
 
     mHandle = new tagAVCHandle;
     memset(mHandle, 0, sizeof(tagAVCHandle));
@@ -120,7 +120,7 @@ AVCEncoder::AVCEncoder(
 }
 
 AVCEncoder::~AVCEncoder() {
-    LOGV("Destruct software AVCEncoder");
+    ALOGV("Destruct software AVCEncoder");
     if (mStarted) {
         stop();
     }
@@ -130,7 +130,7 @@ AVCEncoder::~AVCEncoder() {
 }
 
 status_t AVCEncoder::initCheck(const sp<MetaData>& meta) {
-    LOGV("initCheck");
+    ALOGV("initCheck");
     CHECK(meta->findInt32(kKeyWidth, &mVideoWidth));
     CHECK(meta->findInt32(kKeyHeight, &mVideoHeight));
     CHECK(meta->findInt32(kKeySampleRate, &mVideoFrameRate));
@@ -140,7 +140,7 @@ status_t AVCEncoder::initCheck(const sp<MetaData>& meta) {
     CHECK(meta->findInt32(kKeyColorFormat, &mVideoColorFormat));
     if (mVideoColorFormat != OMX_COLOR_FormatYUV420Planar) {
         if (mVideoColorFormat != OMX_COLOR_FormatYUV420SemiPlanar) {
-            LOGE("Color format %d is not supported", mVideoColorFormat);
+            ALOGE("Color format %d is not supported", mVideoColorFormat);
             return BAD_VALUE;
         }
         // Allocate spare buffer only when color conversion is needed.
@@ -152,7 +152,7 @@ status_t AVCEncoder::initCheck(const sp<MetaData>& meta) {
 
     // XXX: Remove this restriction
     if (mVideoWidth % 16 != 0 || mVideoHeight % 16 != 0) {
-        LOGE("Video frame size %dx%d must be a multiple of 16",
+        ALOGE("Video frame size %dx%d must be a multiple of 16",
             mVideoWidth, mVideoHeight);
         return BAD_VALUE;
     }
@@ -221,7 +221,7 @@ status_t AVCEncoder::initCheck(const sp<MetaData>& meta) {
         mEncParams->idr_period =
             (iFramesIntervalSec * mVideoFrameRate);
     }
-    LOGV("idr_period: %d, I-frames interval: %d seconds, and frame rate: %d",
+    ALOGV("idr_period: %d, I-frames interval: %d seconds, and frame rate: %d",
         mEncParams->idr_period, iFramesIntervalSec, mVideoFrameRate);
 
     // Set profile and level
@@ -250,20 +250,20 @@ status_t AVCEncoder::initCheck(const sp<MetaData>& meta) {
 }
 
 status_t AVCEncoder::start(MetaData *params) {
-    LOGV("start");
+    ALOGV("start");
     if (mInitCheck != OK) {
         return mInitCheck;
     }
 
     if (mStarted) {
-        LOGW("Call start() when encoder already started");
+        ALOGW("Call start() when encoder already started");
         return OK;
     }
 
     AVCEnc_Status err;
     err = PVAVCEncInitialize(mHandle, mEncParams, NULL, NULL);
     if (err != AVCENC_SUCCESS) {
-        LOGE("Failed to initialize the encoder: %d", err);
+        ALOGE("Failed to initialize the encoder: %d", err);
         return UNKNOWN_ERROR;
     }
 
@@ -286,9 +286,9 @@ status_t AVCEncoder::start(MetaData *params) {
 }
 
 status_t AVCEncoder::stop() {
-    LOGV("stop");
+    ALOGV("stop");
     if (!mStarted) {
-        LOGW("Call stop() when encoder has not started");
+        ALOGW("Call stop() when encoder has not started");
         return OK;
     }
 
@@ -316,7 +316,7 @@ status_t AVCEncoder::stop() {
 }
 
 void AVCEncoder::releaseOutputBuffers() {
-    LOGV("releaseOutputBuffers");
+    ALOGV("releaseOutputBuffers");
     for (size_t i = 0; i < mOutputBuffers.size(); ++i) {
         MediaBuffer *buffer = mOutputBuffers.editItemAt(i);
         buffer->setObserver(NULL);
@@ -326,7 +326,7 @@ void AVCEncoder::releaseOutputBuffers() {
 }
 
 sp<MetaData> AVCEncoder::getFormat() {
-    LOGV("getFormat");
+    ALOGV("getFormat");
     return mFormat;
 }
 
@@ -381,7 +381,7 @@ status_t AVCEncoder::read(
                     *out = outputBuffer;
                     return OK;
                 default:
-                    LOGE("Nal type (%d) other than SPS/PPS is unexpected", type);
+                    ALOGE("Nal type (%d) other than SPS/PPS is unexpected", type);
                     return UNKNOWN_ERROR;
             }
         }
@@ -395,7 +395,7 @@ status_t AVCEncoder::read(
         }
         status_t err = mSource->read(&mInputBuffer, options);
         if (err != OK) {
-            LOGE("Failed to read input video frame: %d", err);
+            ALOGE("Failed to read input video frame: %d", err);
             outputBuffer->release();
             return err;
         }
@@ -481,7 +481,7 @@ status_t AVCEncoder::read(
         if (mIsIDRFrame) {
             outputBuffer->meta_data()->setInt32(kKeyIsSyncFrame, mIsIDRFrame);
             mIsIDRFrame = 0;
-            LOGV("Output an IDR frame");
+            ALOGV("Output an IDR frame");
         }
         mReadyForNextFrame = true;
         AVCFrameIO recon;

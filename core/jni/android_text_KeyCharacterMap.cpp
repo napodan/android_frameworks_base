@@ -155,7 +155,7 @@ int register_android_text_KeyCharacterMap(JNIEnv* env)
 
     clazz = env->FindClass("android/view/KeyCharacterMap$KeyData");
     if (clazz == NULL) {
-        LOGE("Can't find android/view/KeyCharacterMap$KeyData");
+        ALOGE("Can't find android/view/KeyCharacterMap$KeyData");
         return -1;
     }
 

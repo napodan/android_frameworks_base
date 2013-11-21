@@ -294,7 +294,7 @@ void NativeInputManager::dump(String8& dump) {
 
 bool NativeInputManager::checkAndClearExceptionFromCallback(JNIEnv* env, const char* methodName) {
     if (env->ExceptionCheck()) {
-        LOGE("An exception was thrown by callback '%s'.", methodName);
+        ALOGE("An exception was thrown by callback '%s'.", methodName);
         LOGE_EX(env);
         env->ExceptionClear();
         return true;
@@ -323,7 +323,7 @@ status_t NativeInputManager::registerInputChannel(JNIEnv* env,
         const sp<InputChannel>& inputChannel, jobject inputChannelObj, bool monitor) {
     jweak inputChannelObjWeak = env->NewWeakGlobalRef(inputChannelObj);
     if (! inputChannelObjWeak) {
-        LOGE("Could not create weak reference for input channel.");
+        ALOGE("Could not create weak reference for input channel.");
         LOGE_EX(env);
         return NO_MEMORY;
     }
@@ -334,7 +334,7 @@ status_t NativeInputManager::registerInputChannel(JNIEnv* env,
 
         ssize_t index = mInputChannelObjWeakTable.indexOfKey(inputChannel.get());
         if (index >= 0) {
-            LOGE("Input channel object '%s' has already been registered",
+            ALOGE("Input channel object '%s' has already been registered",
                     inputChannel->getName().string());
             status = INVALID_OPERATION;
             goto DeleteWeakRef;
@@ -368,7 +368,7 @@ status_t NativeInputManager::unregisterInputChannel(JNIEnv* env,
 
         ssize_t index = mInputChannelObjWeakTable.indexOfKey(inputChannel.get());
         if (index < 0) {
-            LOGE("Input channel object '%s' is not currently registered",
+            ALOGE("Input channel object '%s' is not currently registered",
                     inputChannel->getName().string());
             return INVALID_OPERATION;
         }
@@ -574,7 +574,7 @@ void NativeInputManager::getExcludedDeviceNames(Vector<String8>& outExcludedDevi
 void NativeInputManager::notifySwitch(nsecs_t when, int32_t switchCode,
         int32_t switchValue, uint32_t policyFlags) {
 #if DEBUG_INPUT_DISPATCHER_POLICY
-    LOGD("notifySwitch - when=%lld, switchCode=%d, switchValue=%d, policyFlags=0x%x",
+    ALOGD("notifySwitch - when=%lld, switchCode=%d, switchValue=%d, policyFlags=0x%x",
             when, switchCode, switchValue, policyFlags);
 #endif
 
@@ -591,7 +591,7 @@ void NativeInputManager::notifySwitch(nsecs_t when, int32_t switchCode,
 
 void NativeInputManager::notifyConfigurationChanged(nsecs_t when) {
 #if DEBUG_INPUT_DISPATCHER_POLICY
-    LOGD("notifyConfigurationChanged - when=%lld", when);
+    ALOGD("notifyConfigurationChanged - when=%lld", when);
 #endif
 
     JNIEnv* env = jniEnv();
@@ -603,7 +603,7 @@ void NativeInputManager::notifyConfigurationChanged(nsecs_t when) {
 nsecs_t NativeInputManager::notifyANR(const sp<InputApplicationHandle>& inputApplicationHandle,
         const sp<InputChannel>& inputChannel) {
 #if DEBUG_INPUT_DISPATCHER_POLICY
-    LOGD("notifyANR");
+    ALOGD("notifyANR");
 #endif
 
     JNIEnv* env = jniEnv();
@@ -633,7 +633,7 @@ nsecs_t NativeInputManager::notifyANR(const sp<InputApplicationHandle>& inputApp
 
 void NativeInputManager::notifyInputChannelBroken(const sp<InputChannel>& inputChannel) {
 #if DEBUG_INPUT_DISPATCHER_POLICY
-    LOGD("notifyInputChannelBroken - inputChannel='%s'", inputChannel->getName().string());
+    ALOGD("notifyInputChannelBroken - inputChannel='%s'", inputChannel->getName().string());
 #endif
 
     JNIEnv* env = jniEnv();
@@ -790,12 +790,12 @@ bool NativeInputManager::populateWindow(JNIEnv* env, jobject windowObj,
             env->ReleaseStringUTFChars(name, nameStr);
             valid = true;
         } else {
-            LOGW("Dropping input target because its input channel is not initialized.");
+            ALOGW("Dropping input target because its input channel is not initialized.");
         }
 
         env->DeleteLocalRef(inputChannelObj);
     } else {
-        LOGW("Dropping input target because the input channel object was null.");
+        ALOGW("Dropping input target because the input channel object was null.");
     }
     return valid;
 }
@@ -810,7 +810,7 @@ void NativeInputManager::setFocusedApplication(JNIEnv* env, jobject applicationO
                 gInputApplicationClassInfo.token);
         jweak tokenObjWeak = env->NewWeakGlobalRef(tokenObj);
         if (! tokenObjWeak) {
-            LOGE("Could not create weak reference for application token.");
+            ALOGE("Could not create weak reference for application token.");
             LOGE_EX(env);
             env->ExceptionClear();
         }
@@ -823,7 +823,7 @@ void NativeInputManager::setFocusedApplication(JNIEnv* env, jobject applicationO
             env->ReleaseStringUTFChars(nameObj, nameStr);
             env->DeleteLocalRef(nameObj);
         } else {
-            LOGE("InputApplication.name should not be null.");
+            ALOGE("InputApplication.name should not be null.");
             name.setTo("unknown");
         }
 
@@ -853,7 +853,7 @@ void NativeInputManager::interceptKeyBeforeQueueing(nsecs_t when,
         int32_t deviceId, int32_t action, int32_t &flags,
         int32_t keyCode, int32_t scanCode, uint32_t& policyFlags) {
 #if DEBUG_INPUT_DISPATCHER_POLICY
-    LOGD("interceptKeyBeforeQueueing - when=%lld, deviceId=%d, action=%d, flags=%d, "
+    ALOGD("interceptKeyBeforeQueueing - when=%lld, deviceId=%d, action=%d, flags=%d, "
             "keyCode=%d, scanCode=%d, policyFlags=0x%x",
             when, deviceId, action, flags, keyCode, scanCode, policyFlags);
 #endif
@@ -912,7 +912,7 @@ void NativeInputManager::interceptKeyBeforeQueueing(nsecs_t when,
 
 void NativeInputManager::interceptGenericBeforeQueueing(nsecs_t when, uint32_t& policyFlags) {
 #if DEBUG_INPUT_DISPATCHER_POLICY
-    LOGD("interceptGenericBeforeQueueing - when=%lld, policyFlags=0x%x", when, policyFlags);
+    ALOGD("interceptGenericBeforeQueueing - when=%lld, policyFlags=0x%x", when, policyFlags);
 #endif
 
     // Policy:
@@ -978,7 +978,7 @@ static sp<NativeInputManager> gNativeInputManager;
 
 static bool checkInputManagerUnitialized(JNIEnv* env) {
     if (gNativeInputManager == NULL) {
-        LOGE("Input manager not initialized.");
+        ALOGE("Input manager not initialized.");
         jniThrowRuntimeException(env, "Input manager not initialized.");
         return true;
     }
@@ -990,7 +990,7 @@ static void android_server_InputManager_nativeInit(JNIEnv* env, jclass clazz,
     if (gNativeInputManager == NULL) {
         gNativeInputManager = new NativeInputManager(callbacks);
     } else {
-        LOGE("Input manager already initialized.");
+        ALOGE("Input manager already initialized.");
         jniThrowRuntimeException(env, "Input manager already initialized.");
     }
 }
@@ -1087,7 +1087,7 @@ static void throwInputChannelNotInitialized(JNIEnv* env) {
 
 static void android_server_InputManager_handleInputChannelDisposed(JNIEnv* env,
         jobject inputChannelObj, const sp<InputChannel>& inputChannel, void* data) {
-    LOGW("Input channel object '%s' was disposed without first being unregistered with "
+    ALOGW("Input channel object '%s' was disposed without first being unregistered with "
             "the input manager!", inputChannel->getName().string());
 
     if (gNativeInputManager != NULL) {

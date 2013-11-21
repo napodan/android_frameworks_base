@@ -52,7 +52,7 @@ bool MtpClient::start() {
         return true;
 
     if (usb_host_init(usb_device_added, usb_device_removed, this)) {
-        LOGE("MtpClient::start failed\n");
+        ALOGE("MtpClient::start failed\n");
         return false;
     }
     mStarted = true;
@@ -65,7 +65,7 @@ void MtpClient::usbDeviceAdded(const char *devname) {
 
     struct usb_device *device = usb_device_open(devname);
     if (!device) {
-        LOGE("usb_device_open failed\n");
+        ALOGE("usb_device_open failed\n");
         return;
     }
 
@@ -79,7 +79,7 @@ void MtpClient::usbDeviceAdded(const char *devname) {
                 interface->bInterfaceSubClass == 1 && // Still Image Capture
                 interface->bInterfaceProtocol == 1)     // Picture Transfer Protocol (PIMA 15470)
             {
-                LOGD("Found camera: \"%s\" \"%s\"\n", usb_device_get_manufacturer_name(device),
+                ALOGD("Found camera: \"%s\" \"%s\"\n", usb_device_get_manufacturer_name(device),
                         usb_device_get_product_name(device));
 
                 // interface should be followed by three endpoints
@@ -90,7 +90,7 @@ void MtpClient::usbDeviceAdded(const char *devname) {
                 for (int i = 0; i < 3; i++) {
                     ep = (struct usb_endpoint_descriptor *)usb_descriptor_iter_next(&iter);
                     if (!ep || ep->bDescriptorType != USB_DT_ENDPOINT) {
-                        LOGE("endpoints not found\n");
+                        ALOGE("endpoints not found\n");
                         return;
                     }
                     if (ep->bmAttributes == USB_ENDPOINT_XFER_BULK) {
@@ -104,7 +104,7 @@ void MtpClient::usbDeviceAdded(const char *devname) {
                     }
                 }
                 if (!ep_in_desc || !ep_out_desc || !ep_intr_desc) {
-                    LOGE("endpoints not found\n");
+                    ALOGE("endpoints not found\n");
                     return;
                 }
 
@@ -113,7 +113,7 @@ void MtpClient::usbDeviceAdded(const char *devname) {
                 struct usb_endpoint *ep_intr = usb_endpoint_open(device, ep_intr_desc);
 
                 if (usb_device_claim_interface(device, interface->bInterfaceNumber)) {
-                    LOGE("usb_device_claim_interface failed\n");
+                    ALOGE("usb_device_claim_interface failed\n");
                     usb_endpoint_close(ep_in);
                     usb_endpoint_close(ep_out);
                     usb_endpoint_close(ep_intr);
@@ -149,19 +149,19 @@ void MtpClient::usbDeviceRemoved(const char *devname) {
             deviceRemoved(device);
             mDeviceList.removeAt(i);
             delete device;
-            LOGD("Camera removed!\n");
+            ALOGD("Camera removed!\n");
             break;
         }
     }
 }
 
 void MtpClient::usb_device_added(const char *devname, void* client_data) {
-    LOGD("usb_device_added %s\n", devname);
+    ALOGD("usb_device_added %s\n", devname);
     ((MtpClient *)client_data)->usbDeviceAdded(devname);
 }
 
 void MtpClient::usb_device_removed(const char *devname, void* client_data) {
-    LOGD("usb_device_removed %s\n", devname);
+    ALOGD("usb_device_removed %s\n", devname);
     ((MtpClient *)client_data)->usbDeviceRemoved(devname);
 }
 

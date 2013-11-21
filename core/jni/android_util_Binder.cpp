@@ -39,8 +39,8 @@
 
 #include <android_runtime/AndroidRuntime.h>
 
-//#undef LOGV
-//#define LOGV(...) fprintf(stderr, __VA_ARGS__)
+//#undef ALOGV
+//#define ALOGV(...) fprintf(stderr, __VA_ARGS__)
 
 using namespace android;
 
@@ -157,7 +157,7 @@ static void incRefsCreated(JNIEnv* env)
         env->CallStaticVoidMethod(gBinderInternalOffsets.mClass,
                 gBinderInternalOffsets.mForceGc);
     } else {
-        LOGV("Now have %d binder ops", old);
+        ALOGV("Now have %d binder ops", old);
     }
 }
 
@@ -182,8 +182,8 @@ static void report_exception(JNIEnv* env, jthrowable excep, const char* msg)
 
     if ((tagstr == NULL) || (msgstr == NULL)) {
         env->ExceptionClear();      /* assume exception (OOM?) was thrown */
-        LOGE("Unable to call Log.e()\n");
-        LOGE("%s", msg);
+        ALOGE("Unable to call Log.e()\n");
+        ALOGE("%s", msg);
         goto bail;
     }
 
@@ -191,7 +191,7 @@ static void report_exception(JNIEnv* env, jthrowable excep, const char* msg)
         gLogOffsets.mClass, gLogOffsets.mLogE, tagstr, msgstr, excep);
     if (env->ExceptionCheck()) {
         /* attempting to log the failure has failed */
-        LOGW("Failed trying to log exception, msg='%s'\n", msg);
+        ALOGW("Failed trying to log exception, msg='%s'\n", msg);
         env->ExceptionClear();
     }
 
@@ -209,7 +209,7 @@ static void report_exception(JNIEnv* env, jthrowable excep, const char* msg)
         env->Throw(excep);
         vm->DetachCurrentThread();
         sleep(60);
-        LOGE("Forcefully exiting");
+        ALOGE("Forcefully exiting");
         exit(1);
         *((int *) 1) = 1;
     }
@@ -237,7 +237,7 @@ public:
     JavaBBinder(JNIEnv* env, jobject object)
         : mVM(jnienv_to_javavm(env)), mObject(env->NewGlobalRef(object))
     {
-        LOGV("Creating JavaBBinder %p\n", this);
+        ALOGV("Creating JavaBBinder %p\n", this);
         android_atomic_inc(&gNumLocalRefs);
         incRefsCreated(env);
     }
@@ -255,7 +255,7 @@ public:
 protected:
     virtual ~JavaBBinder()
     {
-        LOGV("Destroying JavaBBinder %p\n", this);
+        ALOGV("Destroying JavaBBinder %p\n", this);
         android_atomic_dec(&gNumLocalRefs);
         JNIEnv* env = javavm_to_jnienv(mVM);
         env->DeleteGlobalRef(mObject);
@@ -266,7 +266,7 @@ protected:
     {
         JNIEnv* env = javavm_to_jnienv(mVM);
 
-        LOGV("onTransact() on %p calling object %p in env %p vm %p\n", this, mObject, env, mVM);
+        ALOGV("onTransact() on %p calling object %p in env %p vm %p\n", this, mObject, env, mVM);
 
         IPCThreadState* thread_state = IPCThreadState::self();
         const int strict_policy_before = thread_state->getStrictModePolicy();
@@ -325,11 +325,11 @@ public:
     JavaBBinderHolder(JNIEnv* env, jobject object)
         : mObject(object)
     {
-        LOGV("Creating JavaBBinderHolder for Object %p\n", object);
+        ALOGV("Creating JavaBBinderHolder for Object %p\n", object);
     }
     ~JavaBBinderHolder()
     {
-        LOGV("Destroying JavaBBinderHolder for Object %p\n", mObject);
+        ALOGV("Destroying JavaBBinderHolder for Object %p\n", mObject);
     }
 
     sp<JavaBBinder> get(JNIEnv* env)
@@ -339,7 +339,7 @@ public:
         if (b == NULL) {
             b = new JavaBBinder(env, mObject);
             mBinder = b;
-            LOGV("Creating JavaBinder %p (refs %p) for Object %p, weakCount=%d\n",
+            ALOGV("Creating JavaBinder %p (refs %p) for Object %p, weakCount=%d\n",
                  b.get(), b->getWeakRefs(), mObject, b->getWeakRefs()->getWeakCount());
         }
 
@@ -376,7 +376,7 @@ public:
     {
         JNIEnv* env = javavm_to_jnienv(mVM);
 
-        LOGV("Receiving binderDied() on JavaDeathRecipient %p\n", this);
+        ALOGV("Receiving binderDied() on JavaDeathRecipient %p\n", this);
 
         env->CallStaticVoidMethod(gBinderProxyOffsets.mClass,
             gBinderProxyOffsets.mSendDeathNotice, mObject);
@@ -406,7 +406,7 @@ public:
 protected:
     virtual ~JavaDeathRecipient()
     {
-        //LOGI("Removing death ref: recipient=%p\n", mObject);
+        //ALOGI("Removing death ref: recipient=%p\n", mObject);
         android_atomic_dec(&gNumDeathRefs);
         JNIEnv* env = javavm_to_jnienv(mVM);
         env->DeleteGlobalRef(mObject);
@@ -452,10 +452,10 @@ jobject javaObjectForIBinder(JNIEnv* env, const sp<IBinder>& val)
     if (object != NULL) {
         jobject res = env->CallObjectMethod(object, gWeakReferenceOffsets.mGet);
         if (res != NULL) {
-            LOGV("objectForBinder %p: found existing %p!\n", val.get(), res);
+            ALOGV("objectForBinder %p: found existing %p!\n", val.get(), res);
             return res;
         }
-        LOGV("Proxy object %p of IBinder %p no longer in working set!!!", object, val.get());
+        ALOGV("Proxy object %p of IBinder %p no longer in working set!!!", object, val.get());
         android_atomic_dec(&gNumProxyRefs);
         val->detachObject(&gBinderProxyOffsets);
         env->DeleteGlobalRef(object);
@@ -463,7 +463,7 @@ jobject javaObjectForIBinder(JNIEnv* env, const sp<IBinder>& val)
 
     object = env->NewObject(gBinderProxyOffsets.mClass, gBinderProxyOffsets.mConstructor);
     if (object != NULL) {
-        LOGV("objectForBinder %p: created new %p!\n", val.get(), object);
+        ALOGV("objectForBinder %p: created new %p!\n", val.get(), object);
         // The proxy holds a reference to the native object.
         env->SetIntField(object, gBinderProxyOffsets.mObject, (int)val.get());
         val->incStrong(object);
@@ -498,7 +498,7 @@ sp<IBinder> ibinderForJavaObject(JNIEnv* env, jobject obj)
             env->GetIntField(obj, gBinderProxyOffsets.mObject);
     }
 
-    LOGW("ibinderForJavaObject: %p is not a Binder object", obj);
+    ALOGW("ibinderForJavaObject: %p is not a Binder object", obj);
     return NULL;
 }
 
@@ -519,7 +519,7 @@ jobject newFileDescriptor(JNIEnv* env, int fd)
     jobject object = env->NewObject(
             gFileDescriptorOffsets.mClass, gFileDescriptorOffsets.mConstructor);
     if (object != NULL) {
-        //LOGI("Created new FileDescriptor %p with fd %d\n", object, fd);
+        //ALOGI("Created new FileDescriptor %p with fd %d\n", object, fd);
         env->SetIntField(object, gFileDescriptorOffsets.mDescriptor, fd);
     }
     return object;
@@ -574,11 +574,11 @@ void signalExceptionForError(JNIEnv* env, jobject obj, status_t err)
             jniThrowException(env, "java/lang/RuntimeException", "Unknown transaction code");
             break;
         case FAILED_TRANSACTION:
-            LOGE("!!! FAILED BINDER TRANSACTION !!!");
+            ALOGE("!!! FAILED BINDER TRANSACTION !!!");
             //jniThrowException(env, "java/lang/OutOfMemoryError", "Binder transaction too large");
             break;
         default:
-            LOGE("Unknown binder error code. 0x%x", err);
+            ALOGE("Unknown binder error code. 0x%x", err);
     }
 }
 
@@ -637,7 +637,7 @@ static void android_os_Binder_init(JNIEnv* env, jobject clazz)
         jniThrowException(env, "java/lang/OutOfMemoryError", NULL);
         return;
     }
-    LOGV("Java Binder %p: acquiring first ref on holder %p", clazz, jbh);
+    ALOGV("Java Binder %p: acquiring first ref on holder %p", clazz, jbh);
     jbh->incStrong(clazz);
     env->SetIntField(clazz, gBinderOffsets.mObject, (int)jbh);
 }
@@ -648,7 +648,7 @@ static void android_os_Binder_destroy(JNIEnv* env, jobject clazz)
         env->GetIntField(clazz, gBinderOffsets.mObject);
     if (jbh != NULL) {
         env->SetIntField(clazz, gBinderOffsets.mObject, 0);
-        LOGV("Java Binder %p: removing ref on holder %p", clazz, jbh);
+        ALOGV("Java Binder %p: removing ref on holder %p", clazz, jbh);
         jbh->decStrong(clazz);
     } else {
         // Encountering an uninitialized binder is harmless.  All it means is that
@@ -657,7 +657,7 @@ static void android_os_Binder_destroy(JNIEnv* env, jobject clazz)
         // For example, a Binder subclass constructor might have thrown an exception before
         // it could delegate to its superclass's constructor.  Consequently init() would
         // not have been called and the holder pointer would remain NULL.
-        LOGV("Java Binder %p: ignoring uninitialized binder", clazz);
+        ALOGV("Java Binder %p: ignoring uninitialized binder", clazz);
     }
 }
 
@@ -746,7 +746,7 @@ static void android_os_BinderInternal_disableBackgroundScheduling(JNIEnv* env,
 
 static void android_os_BinderInternal_handleGc(JNIEnv* env, jobject clazz)
 {
-    LOGV("Gc has executed, clearing binder ops");
+    ALOGV("Gc has executed, clearing binder ops");
     android_atomic_and(0, &gNumRefsCreated);
 }
 
@@ -833,7 +833,7 @@ static bool push_eventlog_string(char** pos, const char* end, const char* str) {
     jint len = strlen(str);
     int space_needed = 1 + sizeof(len) + len;
     if (end - *pos < space_needed) {
-        LOGW("not enough space for string. remain=%d; needed=%d",
+        ALOGW("not enough space for string. remain=%d; needed=%d",
              (end - *pos), space_needed);
         return false;
     }
@@ -849,7 +849,7 @@ static bool push_eventlog_string(char** pos, const char* end, const char* str) {
 static bool push_eventlog_int(char** pos, const char* end, jint val) {
     int space_needed = 1 + sizeof(val);
     if (end - *pos < space_needed) {
-        LOGW("not enough space for int.  remain=%d; needed=%d",
+        ALOGW("not enough space for int.  remain=%d; needed=%d",
              (end - *pos), space_needed);
         return false;
     }
@@ -936,7 +936,7 @@ static jboolean android_os_BinderProxy_transact(JNIEnv* env, jobject obj,
         return JNI_FALSE;
     }
 
-    LOGV("Java code calling transact on %p in Java object %p with code %d\n",
+    ALOGV("Java code calling transact on %p in Java object %p with code %d\n",
             target, obj, code);
 
     // Only log the binder call duration for things on the Java-level main thread.
@@ -975,11 +975,11 @@ static void android_os_BinderProxy_linkToDeath(JNIEnv* env, jobject obj,
     IBinder* target = (IBinder*)
         env->GetIntField(obj, gBinderProxyOffsets.mObject);
     if (target == NULL) {
-        LOGW("Binder has been finalized when calling linkToDeath() with recip=%p)\n", recipient);
+        ALOGW("Binder has been finalized when calling linkToDeath() with recip=%p)\n", recipient);
         assert(false);
     }
 
-    LOGV("linkToDeath: binder=%p recipient=%p\n", target, recipient);
+    ALOGV("linkToDeath: binder=%p recipient=%p\n", target, recipient);
 
     if (!target->localBinder()) {
         sp<JavaDeathRecipient> jdr = new JavaDeathRecipient(env, recipient);
@@ -1005,11 +1005,11 @@ static jboolean android_os_BinderProxy_unlinkToDeath(JNIEnv* env, jobject obj,
     IBinder* target = (IBinder*)
         env->GetIntField(obj, gBinderProxyOffsets.mObject);
     if (target == NULL) {
-        LOGW("Binder has been finalized when calling linkToDeath() with recip=%p)\n", recipient);
+        ALOGW("Binder has been finalized when calling linkToDeath() with recip=%p)\n", recipient);
         return JNI_FALSE;
     }
 
-    LOGV("unlinkToDeath: binder=%p recipient=%p\n", target, recipient);
+    ALOGV("unlinkToDeath: binder=%p recipient=%p\n", target, recipient);
 
     if (!target->localBinder()) {
         wp<IBinder::DeathRecipient> dr;
@@ -1036,7 +1036,7 @@ static void android_os_BinderProxy_destroy(JNIEnv* env, jobject obj)
 {
     IBinder* b = (IBinder*)
         env->GetIntField(obj, gBinderProxyOffsets.mObject);
-    LOGV("Destroying BinderProxy %p: binder=%p\n", obj, b);
+    ALOGV("Destroying BinderProxy %p: binder=%p\n", obj, b);
     env->SetIntField(obj, gBinderProxyOffsets.mObject, 0);
     b->decStrong(obj);
     IPCThreadState::self()->flushCommands();
@@ -1366,7 +1366,7 @@ static jobject android_os_Parcel_readFileDescriptor(JNIEnv* env, jobject clazz)
         jobject object = env->NewObject(
                 gFileDescriptorOffsets.mClass, gFileDescriptorOffsets.mConstructor);
         if (object != NULL) {
-            //LOGI("Created new FileDescriptor %p with fd %d\n", object, fd);
+            //ALOGI("Created new FileDescriptor %p with fd %d\n", object, fd);
             env->SetIntField(object, gFileDescriptorOffsets.mDescriptor, fd);
         }
         return object;
@@ -1428,7 +1428,7 @@ static void android_os_Parcel_closeFileDescriptor(JNIEnv* env, jobject clazz, jo
     int fd = env->GetIntField(object, gFileDescriptorOffsets.mDescriptor);
     if (fd >= 0) {
         env->SetIntField(object, gFileDescriptorOffsets.mDescriptor, -1);
-        //LOGI("Closing ParcelFileDescriptor %d\n", fd);
+        //ALOGI("Closing ParcelFileDescriptor %d\n", fd);
         close(fd);
     }
 }
@@ -1439,7 +1439,7 @@ static void android_os_Parcel_freeBuffer(JNIEnv* env, jobject clazz)
     if (own) {
         Parcel* parcel = parcelForJavaObject(env, clazz);
         if (parcel != NULL) {
-            //LOGI("Parcel.freeBuffer() called for C++ Parcel %p\n", parcel);
+            //ALOGI("Parcel.freeBuffer() called for C++ Parcel %p\n", parcel);
             parcel->freeData();
         }
     }
@@ -1450,17 +1450,17 @@ static void android_os_Parcel_init(JNIEnv* env, jobject clazz, jint parcelInt)
     Parcel* parcel = (Parcel*)parcelInt;
     int own = 0;
     if (!parcel) {
-        //LOGI("Initializing obj %p: creating new Parcel\n", clazz);
+        //ALOGI("Initializing obj %p: creating new Parcel\n", clazz);
         own = 1;
         parcel = new Parcel;
     } else {
-        //LOGI("Initializing obj %p: given existing Parcel %p\n", clazz, parcel);
+        //ALOGI("Initializing obj %p: given existing Parcel %p\n", clazz, parcel);
     }
     if (parcel == NULL) {
         jniThrowException(env, "java/lang/OutOfMemoryError", NULL);
         return;
     }
-    //LOGI("Initializing obj %p from C++ Parcel %p, own=%d\n", clazz, parcel, own);
+    //ALOGI("Initializing obj %p from C++ Parcel %p, own=%d\n", clazz, parcel, own);
     env->SetIntField(clazz, gParcelOffsets.mOwnObject, own);
     env->SetIntField(clazz, gParcelOffsets.mObject, (int)parcel);
 }
@@ -1471,11 +1471,11 @@ static void android_os_Parcel_destroy(JNIEnv* env, jobject clazz)
     if (own) {
         Parcel* parcel = parcelForJavaObject(env, clazz);
         env->SetIntField(clazz, gParcelOffsets.mObject, 0);
-        //LOGI("Destroying obj %p: deleting C++ Parcel %p\n", clazz, parcel);
+        //ALOGI("Destroying obj %p: deleting C++ Parcel %p\n", clazz, parcel);
         delete parcel;
     } else {
         env->SetIntField(clazz, gParcelOffsets.mObject, 0);
-        //LOGI("Destroying obj %p: leaving C++ Parcel %p\n", clazz);
+        //ALOGI("Destroying obj %p: leaving C++ Parcel %p\n", clazz);
     }
 }
 

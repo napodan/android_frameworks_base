@@ -71,10 +71,10 @@ bool CursorWindow::initBuffer(bool localOnly)
                 return true;                
             }
         } 
-        LOGE("CursorWindow heap allocation failed");
+        ALOGE("CursorWindow heap allocation failed");
         return false;
     } else {
-        LOGE("failed to create the CursorWindow heap");
+        ALOGE("failed to create the CursorWindow heap");
         return false;
     }
 }
@@ -115,7 +115,7 @@ field_slot_t * CursorWindow::allocRow()
     uint32_t fieldDirOffset = alloc(fieldDirSize);
     if (!fieldDirOffset) {
         mHeader->numRows--;
-        LOGE("The row failed, so back out the new row accounting from allocRowSlot %d", mHeader->numRows);
+        ALOGE("The row failed, so back out the new row accounting from allocRowSlot %d", mHeader->numRows);
         return NULL;
     }
     field_slot_t * fieldDir = (field_slot_t *)offsetToPtr(fieldDirOffset);
@@ -141,10 +141,10 @@ uint32_t CursorWindow::alloc(size_t requestedSize, bool aligned)
     size = requestedSize + padding;
 
     if (size > freeSpace()) {
-        LOGE("need to grow: mSize = %d, size = %d, freeSpace() = %d, numRows = %d", mSize, size, freeSpace(), mHeader->numRows);
+        ALOGE("need to grow: mSize = %d, size = %d, freeSpace() = %d, numRows = %d", mSize, size, freeSpace(), mHeader->numRows);
         // Only grow the window if the first row doesn't fit
         if (mHeader->numRows > 1) {
-LOGE("not growing since there are already %d row(s), max size %d", mHeader->numRows, mMaxSize);
+ALOGE("not growing since there are already %d row(s), max size %d", mHeader->numRows, mMaxSize);
             return 0;
         }
 
@@ -154,7 +154,7 @@ LOGE("not growing since there are already %d row(s), max size %d", mHeader->numR
         while (size > (newSize - allocated)) {
             newSize += WINDOW_ALLOCATION_SIZE;
             if (newSize > mMaxSize) {
-                LOGE("Attempting to grow window beyond max size (%d)", mMaxSize);
+                ALOGE("Attempting to grow window beyond max size (%d)", mMaxSize);
                 return 0;
             }
         }
@@ -217,16 +217,16 @@ LOG_WINDOW("follwing 'pointer' to next chunk, offset of next pointer is %d", chu
 field_slot_t * CursorWindow::getFieldSlotWithCheck(int row, int column)
 {
   if (row < 0 || row >= mHeader->numRows || column < 0 || column >= mHeader->numColumns) {
-      LOGE("Bad request for field slot %d,%d. numRows = %d, numColumns = %d", row, column, mHeader->numRows, mHeader->numColumns);
+      ALOGE("Bad request for field slot %d,%d. numRows = %d, numColumns = %d", row, column, mHeader->numRows, mHeader->numColumns);
       return NULL;
   }        
   row_slot_t * rowSlot = getRowSlot(row);
   if (!rowSlot) {
-      LOGE("Failed to find rowSlot for row %d", row);
+      ALOGE("Failed to find rowSlot for row %d", row);
       return NULL;
   }
   if (rowSlot->offset == 0 || rowSlot->offset >= mSize) {
-      LOGE("Invalid rowSlot, offset = %d", rowSlot->offset);
+      ALOGE("Invalid rowSlot, offset = %d", rowSlot->offset);
       return NULL;
   }  
   int fieldDirOffset = rowSlot->offset;
@@ -236,16 +236,16 @@ field_slot_t * CursorWindow::getFieldSlotWithCheck(int row, int column)
 uint32_t CursorWindow::read_field_slot(int row, int column, field_slot_t * slotOut)
 {
     if (row < 0 || row >= mHeader->numRows || column < 0 || column >= mHeader->numColumns) {
-        LOGE("Bad request for field slot %d,%d. numRows = %d, numColumns = %d", row, column, mHeader->numRows, mHeader->numColumns);
+        ALOGE("Bad request for field slot %d,%d. numRows = %d, numColumns = %d", row, column, mHeader->numRows, mHeader->numColumns);
         return -1;
     }        
     row_slot_t * rowSlot = getRowSlot(row);
     if (!rowSlot) {
-        LOGE("Failed to find rowSlot for row %d", row);
+        ALOGE("Failed to find rowSlot for row %d", row);
         return -1;
     }
     if (rowSlot->offset == 0 || rowSlot->offset >= mSize) {
-        LOGE("Invalid rowSlot, offset = %d", rowSlot->offset);
+        ALOGE("Invalid rowSlot, offset = %d", rowSlot->offset);
         return -1;
     }
 LOG_WINDOW("Found field directory for %d,%d at rowSlot %d, offset %d", row, column, (uint8_t *)rowSlot - mData, rowSlot->offset);
