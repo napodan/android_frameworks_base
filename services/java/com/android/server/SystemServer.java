@@ -431,6 +431,18 @@ class ServerThread extends Thread {
             } catch (Throwable e) {
                 Slog.e(TAG, "Failure starting DiskStats Service", e);
             }
+
+            try {
+                // need to add this service even if SamplingProfilerIntegration.isEnabled()
+                // is false, because it is this service that detects system property change and
+                // turns on SamplingProfilerIntegration. Plus, when sampling profiler doesn't work,
+                // there is little overhead for running this service.
+                Slog.i(TAG, "SamplingProfiler Service");
+                ServiceManager.addService("samplingprofiler",
+                            new SamplingProfilerService(context));
+            } catch (Throwable e) {
+                Slog.e(TAG, "Failure starting SamplingProfiler Service", e);
+            }
         }
 
         // make sure the ADB_ENABLED setting value matches the secure property value
@@ -570,7 +582,7 @@ public class SystemServer {
             timer.schedule(new TimerTask() {
                 @Override
                 public void run() {
-                    SamplingProfilerIntegration.writeSnapshot("system_server");
+                    SamplingProfilerIntegration.writeSnapshot("system_server", null);
                 }
             }, SNAPSHOT_INTERVAL, SNAPSHOT_INTERVAL);
         }
@@ -578,7 +590,7 @@ public class SystemServer {
         // The system server has to run all of the time, so it needs to be
         // as efficient as possible with its memory usage.
         VMRuntime.getRuntime().setTargetHeapUtilization(0.8f);
-        
+
         System.loadLibrary("android_servers");
         init1(args);
     }
