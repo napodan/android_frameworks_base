@@ -2254,7 +2254,7 @@ class ContextImpl extends Context {
                 return info.activityInfo.loadIcon(this);
             }
 
-            throw new NameNotFoundException(intent.toURI());
+            throw new NameNotFoundException(intent.toUri(0));
         }
 
         @Override public Drawable getDefaultActivityIcon() {
