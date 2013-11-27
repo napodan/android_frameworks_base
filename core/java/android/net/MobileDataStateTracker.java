@@ -189,102 +189,100 @@ public class MobileDataStateTracker implements NetworkStateTracker {
     private class MobileDataStateReceiver extends BroadcastReceiver {
         ConnectivityManager mConnectivityManager;
         public void onReceive(Context context, Intent intent) {
-            synchronized(this) {
-                // update state and roaming before we set the state - only state changes are
-                // noticed
-                TelephonyManager tm = TelephonyManager.getDefault();
-                setRoamingStatus(tm.isNetworkRoaming());
-                setSubtype(tm.getNetworkType(), tm.getNetworkTypeName());
-                if (intent.getAction().equals(TelephonyIntents.
-                        ACTION_ANY_DATA_CONNECTION_STATE_CHANGED)) {
-                    String apnType = intent.getStringExtra(Phone.DATA_APN_TYPE_KEY);
+            // update state and roaming before we set the state - only state changes are
+            // noticed
+            TelephonyManager tm = TelephonyManager.getDefault();
+            setRoamingStatus(tm.isNetworkRoaming());
+            setSubtype(tm.getNetworkType(), tm.getNetworkTypeName());
+            if (intent.getAction().equals(TelephonyIntents.
+                    ACTION_ANY_DATA_CONNECTION_STATE_CHANGED)) {
+                String apnType = intent.getStringExtra(Phone.DATA_APN_TYPE_KEY);
 
-                    if (!TextUtils.equals(apnType, mApnType)) {
-                        return;
-                    }
-                    Phone.DataState state = Enum.valueOf(Phone.DataState.class,
-                            intent.getStringExtra(Phone.STATE_KEY));
-                    String reason = intent.getStringExtra(Phone.STATE_CHANGE_REASON_KEY);
-                    String apnName = intent.getStringExtra(Phone.DATA_APN_KEY);
-
-                    boolean unavailable = intent.getBooleanExtra(Phone.NETWORK_UNAVAILABLE_KEY,
-                            false);
-                    mNetworkInfo.setIsAvailable(!unavailable);
-
-                    if (DBG) Log.d(TAG, mApnType + " Received state= " + state + ", old= " +
-                            mMobileDataState + ", reason= " +
-                            (reason == null ? "(unspecified)" : reason));
-
-                    if (mMobileDataState != state) {
-                        mMobileDataState = state;
-                        switch (state) {
-                            case DISCONNECTED:
-                                if(isTeardownRequested()) {
-                                    setTeardownRequested(false);
-                                }
-
-                                setDetailedState(DetailedState.DISCONNECTED, reason, apnName);
-                                boolean doReset = true;
-                                if (mIsDefaultOrHipri == true) {
-                                    // both default and hipri must go down before we reset
-                                    int typeToCheck = (Phone.APN_TYPE_DEFAULT.equals(mApnType) ?
-                                            ConnectivityManager.TYPE_MOBILE_HIPRI :
-                                            ConnectivityManager.TYPE_MOBILE);
-                                    if (mConnectivityManager == null) {
-                                        mConnectivityManager =
-                                                (ConnectivityManager)context.getSystemService(
-                                                Context.CONNECTIVITY_SERVICE);
-                                    }
-                                    if (mConnectivityManager != null) {
-                                        NetworkInfo info = mConnectivityManager.getNetworkInfo(
-                                                    typeToCheck);
-                                        if (info != null && info.isConnected() == true) {
-                                            doReset = false;
-                                        }
-                                    }
-                                }
-                                if (doReset && mInterfaceName != null) {
-                                    NetworkUtils.resetConnections(mInterfaceName);
-                                }
-                                // can't do this here - ConnectivityService needs it to clear stuff
-                                // it's ok though - just leave it to be refreshed next time
-                                // we connect.
-                                //if (DBG) Log.d(TAG, "clearing mInterfaceName for "+ mApnType +
-                                //        " as it DISCONNECTED");
-                                //mInterfaceName = null;
-                                //mDefaultGatewayAddr = 0;
-                                break;
-                            case CONNECTING:
-                                setDetailedState(DetailedState.CONNECTING, reason, apnName);
-                                break;
-                            case SUSPENDED:
-                                setDetailedState(DetailedState.SUSPENDED, reason, apnName);
-                                break;
-                            case CONNECTED:
-                                mInterfaceName = intent.getStringExtra(Phone.DATA_IFACE_NAME_KEY);
-                                if (mInterfaceName == null) {
-                                    Log.d(TAG, "CONNECTED event did not supply interface name.");
-                                }
-                                mDefaultGatewayAddr = intent.getIntExtra(Phone.DATA_GATEWAY_KEY, 0);
-                                if (mDefaultGatewayAddr == 0) {
-                                    Log.d(TAG, "CONNECTED event did not supply a default gateway.");
-                                }
-                                setDetailedState(DetailedState.CONNECTED, reason, apnName);
-                                break;
-                        }
-                    }
-                } else if (intent.getAction().
-                        equals(TelephonyIntents.ACTION_DATA_CONNECTION_FAILED)) {
-                    String apnType = intent.getStringExtra(Phone.DATA_APN_TYPE_KEY);
-                    if (!TextUtils.equals(apnType, mApnType)) {
-                        return;
-                    }
-                    String reason = intent.getStringExtra(Phone.FAILURE_REASON_KEY);
-                    String apnName = intent.getStringExtra(Phone.DATA_APN_KEY);
-                    if (DBG) Log.d(TAG, mApnType + "Received " + intent.getAction() +
-                            " broadcast" + reason == null ? "" : "(" + reason + ")");
-                    setDetailedState(DetailedState.FAILED, reason, apnName);
+                if (!TextUtils.equals(apnType, mApnType)) {
+                    return;
                 }
+                Phone.DataState state = Enum.valueOf(Phone.DataState.class,
+                        intent.getStringExtra(Phone.STATE_KEY));
+                String reason = intent.getStringExtra(Phone.STATE_CHANGE_REASON_KEY);
+                String apnName = intent.getStringExtra(Phone.DATA_APN_KEY);
+
+                boolean unavailable = intent.getBooleanExtra(Phone.NETWORK_UNAVAILABLE_KEY,
+                        false);
+                mNetworkInfo.setIsAvailable(!unavailable);
+
+                if (DBG) Log.d(TAG, mApnType + " Received state= " + state + ", old= " +
+                        mMobileDataState + ", reason= " +
+                        (reason == null ? "(unspecified)" : reason));
+
+                if (mMobileDataState != state) {
+                    mMobileDataState = state;
+                    switch (state) {
+                        case DISCONNECTED:
+                            if(isTeardownRequested()) {
+                                setTeardownRequested(false);
+                            }
+
+                            setDetailedState(DetailedState.DISCONNECTED, reason, apnName);
+                            boolean doReset = true;
+                            if (mIsDefaultOrHipri == true) {
+                                // both default and hipri must go down before we reset
+                                int typeToCheck = (Phone.APN_TYPE_DEFAULT.equals(mApnType) ?
+                                    ConnectivityManager.TYPE_MOBILE_HIPRI :
+                                    ConnectivityManager.TYPE_MOBILE);
+                                if (mConnectivityManager == null) {
+                                    mConnectivityManager =
+                                            (ConnectivityManager)context.getSystemService(
+                                            Context.CONNECTIVITY_SERVICE);
+                                }
+                                if (mConnectivityManager != null) {
+                                    NetworkInfo info = mConnectivityManager.getNetworkInfo(
+                                            typeToCheck);
+                                    if (info != null && info.isConnected() == true) {
+                                        doReset = false;
+                                    }
+                                }
+                            }
+                            if (doReset && mInterfaceName != null) {
+                                NetworkUtils.resetConnections(mInterfaceName);
+                            }
+                            // can't do this here - ConnectivityService needs it to clear stuff
+                            // it's ok though - just leave it to be refreshed next time
+                            // we connect.
+                            //if (DBG) Log.d(TAG, "clearing mInterfaceName for "+ mApnType +
+                            //        " as it DISCONNECTED");
+                            //mInterfaceName = null;
+                            //mDefaultGatewayAddr = 0;
+                            break;
+                        case CONNECTING:
+                            setDetailedState(DetailedState.CONNECTING, reason, apnName);
+                            break;
+                        case SUSPENDED:
+                            setDetailedState(DetailedState.SUSPENDED, reason, apnName);
+                            break;
+                        case CONNECTED:
+                            mInterfaceName = intent.getStringExtra(Phone.DATA_IFACE_NAME_KEY);
+                            if (mInterfaceName == null) {
+                                Log.d(TAG, "CONNECTED event did not supply interface name.");
+                            }
+                            mDefaultGatewayAddr = intent.getIntExtra(Phone.DATA_GATEWAY_KEY, 0);
+                            if (mDefaultGatewayAddr == 0) {
+                                Log.d(TAG, "CONNECTED event did not supply a default gateway.");
+                            }
+                            setDetailedState(DetailedState.CONNECTED, reason, apnName);
+                            break;
+                    }
+                }
+            } else if (intent.getAction().
+                    equals(TelephonyIntents.ACTION_DATA_CONNECTION_FAILED)) {
+                String apnType = intent.getStringExtra(Phone.DATA_APN_TYPE_KEY);
+                if (!TextUtils.equals(apnType, mApnType)) {
+                    return;
+                }
+                String reason = intent.getStringExtra(Phone.FAILURE_REASON_KEY);
+                String apnName = intent.getStringExtra(Phone.DATA_APN_KEY);
+                if (DBG) Log.d(TAG, mApnType + "Received " + intent.getAction() +
+                        " broadcast" + reason == null ? "" : "(" + reason + ")");
+                setDetailedState(DetailedState.FAILED, reason, apnName);
             }
         }
     }
