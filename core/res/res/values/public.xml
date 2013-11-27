@@ -1243,7 +1243,7 @@
   <public type="id" name="custom" id="0x0102002b" />
 
   <public type="anim" name="cycle_interpolator" id="0x010a000c" />
-    
+
 <!-- ===============================================================
      Resources added in version 9 of the platform (Gingerbread / 2.3)
      =============================================================== -->
@@ -1302,6 +1302,7 @@
   <public type="attr" name="customNavigationLayout" />
   <public type="attr" name="hardwareAccelerated" />
   <public type="attr" name="measureWithLargestChild" />
+  <public type="attr" name="animateFirstView" />
 
   <public type="id" name="home" />
 
