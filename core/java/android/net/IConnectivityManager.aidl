@@ -73,5 +73,7 @@ interface IConnectivityManager
 
     String[] getTetherableWifiRegexs();
 
+    void requestNetworkTransitionWakelock(in String forWhom);
+
     void reportInetCondition(int networkType, int percentage);
 }

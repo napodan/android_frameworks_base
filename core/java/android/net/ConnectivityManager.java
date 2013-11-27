@@ -555,6 +555,21 @@ public class ConnectivityManager
     }
 
     /**
+     * Ensure the device stays awake until we connect with the next network
+     * @param forWhome The name of the network going down for logging purposes
+     * @return {@code true} on success, {@code false} on failure
+     * {@hide}
+     */
+    public boolean requestNetworkTransitionWakelock(String forWhom) {
+        try {
+            mService.requestNetworkTransitionWakelock(forWhom);
+            return true;
+        } catch (RemoteException e) {
+            return false;
+        }
+    }
+
+    /*
      * @param networkType The type of network you want to report on
      * @param percentage The quality of the connection 0 is bad, 100 is good
      * {@hide}

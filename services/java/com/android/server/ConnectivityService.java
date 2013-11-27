@@ -38,6 +38,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
+import android.os.PowerManager;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.SystemProperties;
@@ -75,7 +76,6 @@ public class ConnectivityService extends IConnectivityManager.Stub {
     // system property that can override the above value
     private static final String NETWORK_RESTORE_DELAY_PROP_NAME =
             "android.telephony.apn-restore";
-
 
     private Tethering mTethering;
     private boolean mTetheringConfigValid = false;
@@ -178,6 +178,10 @@ public class ConnectivityService extends IConnectivityManager.Stub {
     private boolean mSystemReady;
     private Intent mInitialBroadcast;
 
+    private PowerManager.WakeLock mNetTransitionWakeLock;
+    private String mNetTransitionWakeLockCausedBy = "";
+    private int mNetTransitionWakeLockSerialNumber;
+    private int mNetTransitionWakeLockTimeout;
     // used in DBG mode to track inet condition reports
     private static final int INET_CONDITION_LOG_MAX_SIZE = 15;
     private ArrayList mInetLog;
@@ -272,6 +276,12 @@ public class ConnectivityService extends IConnectivityManager.Stub {
         }
 
         mContext = context;
+
+        PowerManager powerManager = (PowerManager)mContext.getSystemService(Context.POWER_SERVICE);
+        mNetTransitionWakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
+        mNetTransitionWakeLockTimeout = mContext.getResources().getInteger(
+                com.android.internal.R.integer.config_networkTransitionTimeout);
+
         mNetTrackers = new NetworkStateTracker[
                 ConnectivityManager.MAX_NETWORK_TYPE+1];
         mHandler = new MyHandler();
@@ -1069,6 +1079,12 @@ public class ConnectivityService extends IConnectivityManager.Stub {
                 "ConnectivityService");
     }
 
+    private void enforceConnectivityInternalPermission() {
+        mContext.enforceCallingOrSelfPermission(
+                android.Manifest.permission.CONNECTIVITY_INTERNAL,
+                "ConnectivityService");
+    }
+
     /**
      * Handle a {@code DISCONNECTED} event. If this pertains to the non-active
      * network, we ignore it. If it is for the active network, we send out a
@@ -1308,9 +1324,17 @@ public class ConnectivityService extends IConnectivityManager.Stub {
                         teardown(thisNet);
                         return;
                     }
-                    if (isFailover) {
-                        otherNet.releaseWakeLock();
-                    }
+                }
+            }
+            synchronized (ConnectivityService.this) {
+                // have a new default network, release the transition wakelock in a second
+                // if it's held.  The second pause is to allow apps to reconnect over the
+                // new network
+                if (mNetTransitionWakeLock.isHeld()) {
+                    mHandler.sendMessageDelayed(mHandler.obtainMessage(
+                            NetworkStateTracker.EVENT_CLEAR_NET_TRANSITION_WAKELOCK,
+                            mNetTransitionWakeLockSerialNumber, 0),
+                            1000);
                 }
             }
             mActiveDefaultNetwork = type;
@@ -1704,6 +1728,13 @@ public class ConnectivityService extends IConnectivityManager.Stub {
         }
         pw.println();
 
+        synchronized (this) {
+            pw.println("NetworkTranstionWakeLock is currently " +
+                    (mNetTransitionWakeLock.isHeld() ? "" : "not ") + "held.");
+            pw.println("It was last requested for "+mNetTransitionWakeLockCausedBy);
+        }
+        pw.println();
+
         mTethering.dump(fd, pw, args);
 
         if (mInetLog != null) {
@@ -1801,6 +1832,20 @@ public class ConnectivityService extends IConnectivityManager.Stub {
 
                 case NetworkStateTracker.EVENT_NETWORK_SUBTYPE_CHANGED:
                     // fill me in
+                    break;
+                case NetworkStateTracker.EVENT_CLEAR_NET_TRANSITION_WAKELOCK:
+                    String causedBy = null;
+                    synchronized (ConnectivityService.this) {
+                        if (msg.arg1 == mNetTransitionWakeLockSerialNumber &&
+                                mNetTransitionWakeLock.isHeld()) {
+                            mNetTransitionWakeLock.release();
+                            causedBy = mNetTransitionWakeLockCausedBy;
+                        }
+                    }
+                    if (causedBy != null) {
+                        Slog.d(TAG, "NetTransition Wakelock for " +
+                                causedBy + " released by timeout");
+                    }
                     break;
                 case EVENT_RESTORE_DEFAULT_NETWORK:
                     FeatureUser u = (FeatureUser)msg.obj;
@@ -1920,6 +1965,25 @@ public class ConnectivityService extends IConnectivityManager.Stub {
         boolean tetherEnabledInSettings = (Settings.Secure.getInt(mContext.getContentResolver(),
                 Settings.Secure.TETHER_SUPPORTED, defaultVal) != 0);
         return tetherEnabledInSettings && mTetheringConfigValid;
+    }
+
+    // An API NetworkStateTrackers can call when they lose their network.
+    // This will automatically be cleared after X seconds or a network becomes CONNECTED,
+    // whichever happens first.  The timer is started by the first caller and not
+    // restarted by subsequent callers.
+    public void requestNetworkTransitionWakelock(String forWhom) {
+        enforceConnectivityInternalPermission();
+        synchronized (this) {
+            if (mNetTransitionWakeLock.isHeld()) return;
+            mNetTransitionWakeLockSerialNumber++;
+            mNetTransitionWakeLock.acquire();
+            mNetTransitionWakeLockCausedBy = forWhom;
+        }
+        mHandler.sendMessageDelayed(mHandler.obtainMessage(
+                NetworkStateTracker.EVENT_CLEAR_NET_TRANSITION_WAKELOCK,
+                mNetTransitionWakeLockSerialNumber, 0),
+                mNetTransitionWakeLockTimeout);
+        return;
     }
 
     // 100 percent is full good, 0 is full bad.
