@@ -74,12 +74,6 @@ import android.widget.TextView;
 
 import com.android.internal.view.BaseSurfaceHolder;
 import com.android.internal.view.RootViewSurfaceTaker;
-import com.android.internal.view.menu.ContextMenuBuilder;
-import com.android.internal.view.menu.MenuBuilder;
-import com.android.internal.view.menu.MenuDialogHelper;
-import com.android.internal.view.menu.MenuView;
-import com.android.internal.view.menu.SubMenuBuilder;
-
 /**
  * Android-specific Window.
  * <p>
@@ -306,7 +300,7 @@ public class PhoneWindow extends Window implements MenuBuilder.Callback {
         // Already prepared (isPrepared will be reset to false later)
         if (st.isPrepared)
             return true;
-
+        
         if ((mPreparedPanel != null) && (mPreparedPanel != st)) {
             // Another Panel is prepared and possibly open, so close it
             closePanel(mPreparedPanel, false);
@@ -333,7 +327,12 @@ public class PhoneWindow extends Window implements MenuBuilder.Callback {
 
                     return false;
                 }
+                
                 st.refreshMenuContent = false;
+
+                if (mActionBar != null) {
+                    mActionBar.setMenu(st.menu);
+                }
             }
 
             // Callback and return if the callback does not want to show the menu
@@ -382,11 +381,9 @@ public class PhoneWindow extends Window implements MenuBuilder.Callback {
                 clearMenuViews(st);
             }
         }
-
     }
 
     private static void clearMenuViews(PanelFeatureState st) {
-
         // This can be called on config changes, so we should make sure
         // the views will be reconstructed based on the new orientation, etc.
 
@@ -561,6 +558,16 @@ public class PhoneWindow extends Window implements MenuBuilder.Callback {
         }
         st.refreshMenuContent = true;
         st.refreshDecorView = true;
+        
+        // Prepare the options panel if we have an action bar
+        if ((featureId == FEATURE_ACTION_BAR || featureId == FEATURE_OPTIONS_PANEL)
+                && mActionBar != null) {
+            st = getPanelState(Window.FEATURE_OPTIONS_PANEL, false);
+            if (st != null) {
+                st.isPrepared = false;
+                preparePanel(st, null);
+            }
+        }
     }
     
     /**
@@ -2300,10 +2307,8 @@ public class PhoneWindow extends Window implements MenuBuilder.Callback {
                 }
             } else {
                 mActionBar = (ActionBarView) findViewById(com.android.internal.R.id.action_bar);
-                if (mActionBar != null) {
-                    if (mActionBar.getTitle() == null) {
-                        mActionBar.setTitle(mTitle);
-                    }
+                if (mActionBar != null && mActionBar.getTitle() == null) {
+                    mActionBar.setTitle(mTitle);
                 }
             }
         }
