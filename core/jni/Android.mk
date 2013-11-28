@@ -47,6 +47,8 @@ LOCAL_SRC_FILES:= \
 	android_view_InputChannel.cpp \
 	android_view_InputQueue.cpp \
 	android_view_KeyEvent.cpp \
+	android_view_HardwareRenderer.cpp \
+	android_view_GLES20Canvas.cpp \
 	android_view_MotionEvent.cpp \
 	android_text_AndroidCharacter.cpp \
 	android_text_AndroidBidi.cpp \
@@ -142,11 +144,11 @@ LOCAL_SRC_FILES:= \
 	android_backup_BackupHelperDispatcher.cpp \
 	android_content_res_ObbScanner.cpp \
     android_content_res_Configuration.cpp \
-	android_view_HardwareRenderer.cpp \
 
 LOCAL_C_INCLUDES += \
 	$(JNI_H_INCLUDE) \
 	$(LOCAL_PATH)/android/graphics \
+	$(LOCAL_PATH)/../../libs/hwui \
 	$(call include-path-for, bluedroid) \
 	$(call include-path-for, libhardware)/hardware \
 	$(call include-path-for, libhardware_legacy)/hardware_legacy \
@@ -177,6 +179,7 @@ LOCAL_SHARED_LIBRARIES := \
 	libnetutils \
 	libui \
 	libgui \
+	libhwui \
 	libsurfaceflinger_client \
 	libcamera_client \
 	libskiagl \
