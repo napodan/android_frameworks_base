@@ -20,6 +20,7 @@ import android.bluetooth.BluetoothA2dp;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothInputDevice;
 import android.bluetooth.BluetoothUuid;
 import android.content.Context;
 import android.content.Intent;
@@ -373,6 +374,20 @@ class BluetoothEventLoop {
         }
     }
 
+    private void onInputDevicePropertyChanged(String path, String[] propValues) {
+        String address = mBluetoothService.getAddressFromObjectPath(path);
+        if (address == null) {
+            Log.e(TAG, "onInputDevicePropertyChanged: Address of the remote device in null");
+            return;
+        }
+        log(" Input Device : Name of Property is:" + propValues[0]);
+        boolean state = false;
+        if (propValues[1].equals("true")) {
+            state = true;
+        }
+        mBluetoothService.handleInputDevicePropertyChange(address, state);
+    }
+
     private String checkPairingRequestAndGetAddress(String objectPath, int nativeData) {
         String address = mBluetoothService.getAddressFromObjectPath(objectPath);
         if (address == null) {
@@ -525,6 +540,8 @@ class BluetoothEventLoop {
     }
 
     private void  onAgentAuthorize(String objectPath, String deviceUuid, int nativeData) {
+        if (!mBluetoothService.isEnabled()) return;
+
         String address = mBluetoothService.getAddressFromObjectPath(objectPath);
         if (address == null) {
             Log.e(TAG, "Unable to get device address in onAuthAgentAuthorize");
@@ -533,17 +550,17 @@ class BluetoothEventLoop {
 
         boolean authorized = false;
         ParcelUuid uuid = ParcelUuid.fromString(deviceUuid);
-        BluetoothA2dp a2dp = new BluetoothA2dp(mContext);
 
         BluetoothDevice device = mAdapter.getRemoteDevice(address);
         mAuthorizationAgentRequestData.put(address, new Integer(nativeData));
 
         // Bluez sends the UUID of the local service being accessed, _not_ the
         // remote service
-        if (mBluetoothService.isEnabled() &&
-                (BluetoothUuid.isAudioSource(uuid) || BluetoothUuid.isAvrcpTarget(uuid)
-                        || BluetoothUuid.isAdvAudioDist(uuid)) &&
-                        !isOtherSinkInNonDisconnectingState(address)) {
+        if ((BluetoothUuid.isAudioSource(uuid) || BluetoothUuid.isAvrcpTarget(uuid)
+              || BluetoothUuid.isAdvAudioDist(uuid)) &&
+              !isOtherSinkInNonDisconnectingState(address)) {
+            BluetoothA2dp a2dp = new BluetoothA2dp(mContext);
+
             authorized = a2dp.getSinkPriority(device) > BluetoothA2dp.PRIORITY_OFF;
             if (authorized) {
                 Log.i(TAG, "First check pass for incoming A2DP / AVRCP connection from " + address);
@@ -560,11 +577,19 @@ class BluetoothEventLoop {
             } else {
                 Log.i(TAG, "Rejecting incoming A2DP / AVRCP connection from " + address);
             }
+        } else if (BluetoothUuid.isInputDevice(uuid) && !isOtherInputDeviceConnected(address)) {
+            BluetoothInputDevice inputDevice = new BluetoothInputDevice(mContext);
+            authorized = inputDevice.getInputDevicePriority(device) >
+                         BluetoothInputDevice.PRIORITY_OFF;
+             if (authorized) {
+                 Log.i(TAG, "Allowing incoming HID connection from " + address);
+             } else {
+                 Log.i(TAG, "Rejecting incoming HID connection from " + address);
+             }
         } else {
             Log.i(TAG, "Rejecting incoming " + deviceUuid + " connection from " + address);
         }
         log("onAgentAuthorize(" + objectPath + ", " + deviceUuid + ") = " + authorized);
-        if (!authorized) a2dp.allowIncomingConnect(device, authorized);
     }
 
     private boolean onAgentOutOfBandDataAvailable(String objectPath) {
@@ -579,6 +604,18 @@ class BluetoothEventLoop {
         }
         return false;
 
+    }
+
+    private boolean isOtherInputDeviceConnected(String address) {
+        Set<BluetoothDevice> devices =
+            mBluetoothService.lookupInputDevicesMatchingStates(new int[] {
+                                                BluetoothInputDevice.STATE_CONNECTING,
+                                                BluetoothInputDevice.STATE_CONNECTED});
+
+        for (BluetoothDevice device : devices) {
+            if (!device.getAddress().equals(address)) return true;
+        }
+        return false;
     }
 
     private boolean isOtherSinkInNonDisconnectingState(String address) {
