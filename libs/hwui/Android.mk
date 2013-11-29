@@ -19,7 +19,7 @@ LOCAL_C_INCLUDES += \
 	external/skia/include/utils
 
 LOCAL_MODULE_CLASS := SHARED_LIBRARIES
-LOCAL_SHARED_LIBRARIES := libcutils libutils libGLESv2 libskia
+LOCAL_SHARED_LIBRARIES := liblog libcutils libutils libGLESv2 libskia
 LOCAL_MODULE:= libhwui
 LOCAL_PRELINK_MODULE := false
 
