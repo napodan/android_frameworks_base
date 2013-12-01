@@ -1282,6 +1282,7 @@ public class WebSettings {
     /**
      * Sets whether XSS Auditor is enabled.
      * @param flag Whether XSS Auditor should be enabled.
+     * @hide Only used by LayoutTestController.
      */
     public synchronized void setXSSAuditorEnabled(boolean flag) {
         if (mXSSAuditorEnabled != flag) {
