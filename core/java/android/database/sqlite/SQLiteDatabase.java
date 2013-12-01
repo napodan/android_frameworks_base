@@ -1882,6 +1882,11 @@ public class SQLiteDatabase extends SQLiteClosable {
      * @throws SQLException If the SQL string is invalid for some reason
      */
     public void execSQL(String sql) throws SQLException {
+        sql = sql.trim();
+        String prefix = sql.substring(0, 6);
+        if (prefix.equalsIgnoreCase("ATTACH")) {
+            disableWriteAheadLogging();
+        }
         verifyDbIsOpen();
         BlockGuard.getThreadPolicy().onWriteToDisk();
         long timeStart = SystemClock.uptimeMillis();
@@ -2364,6 +2369,14 @@ public class SQLiteDatabase extends SQLiteClosable {
             setJournalMode(mPath, "WAL");
         }
         return true;
+    }
+
+    private synchronized void disableWriteAheadLogging() {
+        if (mConnectionPool == null) {
+            return;
+        }
+        mConnectionPool.close();
+        mConnectionPool = null;
     }
 
     /**
