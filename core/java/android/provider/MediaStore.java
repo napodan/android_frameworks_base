@@ -335,26 +335,27 @@ public final class MediaStore {
             // Log.v(TAG, "getThumbnail: origId="+origId+", kind="+kind+", isVideo="+isVideo);
             // If the magic is non-zero, we simply return thumbnail if it does exist.
             // querying MediaProvider and simply return thumbnail.
-            MiniThumbFile thumbFile = MiniThumbFile.instance(baseUri);
-            long magic = thumbFile.getMagic(origId);
-            if (magic != 0) {
-                if (kind == MICRO_KIND) {
-                    synchronized (sThumbBufLock) {
-                        if (sThumbBuf == null) {
-                            sThumbBuf = new byte[MiniThumbFile.BYTES_PER_MINTHUMB];
-                        }
-                        if (thumbFile.getMiniThumbFromFile(origId, sThumbBuf) != null) {
-                            bitmap = BitmapFactory.decodeByteArray(sThumbBuf, 0, sThumbBuf.length);
-                            if (bitmap == null) {
-                                Log.w(TAG, "couldn't decode byte array.");
+            MiniThumbFile thumbFile = new MiniThumbFile(isVideo ? Video.Media.EXTERNAL_CONTENT_URI
+                    : Images.Media.EXTERNAL_CONTENT_URI);
+            Cursor c = null;
+            try {
+                long magic = thumbFile.getMagic(origId);
+                if (magic != 0) {
+                    if (kind == MICRO_KIND) {
+                        synchronized (sThumbBufLock) {
+                            if (sThumbBuf == null) {
+                                sThumbBuf = new byte[MiniThumbFile.BYTES_PER_MINTHUMB];
+                            }
+                            if (thumbFile.getMiniThumbFromFile(origId, sThumbBuf) != null) {
+                                bitmap = BitmapFactory.decodeByteArray(sThumbBuf, 0, sThumbBuf.length);
+                                if (bitmap == null) {
+                                    Log.w(TAG, "couldn't decode byte array.");
+                                }
                             }
                         }
-                    }
-                    return bitmap;
-                } else if (kind == MINI_KIND) {
-                    String column = isVideo ? "video_id=" : "image_id=";
-                    Cursor c = null;
-                    try {
+                        return bitmap;
+                    } else if (kind == MINI_KIND) {
+                        String column = isVideo ? "video_id=" : "image_id=";
                         c = cr.query(baseUri, PROJECTION, column + origId, null, null);
                         if (c != null && c.moveToFirst()) {
                             bitmap = getMiniThumbFromFile(c, baseUri, cr, options);
@@ -362,17 +363,13 @@ public final class MediaStore {
                                 return bitmap;
                             }
                         }
-                    } finally {
-                        if (c != null) c.close();
                     }
                 }
-            }
 
-            Cursor c = null;
-            try {
                 Uri blockingUri = baseUri.buildUpon().appendQueryParameter("blocking", "1")
                         .appendQueryParameter("orig_id", String.valueOf(origId))
                         .appendQueryParameter("group_id", String.valueOf(groupId)).build();
+                if (c != null) c.close();
                 c = cr.query(blockingUri, PROJECTION, null, null, null);
                 // This happens when original image/video doesn't exist.
                 if (c == null) return null;
@@ -423,6 +420,9 @@ public final class MediaStore {
                 Log.w(TAG, ex);
             } finally {
                 if (c != null) c.close();
+                // To avoid file descriptor leak in application process.
+                thumbFile.deactivate();
+                thumbFile = null;
             }
             return bitmap;
         }
