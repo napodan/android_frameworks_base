@@ -66,7 +66,8 @@ import java.util.Set;
 public class Tethering extends INetworkManagementEventObserver.Stub {
 
     private Context mContext;
-    private final String TAG = "Tethering";
+    private final static String TAG = "Tethering";
+    private final static boolean DEBUG = false;
 
     private boolean mBooted = false;
     //used to remember if we got connected before boot finished
@@ -174,7 +175,7 @@ public class Tethering extends INetworkManagementEventObserver.Stub {
     }
 
     public void interfaceLinkStatusChanged(String iface, boolean link) {
-        Log.d(TAG, "interfaceLinkStatusChanged " + iface + ", " + link);
+        if (DEBUG) Log.d(TAG, "interfaceLinkStatusChanged " + iface + ", " + link);
         boolean found = false;
         boolean usb = false;
         if (isWifi(iface)) {
@@ -229,28 +230,30 @@ public class Tethering extends INetworkManagementEventObserver.Stub {
             usb = true;
         }
         if (found == false) {
-            Log.d(TAG, iface + " is not a tetherable iface, ignoring");
+            if (DEBUG) Log.d(TAG, iface + " is not a tetherable iface, ignoring");
             return;
         }
 
         synchronized (mIfaces) {
             TetherInterfaceSM sm = mIfaces.get(iface);
             if (sm != null) {
-                Log.e(TAG, "active iface (" + iface + ") reported as added, ignoring");
+                if (DEBUG) Log.d(TAG, "active iface (" + iface + ") reported as added, ignoring");
                 return;
             }
             sm = new TetherInterfaceSM(iface, mLooper, usb);
             mIfaces.put(iface, sm);
             sm.start();
         }
-        Log.d(TAG, "interfaceAdded :" + iface);
+        if (DEBUG) Log.d(TAG, "interfaceAdded :" + iface);
     }
 
     public void interfaceRemoved(String iface) {
         synchronized (mIfaces) {
             TetherInterfaceSM sm = mIfaces.get(iface);
             if (sm == null) {
-                Log.e(TAG, "attempting to remove unknown iface (" + iface + "), ignoring");
+                if (DEBUG) {
+                    Log.e(TAG, "attempting to remove unknown iface (" + iface + "), ignoring");
+                }
                 return;
             }
             sm.sendMessage(TetherInterfaceSM.CMD_INTERFACE_DOWN);
@@ -350,8 +353,10 @@ public class Tethering extends INetworkManagementEventObserver.Stub {
         broadcast.putStringArrayListExtra(ConnectivityManager.EXTRA_ERRORED_TETHER,
                 erroredList);
         mContext.sendStickyBroadcast(broadcast);
-        Log.d(TAG, "sendTetherStateChangedBroadcast " + availableList.size() + ", " +
-                activeList.size() + ", " + erroredList.size());
+        if (DEBUG) {
+            Log.d(TAG, "sendTetherStateChangedBroadcast " + availableList.size() + ", " +
+                    activeList.size() + ", " + erroredList.size());
+        }
 
         if (usbTethered) {
             if (wifiTethered) {
@@ -467,7 +472,7 @@ public class Tethering extends INetworkManagementEventObserver.Stub {
 
     // toggled when we enter/leave the fully teathered state
     private boolean enableUsbRndis(boolean enabled) {
-        Log.d(TAG, "enableUsbRndis(" + enabled + ")");
+        if (DEBUG) Log.d(TAG, "enableUsbRndis(" + enabled + ")");
         IBinder b = ServiceManager.getService(Context.NETWORKMANAGEMENT_SERVICE);
                 INetworkManagementService service = INetworkManagementService.Stub.asInterface(b);
 
@@ -492,7 +497,7 @@ public class Tethering extends INetworkManagementEventObserver.Stub {
 
     // configured when we start tethering and unconfig'd on error or conclusion
     private boolean configureUsbIface(boolean enabled) {
-        Log.d(TAG, "configureUsbIface(" + enabled + ")");
+        if (DEBUG) Log.d(TAG, "configureUsbIface(" + enabled + ")");
 
         IBinder b = ServiceManager.getService(Context.NETWORKMANAGEMENT_SERVICE);
         INetworkManagementService service = INetworkManagementService.Stub.asInterface(b);
@@ -739,7 +744,7 @@ public class Tethering extends INetworkManagementEventObserver.Stub {
 
             @Override
             public boolean processMessage(Message message) {
-                Log.d(TAG, "InitialState.processMessage what=" + message.what);
+                if (DEBUG) Log.d(TAG, "InitialState.processMessage what=" + message.what);
                 boolean retValue = true;
                 switch (message.what) {
                     case CMD_TETHER_REQUESTED:
@@ -780,7 +785,7 @@ public class Tethering extends INetworkManagementEventObserver.Stub {
             }
             @Override
             public boolean processMessage(Message message) {
-                Log.d(TAG, "StartingState.processMessage what=" + message.what);
+                if (DEBUG) Log.d(TAG, "StartingState.processMessage what=" + message.what);
                 boolean retValue = true;
                 switch (message.what) {
                     // maybe a parent class?
@@ -832,7 +837,7 @@ public class Tethering extends INetworkManagementEventObserver.Stub {
                     return;
                 }
                 if (mUsb) Tethering.this.enableUsbRndis(true);
-                Log.d(TAG, "Tethered " + mIfaceName);
+                if (DEBUG) Log.d(TAG, "Tethered " + mIfaceName);
                 setAvailable(false);
                 setTethered(true);
                 sendTetherStateChangedBroadcast();
@@ -843,7 +848,7 @@ public class Tethering extends INetworkManagementEventObserver.Stub {
             }
             @Override
             public boolean processMessage(Message message) {
-                Log.d(TAG, "TetheredState.processMessage what=" + message.what);
+                if (DEBUG) Log.d(TAG, "TetheredState.processMessage what=" + message.what);
                 boolean retValue = true;
                 boolean error = false;
                 switch (message.what) {
@@ -886,7 +891,7 @@ public class Tethering extends INetworkManagementEventObserver.Stub {
                         } else if (message.what == CMD_INTERFACE_DOWN) {
                             transitionTo(mUnavailableState);
                         }
-                        Log.d(TAG, "Untethered " + mIfaceName);
+                        if (DEBUG) Log.d(TAG, "Untethered " + mIfaceName);
                         break;
                     case CMD_TETHER_CONNECTION_CHANGED:
                         String newUpstreamIfaceName = (String)(message.obj);
@@ -959,7 +964,7 @@ public class Tethering extends INetworkManagementEventObserver.Stub {
                                     ConnectivityManager.TETHER_ERROR_MASTER_ERROR);
                             break;
                         }
-                        Log.d(TAG, "Tether lost upstream connection " + mIfaceName);
+                        if (DEBUG) Log.d(TAG, "Tether lost upstream connection " + mIfaceName);
                         sendTetherStateChangedBroadcast();
                         if (mUsb) {
                             if (!Tethering.this.configureUsbIface(false)) {
@@ -1197,8 +1202,10 @@ public class Tethering extends INetworkManagementEventObserver.Stub {
                 IBinder b = ServiceManager.getService(Context.CONNECTIVITY_SERVICE);
                 IConnectivityManager cm = IConnectivityManager.Stub.asInterface(b);
                 mConnectionRequested = false;
-                Log.d(TAG, "chooseUpstreamType(" + tryCell + "),  dunRequired ="
-                        + mDunRequired + ", iface=" + iface);
+                if (DEBUG) {
+                    Log.d(TAG, "chooseUpstreamType(" + tryCell + "),  dunRequired ="
+                            + mDunRequired + ", iface=" + iface);
+                }
                 if (iface != null) {
                     try {
                         if (mDunRequired) {
@@ -1206,7 +1213,7 @@ public class Tethering extends INetworkManagementEventObserver.Stub {
                             NetworkInfo info = cm.getNetworkInfo(
                                     ConnectivityManager.TYPE_MOBILE_DUN);
                             if (info.isConnected()) {
-                                Log.d(TAG, "setting dun ifacename =" + iface);
+                                if (DEBUG) Log.d(TAG, "setting dun ifacename =" + iface);
                                 // even if we're already connected - it may be somebody else's
                                 // refcount, so add our own
                                 turnOnMobileConnection();
@@ -1218,11 +1225,11 @@ public class Tethering extends INetworkManagementEventObserver.Stub {
                                 }
                             }
                         } else {
-                            Log.d(TAG, "checking if hipri brought us this connection");
+                            if (DEBUG) Log.d(TAG, "checking if hipri brought us this connection");
                             NetworkInfo info = cm.getNetworkInfo(
                                     ConnectivityManager.TYPE_MOBILE_HIPRI);
                             if (info.isConnected()) {
-                                Log.d(TAG, "yes - hipri in use");
+                                if (DEBUG) Log.d(TAG, "yes - hipri in use");
                                 // even if we're already connected - it may be sombody else's
                                 // refcount, so add our own
                                 turnOnMobileConnection();
@@ -1244,7 +1251,7 @@ public class Tethering extends INetworkManagementEventObserver.Stub {
                 notifyTetheredOfNewUpstreamIface(iface);
             }
             protected void notifyTetheredOfNewUpstreamIface(String ifaceName) {
-                Log.d(TAG, "notifying tethered with iface =" + ifaceName);
+                if (DEBUG) Log.d(TAG, "notifying tethered with iface =" + ifaceName);
                 mUpstreamIfaceName = ifaceName;
                 for (Object o : mNotifyList) {
                     TetherInterfaceSM sm = (TetherInterfaceSM)o;
@@ -1261,19 +1268,19 @@ public class Tethering extends INetworkManagementEventObserver.Stub {
             }
             @Override
             public boolean processMessage(Message message) {
-                Log.d(TAG, "MasterInitialState.processMessage what=" + message.what);
+                if (DEBUG) Log.d(TAG, "MasterInitialState.processMessage what=" + message.what);
                 boolean retValue = true;
                 switch (message.what) {
                     case CMD_TETHER_MODE_REQUESTED:
                         mDunRequired = isDunRequired();
                         TetherInterfaceSM who = (TetherInterfaceSM)message.obj;
-                        Log.d(TAG, "Tether Mode requested by " + who.toString());
+                        if (DEBUG) Log.d(TAG, "Tether Mode requested by " + who.toString());
                         mNotifyList.add(who);
                         transitionTo(mTetherModeAliveState);
                         break;
                     case CMD_TETHER_MODE_UNREQUESTED:
                         who = (TetherInterfaceSM)message.obj;
-                        Log.d(TAG, "Tether Mode unrequested by " + who.toString());
+                        if (DEBUG) Log.d(TAG, "Tether Mode unrequested by " + who.toString());
                         int index = mNotifyList.indexOf(who);
                         if (index != -1) {
                             mNotifyList.remove(who);
@@ -1303,7 +1310,7 @@ public class Tethering extends INetworkManagementEventObserver.Stub {
             }
             @Override
             public boolean processMessage(Message message) {
-                Log.d(TAG, "TetherModeAliveState.processMessage what=" + message.what);
+                if (DEBUG) Log.d(TAG, "TetherModeAliveState.processMessage what=" + message.what);
                 boolean retValue = true;
                 switch (message.what) {
                     case CMD_TETHER_MODE_REQUESTED:
@@ -1331,8 +1338,10 @@ public class Tethering extends INetworkManagementEventObserver.Stub {
                         // make sure we're still using a requested connection - may have found
                         // wifi or something since then.
                         if (mConnectionRequested) {
-                            Log.d(TAG, "renewing mobile connection - requeuing for another " +
-                                    CELL_CONNECTION_RENEW_MS + "ms");
+                            if (DEBUG) {
+                                Log.d(TAG, "renewing mobile connection - requeuing for another " +
+                                        CELL_CONNECTION_RENEW_MS + "ms");
+                            }
                             turnOnMobileConnection();
                         }
                         break;
