@@ -340,4 +340,11 @@ public class WebChromeClient {
     public void onSelectionDone(WebView view) {
     }
 
+    /**
+     * Tell the client that the page being viewed is web app capable,
+     * i.e. has specified the fullscreen-web-app-capable meta tag.
+     * @hide
+     */
+    public void setInstallableWebApp() { }
+
 }
