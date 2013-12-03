@@ -4006,6 +4006,7 @@ public class Activity extends ContextThemeWrapper
     
     final void performStart() {
         mCalled = false;
+        mFragments.execPendingActions();
         mInstrumentation.callActivityOnStart(this);
         if (!mCalled) {
             throw new SuperNotCalledException(
@@ -4044,6 +4045,8 @@ public class Activity extends ContextThemeWrapper
     final void performResume() {
         performRestart();
         
+        mFragments.execPendingActions();
+        
         mLastNonConfigurationInstances = null;
         
         mCalled = false;
@@ -4059,6 +4062,7 @@ public class Activity extends ContextThemeWrapper
         mCalled = false;
         
         mFragments.dispatchResume();
+        mFragments.execPendingActions();
         
         onPostResume();
         if (!mCalled) {
