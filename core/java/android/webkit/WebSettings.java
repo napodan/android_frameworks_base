@@ -19,6 +19,7 @@ package android.webkit;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
@@ -107,7 +108,7 @@ public class WebSettings {
      * Use with {@link #setCacheMode}.
      */
     public static final int LOAD_NO_CACHE = 2;
-    
+
     /**
      * Don't use the network, load from cache only.
      * Use with {@link #setCacheMode}.
@@ -434,11 +435,14 @@ public class WebSettings {
             buffer.append(" Build/");
             buffer.append(id);
         }
+        String mobile = ((mContext.getResources().getConfiguration().screenLayout
+                & Configuration.SCREENLAYOUT_SIZE_MASK)
+                == Configuration.SCREENLAYOUT_SIZE_XLARGE) ? "" : "Mobile ";
         final String base = mContext.getResources().getText(
                 com.android.internal.R.string.web_user_agent).toString();
-        return String.format(base, buffer);
+        return String.format(base, buffer, mobile);
     }
-    
+
     /**
      * Enables dumping the pages navigation cache to a text file.
      */
@@ -490,14 +494,14 @@ public class WebSettings {
         mBuiltInZoomControls = enabled;
         mWebView.updateMultiTouchSupport(mContext);
     }
-    
+
     /**
      * Returns true if the zoom mechanism built into WebView is being used.
      */
     public boolean getBuiltInZoomControls() {
         return mBuiltInZoomControls;
     }
-    
+
     /**
      * Enable or disable file access within WebView. File access is enabled by
      * default. Note that this enables or disables file system access only.
@@ -1083,8 +1087,8 @@ public class WebSettings {
 
     private void verifyNetworkAccess() {
         if (!mBlockNetworkLoads) {
-            if (mContext.checkPermission("android.permission.INTERNET", 
-                    android.os.Process.myPid(), android.os.Process.myUid()) != 
+            if (mContext.checkPermission("android.permission.INTERNET",
+                    android.os.Process.myPid(), android.os.Process.myUid()) !=
                         PackageManager.PERMISSION_GRANTED) {
                 throw new SecurityException
                         ("Permission denied - " +
@@ -1379,7 +1383,7 @@ public class WebSettings {
     public synchronized void setUserAgentString(String ua) {
         if (ua == null || ua.length() == 0) {
             synchronized(sLockForLocaleSettings) {
-                Locale currentLocale = Locale.getDefault(); 
+                Locale currentLocale = Locale.getDefault();
                 if (!sLocale.equals(currentLocale)) {
                     sLocale = currentLocale;
                     mAcceptLanguage = getCurrentAcceptLanguage();
@@ -1434,11 +1438,11 @@ public class WebSettings {
         }
         return mAcceptLanguage;
     }
-    
+
     /**
      * Tell the WebView whether it needs to set a node to have focus when
      * {@link WebView#requestFocus(int, android.graphics.Rect)} is called.
-     * 
+     *
      * @param flag
      */
     public void setNeedInitialFocus(boolean flag) {
@@ -1465,7 +1469,7 @@ public class WebSettings {
                     EventHandler.PRIORITY));
         }
     }
-    
+
     /**
      * Override the way the cache is used. The way the cache is used is based
      * on the navigation option. For a normal page load, the cache is checked
@@ -1479,7 +1483,7 @@ public class WebSettings {
             mOverrideCacheMode = mode;
         }
     }
-    
+
     /**
      * Return the current setting for overriding the cache mode. For a full
      * description, see the {@link #setCacheMode(int)} function.
@@ -1487,7 +1491,7 @@ public class WebSettings {
     public int getCacheMode() {
         return mOverrideCacheMode;
     }
-    
+
     /**
      * If set, webkit alternately shrinks and expands images viewed outside
      * of an HTML page to fit the screen. This conflicts with attempts by
