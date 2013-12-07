@@ -116,9 +116,6 @@ LOCAL_SRC_FILES:= \
 	android_media_AudioSystem.cpp \
 	android_media_AudioTrack.cpp \
 	android_media_JetPlayer.cpp \
-	android_media_MtpClient.cpp \
-	android_media_MtpCursor.cpp \
-	android_media_MtpServer.cpp \
 	android_media_ToneGenerator.cpp \
 	android_hardware_Camera.cpp \
 	android_hardware_SensorManager.cpp \
@@ -155,7 +152,6 @@ LOCAL_C_INCLUDES += \
 	$(call include-path-for, libhardware_legacy)/hardware_legacy \
 	$(LOCAL_PATH)/../../include/ui \
 	$(LOCAL_PATH)/../../include/utils \
-	$(LOCAL_PATH)/../../media/mtp \
 	external/skia/include/core \
 	external/skia/include/effects \
 	external/skia/include/images \
@@ -202,9 +198,7 @@ LOCAL_SHARED_LIBRARIES := \
 	libwpa_client \
 	libjpeg \
 	libnfc_ndef \
-	libstagefright
 
-LOCAL_STATIC_LIBRARIES := libmtp libusbhost
 
 ifeq ($(BOARD_HAVE_BLUETOOTH),true)
 LOCAL_C_INCLUDES += \
