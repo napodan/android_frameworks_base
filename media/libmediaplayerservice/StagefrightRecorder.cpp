@@ -1003,6 +1003,9 @@ status_t StagefrightRecorder::setupVideoEncoder(sp<MediaSource> *source) {
 
     sp<CameraSource> cameraSource = CameraSource::CreateFromCamera(mCamera);
     CHECK(cameraSource != NULL);
+    if(mCaptureTimeLapse) {
+        cameraSource->enableTimeLapseMode(1E6, mFrameRate);
+    }
 
     sp<MetaData> enc_meta = new MetaData;
     enc_meta->setInt32(kKeyBitRate, mVideoBitRate);
@@ -1093,7 +1096,7 @@ status_t StagefrightRecorder::startMPEG4Recording() {
     sp<MediaWriter> writer = new MPEG4Writer(dup(mOutputFd));
 
     // Add audio source first if it exists
-    if (mAudioSource != AUDIO_SOURCE_LIST_END) {
+    if (!mCaptureTimeLapse && (mAudioSource != AUDIO_SOURCE_LIST_END)) {
         err = setupAudioEncoder(writer);
         if (err != OK) return err;
         totalBitRate += mAudioBitRate;
@@ -1214,8 +1217,9 @@ status_t StagefrightRecorder::reset() {
     mMaxFileDurationUs = 0;
     mMaxFileSizeBytes = 0;
     mTrackEveryTimeDurationUs = 0;
-    mRotationDegrees = 0;
+    mCaptureTimeLapse = false;
     mEncoderProfiles = MediaProfiles::getInstance();
+    mRotationDegrees = 0;
 
     mOutputFd = -1;
     mFlags = 0;

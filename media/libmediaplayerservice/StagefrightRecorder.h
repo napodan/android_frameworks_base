@@ -93,6 +93,8 @@ private:
     int64_t mTrackEveryTimeDurationUs;
     int32_t mRotationDegrees;  // Clockwise
 
+    bool mCaptureTimeLapse;
+
     String8 mParams;
     int mOutputFd;
     int32_t mFlags;
