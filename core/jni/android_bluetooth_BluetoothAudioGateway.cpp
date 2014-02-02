@@ -491,7 +491,8 @@ static int setup_listening_socket(int dev, int channel) {
 	}
 
     laddr.rc_family = AF_BLUETOOTH;
-    bacpy(&laddr.rc_bdaddr, BDADDR_ANY);
+    bdaddr_t bdaddr = {{0, 0, 0, 0, 0, 0}}; // BDADDR_ANY
+    bacpy(&laddr.rc_bdaddr, &bdaddr);
     laddr.rc_channel = channel;
 
 	if (bind(sk, (struct sockaddr *)&laddr, sizeof(laddr)) < 0) {

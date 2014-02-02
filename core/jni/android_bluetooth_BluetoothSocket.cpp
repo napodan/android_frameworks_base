@@ -245,7 +245,7 @@ static int bindListenNative(JNIEnv *env, jobject obj) {
     jint type;
     socklen_t addr_sz;
     struct sockaddr *addr;
-    bdaddr_t bdaddr = *BDADDR_ANY;
+    bdaddr_t bdaddr = {{0, 0, 0, 0, 0, 0}}; // BDADDR_ANY
     struct asocket *s = get_socketData(env, obj);
 
     if (!s)
